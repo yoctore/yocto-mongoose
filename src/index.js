@@ -1,6 +1,6 @@
 var utils     = require('yocto-utils');
 var logger    = require('yocto-logger');
-//var crud      = require('./modules/crud')()
+var crud      = require('./modules/crud')(logger);
 var mongoose  = require('mongoose');
 var _         = require('lodash');
 var Promise   = require('promise');
@@ -9,6 +9,7 @@ var fs        = require('fs');
 var glob      = require('glob');
 var joi       = require('joi');
 var async     = require('async');
+var Schema    = mongoose.Schema;
 /**
  *
  * Utility tool to manage mongoose connection and auto loading models.
@@ -41,7 +42,7 @@ function YMongoose (logger) {
    */
   this.paths    = {
     model       : '',
-    controller  : ''
+    validator   : ''
   };
   
   /**
@@ -74,9 +75,10 @@ YMongoose.prototype.isDisconnected = function () {
  * Create a connection on mongo server
  *
  * @param {String} url bdd url connection
+ * @param {Object} options options for connection
  * @return {Object} promise status to use for connection testing
  */
-YMongoose.prototype.connect = function (url) {
+YMongoose.prototype.connect = function (url, options) {
   // save current context
   var context =  this;
 
@@ -102,9 +104,11 @@ YMongoose.prototype.connect = function (url) {
     });
 
     // valid url ?
-    if (!_.isUndefined(url) && !_.isNull(url) && _.isString(url) && !_.isEmpty(url)) {
+    if (_.isString(url) && !_.isEmpty(url)) {
+      // normalized options
+      options = _.isObject(options) && !_.isEmpty(options) ? options : {};
       // start connection
-      context.mongoose.connect(url);
+      context.mongoose.connect(url, options);
     } else {
       // invalid url cannot connect
       context.logger.error('[ YMongoose.connect ] - Invalid url, cannot connect.');
@@ -153,23 +157,19 @@ YMongoose.prototype.disconnect = function () {
   });
 };
 
-// TODO RENAME CONTENT AFTER RENAME CONTROLLERS FN
-// ADD TO CHANGELOG 
 /**
  * Set path of model and directory for loading
  *
  * @param {String} directory directory path to set
- * @param {Boolean} isCtrl true if we want set controller path
+ * @param {Boolean} validator true if we want set controller path
  * @return {Boolean} true if all is ok false otherwise
  */
-YMongoose.prototype.setPath = function (directory, isCtrl) {
+YMongoose.prototype.setPath = function (directory, validator) {
   // set default if we need to set controller directory
-  isCtrl = !_.isUndefined(isCtrl) && !_.isNull(isCtrl) &&
-           _.isBoolean(isCtrl) && isCtrl ? isCtrl : false;
+  validator = _.isBoolean(validator) && validator ? validator : false;
 
   // is valid format ?
-  if (!_.isUndefined(directory) && !_.isNull(directory) &&
-       _.isString(directory) && !_.isEmpty(directory)) {
+  if (_.isString(directory) && !_.isEmpty(directory)) {
     // normalize directory path
     directory = path.isAbsolute(directory) ?
                 directory : path.normalize([ process.cwd(), directory ].join('/'));
@@ -177,9 +177,9 @@ YMongoose.prototype.setPath = function (directory, isCtrl) {
     // main process
     try  {
       // check access sync 
-      var access = fs.accessSync(directory, fs.R_OK);
+      var access  = fs.accessSync(directory, fs.R_OK);
       // retreiving stats of directory
-      var stats = fs.statSync(directory);
+      var stats   = fs.statSync(directory);
 
       // is directory ?
       if (!stats.isDirectory()) {
@@ -188,28 +188,28 @@ YMongoose.prototype.setPath = function (directory, isCtrl) {
       }
 
       // check if has data on directory for warning prevent
-      var hasFile = glob.sync([ '*.', (isCtrl ? 'js' : 'json') ].join(' '), {
+      var hasFile = glob.sync([ '*.', (validator ? 'js' : 'json') ].join(' '), {
         cwd : directory
       });
       // so isEmpty ?
       if (_.isEmpty(hasFile.length)) {
         this.logger.warning([ '[ YMongoose.setPath ] - Given directory path for',
-                              (isCtrl ? 'Controllers' : 'Models'),
+                              (validator ? 'Validators' : 'Models'),
                               'seems to be empty.',
-                              'Don\'t forget to ad your', (isCtrl ? 'js' : 'json'),
+                              'Don\'t forget to ad your', (validator ? 'js' : 'json'),
                               'file before load call' ].join(' '));
       }
 
       // set data
-      this.paths[ (isCtrl ? 'controller' : 'model') ] = directory;
+      this.paths[ (validator ? 'validator' : 'model') ] = directory;
       // log message
-      this.logger.info( [ '[ YMongoose.setPath ] -', (isCtrl ? 'Controllers' : 'Models'),
+      this.logger.info( [ '[ YMongoose.setPath ] -', (validator ? 'Validators' : 'Models'),
                           'path was set to :',
-                          this.paths[ (isCtrl ? 'controller' : 'model') ] ].join(' '));
+                          this.paths[ (validator ? 'validator' : 'model') ] ].join(' '));
     } catch (e) {
       // log message
       this.logger.error([ '[ YMongoose.setPath ] - Set path for',
-                          (isCtrl ? 'Controllers' : 'Models'),
+                          (validator ? 'Validators' : 'Models'),
                           'failed.', e ].join(' '));
       // error on set path disconnect mongoose
       this.disconnect();
@@ -244,13 +244,13 @@ YMongoose.prototype.isReady = function (showErrors) {
       this.logger.error('[ YMongoose.isReady ] - Model definition path is not set.');
     }
     // controller defintion path is properly set ?
-    if (_.isEmpty(this.paths.controller)) {
-      this.logger.error('[ YMongoose.isReady ] - Controllers definition path is not set.');
+    if (_.isEmpty(this.paths.validator)) {
+      this.logger.error('[ YMongoose.isReady ] - Validator definition path is not set.');
     }
   }
 
   // default statement
-  return this.isConnected() && !_.isEmpty(this.paths.model) && !_.isEmpty(this.paths.controller);
+  return this.isConnected() && !_.isEmpty(this.paths.model) && !_.isEmpty(this.paths.validator);
 };
 
 /**
@@ -266,17 +266,15 @@ YMongoose.prototype.models = function (directory) {
   return this.setPath(directory);
 };
 
-// TODO RENAME THIS FUNCTION FOR VALIDATION 
-// ADD TO CHANGELOG 
 /**
  * Define current controller path to use for mapping
  *
  * @param {String} directory directory path to use
  * @return {Boolean} true if add was ok false othewise
  */
-YMongoose.prototype.controllers = function (directory) {
+YMongoose.prototype.validators = function (directory) {
   // message
-  this.logger.info('[ YMongoose.controllers ] - Try to set controllers defintion path.');
+  this.logger.info('[ YMongoose.validators ] - Try to set validator defintion path.');
   // default statement
   return this.setPath(directory, true);
 };
@@ -300,10 +298,18 @@ YMongoose.prototype.addModel = function (value) {
     }
 
     // message
-    this.logger.info([ ' [ YMongoose.addModel ] - Creating model :', value.model.name ].join(' '));
+    this.logger.info([ '[ YMongoose.addModel ] - Creating model :', value.model.name ].join(' '));
+
+    // schema value
+    var schema = new Schema(value.model.properties)
+
+    // add crud ?
+    if (value.model.crud.enable) {
+      schema = this.createCrud(schema, value.model.crud.exclude);
+    }
 
     // valid statement
-    return this.mongoose.model(value.model.name, value.model.properties);
+    return this.mongoose.model(value.model.name, schema);
   }
 
   // default statement
@@ -312,13 +318,20 @@ YMongoose.prototype.addModel = function (value) {
 
 // TODO FINISH
 // ADD TO CHANGELOG 
-YMongoose.prototype.createCrud = function (value) {
+YMongoose.prototype.createCrud = function (value, exclude) {
   // is Ready ??
   if (this.isReady(true)) {
-    // message
-    console.log(value);
-  }
+    if (!(value instanceof Schema)) {
+      // invalid instance
+      this.logger.warning([ ' [ YMongoose.createCrud ] - Cannot process.',
+                            ' given schema is not an instanceof Schema' ].join(' '));
+      // invalid statement
+      return false;
+    }
 
+    // valid statement
+    return crud.add(value, exclude);
+  }
   // default statement
   return false;
 };
@@ -348,7 +361,10 @@ YMongoose.prototype.load = function () {
       model : joi.object().keys({
         name        : joi.string().required(),
         properties  : joi.object().required(),
-        crud        : joi.boolean().required(),
+        crud        : joi.object().keys({
+          enable  : joi.boolean().required(),
+          exclude : joi.array().empty()
+        }).allow('enable', 'exclude'),
         validator   : joi.string().required(),
       }).unknown()
     }).unknown();
@@ -370,19 +386,21 @@ YMongoose.prototype.load = function () {
       } else {
         // add new model
         var created = context.addModel(task.data);
-
+        // TEST TO REMOVE
+        created.get(1).then(function(a) {
+          console.log('aaaaa');
+          console.log(a);
+          return created.getOne();
+        }).then(function (e) {
+          console.log('eeeee');
+          console.log(e);
+        }).catch(function(err) {
+          console.log(err)
+        }).done();
         // model is created ?
         if (!created) {
           // callback with error
           callback([ 'Cannot create model for  [', task.file, ']' ].join(' '));
-        }
-        
-        // process crud ?
-        if (task.data.crud) {
-          context.createCrud(created);
-        } else {
-          // success nothing to do here
-          callback();
         }
       }
     }, 100);

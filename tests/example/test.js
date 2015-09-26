@@ -5,7 +5,7 @@ var db        = require('../../src/index.js')(logger);
 db.connect('localhost:27017').then(function() {
   // load models
   db.models('./tests/example/models');
-  db.controllers('./tests/example/controllers');
+  db.validators('./tests/example/controllers');
   if (db.isReady(true)) {
     db.load().then(function() {
       console.log('load success');

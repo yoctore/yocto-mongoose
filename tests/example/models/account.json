@@ -1,8 +1,12 @@
 {
   "model" : {
     "name"      : "Account",
-    "crud"      : true,
+    "crud"      : {
+      "enable"  : true,
+      "exclude" : [ "delete" ]
+    },
     "validator" : "account",
+    
     "properties" : {
       "firstname" : {
         "required" : true,

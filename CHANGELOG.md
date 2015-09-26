@@ -1,4 +1,8 @@
-## 1.0.0 (2015-09-25)
+## 0.0.2 (2015-09-27)
+
+- Change controllers Method name to validators
+
+## 0.0.1 (2015-09-25)
 
 Adding all base function.
 - isConnected : get status of connection
