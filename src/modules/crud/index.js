@@ -27,39 +27,39 @@ function Crud (logger) {
    *
    * @property logger
    */
-  this.logger   = logger;
+  this.logger     = logger;
 }
 
 /**
  * Get One item from given rules
  *
- * @param {String|Object}
- * @return {Promise} promise object to use for handleling
+ * @param {String|Object} conditions conditions to use for search
+ * @return {Promise} promise object to use for handling
  */
-Crud.prototype.getOne = function (rules) {
+Crud.prototype.getOne = function (conditions) {
   // call main function
-  return this.get(rules, 'findOne');
+  return this.get(conditions, 'findOne');
 };
 
 /**
  * Get data from a model
  *
- * @param {Object|String} rules query rules to add in find
+ * @param {Object|String} conditions query rules to add in find
  * @param {String} method id a method name is ginve force method name usage
  * @return {Promise} promise object to use for handleling
  */
-Crud.prototype.get = function (rules, method) {
+Crud.prototype.get = function (conditions, method) {
   // defined default method name to use
   method = _.isString(method) && !_.isEmpty(method) ? method : 'find';
 
   // is string ? so if for findById request. change method name
-  method = _.isString(rules) ? 'findById' : method;
+  method = _.isString(conditions) ? 'findById' : method;
 
   // Create our deferred object, which we will use in our promise chain
   var deferred = Q.defer();
 
   // try to find
-  this[method](rules, function (error, data) {
+  this[method](conditions, function (error, data) {
     if (error) {
       // reject
       deferred.reject(error);
@@ -71,7 +71,106 @@ Crud.prototype.get = function (rules, method) {
 
   // return deferred promise
   return deferred.promise;
-}
+};
+
+/**
+ * Find and Remove a specific model 
+ *
+ * @param {String} rules query rules to add in find
+ * @return {Promise} promise object to use for handling
+ */
+Crud.prototype.delete = function (id) {
+  // Create our deferred object, which we will use in our promise chain
+  var deferred = Q.defer();
+  
+  // is valid type ?
+  if (_.isString(id) && !_.isEmpty(id)) {
+    // try to find
+    this.findByIdAndRemove(id, function (error, data) {
+      // has error ?
+      if (error) {
+        // reject
+        deferred.reject(error);
+      } else {
+        // valid
+        deferred.resolve(data);
+      }
+    });    
+  } else {
+    deferred.reject( [ 'Given id is not a string',
+                      _.isString(id) && _.isEmpty(id) ? ' and is empty' : '' ].join(' '));
+  }
+
+  // return deferred promise
+  return deferred.promise;
+};
+
+/**
+ * Find a model and update it
+ *
+ * @param {Object|String} conditions query rules to add in find
+ * @param {String} update data to use for update
+ * @return {Promise} promise object to use for handling
+ */
+Crud.prototype.update = function(conditions, update) {
+  // is string ? so if for findByIdAndUpdate request. change method name
+  var method = _.isString(conditions) ? 'findByIdAndUpdate' : 'findOneAndUpdate';
+  
+  // Create our deferred object, which we will use in our promise chain
+  var deferred = Q.defer();
+
+  // try to find
+  this[method](conditions, update, { new : true }, function (error, data) {
+    // has error ?
+    if (error) {
+      // reject
+      deferred.reject(error);
+    } else {
+      // valid
+      deferred.resolve(data);
+    }
+  });
+
+  // return deferred promise
+  return deferred.promise;
+};
+
+/**
+ * Insert new data in bdd for current model
+ *
+ * @param {Object} value value to use for create action
+ * @return {Promise} promise object to use for handling
+ */
+Crud.prototype.create = function (value) {
+  // Create our deferred object, which we will use in our promise chain
+  var deferred = Q.defer();
+  // create default instance model
+  var model = !_.isFunction(this.save) ? new this() : this;
+  
+  // model is a valid instance ?
+  if (model instanceof this) {
+    // merge data before save
+    _.merge(model, value);
+  
+    // try to find
+    model.save(function (error, data) {
+      // has error ?
+      if (error) {
+        // reject
+        deferred.reject(error);
+      } else {
+        // valid
+        deferred.resolve(data);
+      }
+    });
+  } else {
+    // reject invalid instance model
+    deferred.reject('[ Crud.create ] - cannot save. invalid instance model');
+  }
+
+  // return deferred promise
+  return deferred.promise;
+};
 
 /**
  * Add a crud method to statics givent schema
@@ -81,6 +180,7 @@ Crud.prototype.get = function (rules, method) {
  * @return {Object} modified schema with new requested method
  */
 Crud.prototype.add = function (schema, exclude) {
+  // valid data ?
   if ((!_.isObject(schema) && !(scheme instanceof Schema)) || !_.isArray(exclude)) {
     this.logger.warning('[ Crud.add ] - Schema or exclude item given is invalid');
     // invalid statement
@@ -88,7 +188,7 @@ Crud.prototype.add = function (schema, exclude) {
   }
 
   // keep only correct method
-  var existing  = _.difference(Object.keys(Crud.prototype), 'add');
+  var existing  = _.difference(Object.keys(Crud.prototype), [ 'add' ]);
   // normalize data
   exclude       = _.isArray(exclude) ? exclude : [];
   // keep only needed methods
@@ -101,14 +201,14 @@ Crud.prototype.add = function (schema, exclude) {
   _.each(saved, function (s) {
     // is a valid func ?
     if (_.isFunction(context[s])) {
-      // assign method
-      schema.statics[s] = context[s];
+      // assign method via static method
+      schema.static(s, context[s]);
     }
   });
 
   // default statement
   return schema;
-}
+};
 
 // Default export
 module.exports = function (l) {

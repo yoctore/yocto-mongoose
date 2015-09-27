@@ -1,3 +1,18 @@
+## 0.0.5 (2015-09-27)
+
+- Adding getModel method to retrieve a valid model
+
+## 0.0.4 (2015-09-27)
+
+- Adding addCrud method to enable crud flag from model
+- Finish load method for autoloading of models from given path
+- Adding isLoaded method. This method get model load status 
+
+## 0.0.3 (2015-09-27)
+
+- Adding get et getOne statics method on crud Class
+- Adding delete statics method on crud Class
+
 ## 0.0.2 (2015-09-27)
 
 - Change controllers Method name to validators

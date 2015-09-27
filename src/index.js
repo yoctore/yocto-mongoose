@@ -10,6 +10,7 @@ var glob      = require('glob');
 var joi       = require('joi');
 var async     = require('async');
 var Schema    = mongoose.Schema;
+
 /**
  *
  * Utility tool to manage mongoose connection and auto loading models.
@@ -47,8 +48,19 @@ function YMongoose (logger) {
   
   /**
    * Define is we create automatique crud function
+   *
+   * @property crud
+   * @default false
    */
   this.crud     = false;
+
+  /**
+   * Define if models are loaded
+   *
+   * @property loaded
+   * @default false
+   */
+  this.loaded   = false;
 }
 
 /**
@@ -227,6 +239,16 @@ YMongoose.prototype.setPath = function (directory, validator) {
 };
 
 /**
+ * Get current curred loaded status
+ *
+ * @return {Boolean} true if all is ok false otherwise
+ */
+YMongoose.prototype.isLoaded = function () {
+  // default statement
+  return this.loaded;
+};
+
+/**
  * Check is current connector is ready
  *
  * @param {Boolean} showErrors true is we want
@@ -316,8 +338,13 @@ YMongoose.prototype.addModel = function (value) {
   return false;
 }
 
-// TODO FINISH
-// ADD TO CHANGELOG 
+/**
+ * Adding crud method to current object
+ *
+ * @param {Object} value a valid schema instance to use
+ * @param {Array} exclude method to exclude on add crud request
+ * @return {Boolean} true if all is ok false otherwise
+ */
 YMongoose.prototype.createCrud = function (value, exclude) {
   // is Ready ??
   if (this.isReady(true)) {
@@ -336,8 +363,11 @@ YMongoose.prototype.createCrud = function (value, exclude) {
   return false;
 };
 
-// TODO FINISH  
-// ADD TO CHANGELOG 
+/**
+ * Load models, from given path
+ *
+ * @return {Object} a valid promise
+ */
 YMongoose.prototype.load = function () {
   var context = this; // saving context
   var errors  = [];   // list of errors
@@ -386,21 +416,16 @@ YMongoose.prototype.load = function () {
       } else {
         // add new model
         var created = context.addModel(task.data);
-        // TEST TO REMOVE
-        created.get(1).then(function(a) {
-          console.log('aaaaa');
-          console.log(a);
-          return created.getOne();
-        }).then(function (e) {
-          console.log('eeeee');
-          console.log(e);
-        }).catch(function(err) {
-          console.log(err)
-        }).done();
+
         // model is created ?
         if (!created) {
           // callback with error
           callback([ 'Cannot create model for  [', task.file, ']' ].join(' '));
+        } else {
+          // change nb added items value
+          nbItems.processed++;
+          // normal process all is ok
+          callback();
         }
       }
     }, 100);
@@ -415,10 +440,12 @@ YMongoose.prototype.load = function () {
                             (nbItems.total > 1) ? 'items' : 'item', '] -',
                             '[ Processed :', nbItems.processed,
                             (nbItems.processed > 1) ? 'items' : 'item', '] -',
-                            '[ Errors :', (errors.length - 1),
+                            '[ Errors :', errors.length,
                             (errors.length > 1) ? 'items' : 'item',']' ].join(' '));
+      // changed loaded status
+      context.loaded = (nbItems.processed === nbItems.total);
       // all is processed ?
-      if (nbItems.processed === nbItems.total) {
+      if (context.loaded) {
         // success message
         context.logger.info('[ YMongoose.load.queue.drain ] - All item was processed.');
         // all is ok so fulfill
@@ -479,8 +506,78 @@ YMongoose.prototype.load = function () {
   });
 };
 
-YMongoose.prototype.getModel = function (name) {
-  // add a flag loaded + is connected and get model
+/**
+ * Retreive a valid model for usage
+ *
+ * @param {String} name model name wanted
+ * @param {Boolean} instance true is we want an instance false otherwise
+ * @return {Boolean|Instance} false if an error occured, a model object if all is ok
+ */
+YMongoose.prototype.getModel = function (name, instance) {
+  // is ready ??
+  if (this.isReady(true) && this.isLoaded() && this.isConnected() &&
+      _.isString(name) && !_.isEmpty(name)) {
+    // do it in try catch
+    try {
+      // try to get model
+      var model = this.mongoose.model(name);
+    } catch (e) {
+      // show error
+      this.logger.error('[ YMongoose.getModel ] - Model not found. Invalid schema name given.');
+      // debug message 
+      this.logger.debug([ '[ YMongoose.getModel ] -', e ].join(' '));
+      // invalid statement
+      return false;
+    }
+
+    // valid statement
+    return (_.isBoolean(instance) && instance) ? new model() : model;
+  }
+
+  // error here
+  this.logger.error('[ YMongoose.getModel ] - Cannot get model. Invalid schema name given.');
+  // invalid statement
+  return false;
+};
+
+// TODO
+// ADD CHANGELOG
+YMongoose.prototype.addStatic = function (model, name, fn) {
+  // is ready ??
+  if (this.isReady(true) && this.isLoaded() && this.isConnected() &&
+      _.isFunction(fn) && _.isString(model) && !_.isEmpty(model) &&
+      _.isString(name) && !_.isEmpty(name)) {
+
+    // check valid method name
+    var retreive = this.getModel(model);
+
+    // retreive model ??
+    if (!retreive) {
+      // log error
+      this.logger.error('[ YMongoose.addMethod ] - Cannot add method. Search model is not found');
+      // invalid statement
+      return false;
+    }
+    // TODO IF ALL IS OK
+    // IMPLEMENT METHOD ADD TWO
+    // TODO Check if method not already exists
+    var schema = retreive.schema;
+    // add static method
+    schema.static(name, fn);
+    // delete existing model before new changes
+    delete this.mongoose.models[model];
+    // create new model
+    this.mongoose.model(model, schema);
+    
+    // valid statement
+    return true;
+  }
+
+  // error here
+  this.logger.warning([ '[ YMongoose.addMethod ] - Cannot add new method.',
+                        'Invalid name or given Function is not valid' ].join(' '));
+  // invalid statement
+  return false;
 };
 
 // Default export
