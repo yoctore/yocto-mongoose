@@ -4,13 +4,13 @@ var validator = require('./modules/validator')(logger);
 var method    = require('./modules/method')(logger);
 var mongoose  = require('mongoose');
 var _         = require('lodash');
-var Promise   = require('promise');
 var path      = require('path');
 var fs        = require('fs');
 var glob      = require('glob');
 var joi       = require('joi');
 var async     = require('async');
 var Schema    = mongoose.Schema;
+var Q         = require('q');
 
 /**
  *
@@ -93,43 +93,46 @@ YMongoose.prototype.isDisconnected = function () {
  * @return {Object} promise status to use for connection testing
  */
 YMongoose.prototype.connect = function (url, options) {
+  // Create our deferred object, which we will use in our promise chain
+  var deferred = Q.defer();
   // save current context
   var context =  this;
 
   // try connect
   this.logger.info('[ YMongoose.connect ] - Try to create a connection.');
-  // default statement
-  return new Promise(function (fulfill, reject) {
-    // listen open event
-    context.mongoose.connection.on('open', function () {
-      // message
-      context.logger.info([ '[ YMongoose.connect ] - Connection successful on', url ].join(' '));
-      // success reponse
-      fulfill();
-    });
 
-    // listen error event
-    context.mongoose.connection.on('error', function (error) {
-      // message
-      context.logger.error([ '[ YMongoose.connect ] - Connection failed.',
-                             'Error is :', error.message ].join(' '));
-      // success reponse
-      reject(error);
-    });
-
-    // valid url ?
-    if (_.isString(url) && !_.isEmpty(url)) {
-      // normalized options
-      options = _.isObject(options) && !_.isEmpty(options) ? options : {};
-      // start connection
-      context.mongoose.connect(url, options);
-    } else {
-      // invalid url cannot connect
-      context.logger.error('[ YMongoose.connect ] - Invalid url, cannot connect.');
-      // reject connection failed
-      reject();
-    }
+  // catch open connection
+  context.mongoose.connection.on('open', function () {
+    // message
+    context.logger.info([ '[ YMongoose.connect ] - Connection successful on', url ].join(' '));
+    // success reponse
+    deferred.resolve();
   });
+
+  // listen error event
+  context.mongoose.connection.on('error', function (error) {
+    // message
+    context.logger.error([ '[ YMongoose.connect ] - Connection failed.',
+                           'Error is :', error.message ].join(' '));
+    // error reponse
+    deferred.reject(error);
+  });
+
+  // valid url ?
+  if (_.isString(url) && !_.isEmpty(url)) {
+    // normalized options
+    options = _.isObject(options) && !_.isEmpty(options) ? options : {};
+    // start connection
+    context.mongoose.connect(url, options);
+  } else {
+    // invalid url cannot connect
+    context.logger.error('[ YMongoose.connect ] - Invalid url, cannot connect.');
+    // reject connection failed
+    deferred.reject();
+  }
+
+  // return deferred promise
+  return deferred.promise;
 };
 
 /**
@@ -138,37 +141,42 @@ YMongoose.prototype.connect = function (url, options) {
  * @return {Object} promise status to use for connection testing
  */
 YMongoose.prototype.disconnect = function () {
+  // Create our deferred object, which we will use in our promise chain
+  var deferred = Q.defer();
+
   // save current context
   var context = this;
 
   // try to disconnect
   this.logger.info('[ YMongoose.disconnect ] - Try to disconnect all connections.');
-  // default statement
-  return new Promise(function (fulfill, reject) {
-    // is connected ?
-    if (context.isConnected()) {
-      // disconnect
-      context.mongoose.disconnect(function (error) {
-        if (error) {
-          // message
-          context.logger.error([ '[ YMongoose.disconnect ] - Disconnect failed.',
-                                 'Error is :', error.message ].join(' '));
-          // reject disconnect failed
-          reject(error);
-        } else {
-          // successful message
-          context.logger.info('[ YMongoose.disconnect ] - Disconnect successful.');
-          // success reponse
-          fulfill();
-        }
-      });
-    } else {
-      // cant disconnect we are not connected
-      context.logger.warning('[ YMongoose.disconnect ] - Cannot disconnect orm is not connected.');
-      // reject
-      reject();
-    }
-  });
+
+  // is connected ?
+  if (this.isConnected()) {
+    // disconnect
+    this.mongoose.disconnect(function (error) {
+      // has error ?
+      if (error) {
+        // message
+        context.logger.error([ '[ YMongoose.disconnect ] - Disconnect failed.',
+                               'Error is :', error.message ].join(' '));
+        // reject disconnect failed
+        deferred.reject(error);
+      } else {
+        // successful message
+        context.logger.info('[ YMongoose.disconnect ] - Disconnect successful.');
+        // success reponse
+        deferred.resolve();
+      }
+    });
+  } else {
+    // cant disconnect we are not connected
+    this.logger.warning('[ YMongoose.disconnect ] - Cannot disconnect orm is not connected.');
+    // reject
+    deferred.reject();
+  }
+
+  // return deferred promise
+  return deferred.promise;
 };
 
 /**
@@ -495,6 +503,9 @@ YMongoose.prototype.createMethod = function (value, items) {
  * @return {Object} a valid promise
  */
 YMongoose.prototype.load = function () {
+  // Create our deferred object, which we will use in our promise chain
+  var deferred = Q.defer();
+
   var context = this; // saving context
   var errors  = [];   // list of errors
 
@@ -504,132 +515,132 @@ YMongoose.prototype.load = function () {
     processed : 0
   };
 
-  // default statement
-  return new Promise(function (fulfill, reject) {
-    // check model definition & controller first
-    var model = glob.sync('*.json', {
-      cwd       : context.paths.model,
-      realpath  : true
-    });
-
-    // define validator Schema
-    var vschema = joi.object().keys({
-      model : joi.object().keys({
-        name        : joi.string().required(),
-        properties  : joi.object().required(),
-        crud        : joi.object().keys({
-          enable  : joi.boolean().required(),
-          exclude : joi.array().empty()
-        }).allow('enable', 'exclude'),
-        validator   : joi.string().optional(),
-      }).unknown()
-    }).unknown();
-
-    // create execution queue with 100 concurrency
-    var queue = async.queue(function (task, callback) {
-      // validate
-      var status = joi.validate(task.data, vschema);
-
-      // has error ?
-      if (!_.isNull(status.error)) {
-        // default error message
-        var message = [ 'Invalid schema for [', task.file, '] Error is :',
-                        status.error ].join(' ');
-        // warning message
-        context.logger.warning([ '[ YMongoose.load.queue ] -', message ].join(' '));
-        // callback with error
-        callback(message);
-      } else {
-        // add new model
-        var created = context.addModel(task.data);
-
-        // model is created ?
-        if (!created) {
-          // callback with error
-          callback([ 'Cannot create model for  [', task.file, ']' ].join(' '));
-        } else {
-          // change nb added items value
-          nbItems.processed++;
-          // normal process all is ok
-          callback();
-        }
-      }
-    }, 100);
-
-    // Callback at the end of queue processing
-    queue.drain = function () {
-      // message drain ending
-      context.logger.info('[ YMongoose.load.queue.drain ] - Process Queue Complete.');
-      // build statistics
-      context.logger.debug([ '[ YMongoose.load.queue.drain ] - Statistics -',
-                            '[ Added on queue :', nbItems.total,
-                            (nbItems.total > 1) ? 'items' : 'item', '] -',
-                            '[ Processed :', nbItems.processed,
-                            (nbItems.processed > 1) ? 'items' : 'item', '] -',
-                            '[ Errors :', errors.length,
-                            (errors.length > 1) ? 'items' : 'item',']' ].join(' '));
-      // changed loaded status
-      context.loaded = (nbItems.processed === nbItems.total);
-      // all is processed ?
-      if (context.loaded) {
-        // success message
-        context.logger.info('[ YMongoose.load.queue.drain ] - All item was processed.');
-        // all is ok so fulfill
-        fulfill();
-      } else {
-        // all was not processed
-        context.logger.error([ '[ YMongoose.load.queue.drain ] -',
-                               'All item was NOT correctly processed.',
-                               'Check your logs.' ].join(' ')
-                            );
-        // reject
-        reject();
-        // disconnect error occured
-        context.disconnect();
-      }
-    };
-
-    // run each model
-    _.each(model, function (m) {
-      // try & catch error
-      try {
-        // build file name
-        var name = m.replace(path.dirname(m), '');
-        // parsed file
-        var parsed = JSON.parse(fs.readFileSync(m, 'utf-8'));
-        // increment counter
-        nbItems.total++;
-        // parsed not failed push to queue
-        queue.push({ file : name, data : parsed }, function (error) {
-          // has error ?
-          if (error) {
-            // log error message
-            context.logger.warning([ '[ YMongoose.load ] - Cannot add item to queue for [',
-                                      name , ']' ].join(' '));
-            // push error on list for drain reject
-            errors.push(error);
-          }
-        });
-      } catch (e) {
-        // error occured
-        this.logger.warning([ '[ YMongoose.load ] - cannot add item to queue.',
-                              'Error is : [', e, '] for [', name, ']' ].join(' '));
-
-        // check here if item was pushed on queue
-        if (_.last(model) === m && nbItems.total === 0) {
-          // build message
-          var message = 'All loaded data failed during JSON.parse(). Cannot continue.';
-          // log message
-          this.logger.error([ '[ YMongoose.load ] -', message ].join(' '));
-
-          // reject
-          reject(message);
-          // disconnect
-          this.disconnect();
-        }
-      }
-    }, context);
+  // check model definition & controller first
+  var model = glob.sync('*.json', {
+    cwd       : this.paths.model,
+    realpath  : true
   });
+
+  // define validator Schema
+  var vschema = joi.object().keys({
+    model : joi.object().keys({
+      name        : joi.string().required(),
+      properties  : joi.object().required(),
+      crud        : joi.object().keys({
+        enable  : joi.boolean().required(),
+        exclude : joi.array().empty()
+      }).allow('enable', 'exclude'),
+      validator   : joi.string().optional(),
+    }).unknown()
+  }).unknown();
+
+  // create execution queue with 100 concurrency
+  var queue = async.queue(function (task, callback) {
+    // validate
+    var status = joi.validate(task.data, vschema);
+
+    // has error ?
+    if (!_.isNull(status.error)) {
+      // default error message
+      var message = [ 'Invalid schema for [', task.file, '] Error is :',
+                      status.error ].join(' ');
+      // warning message
+      context.logger.warning([ '[ YMongoose.load.queue ] -', message ].join(' '));
+      // callback with error
+      callback(message);
+    } else {
+      // add new model
+      var created = context.addModel(task.data);
+
+      // model is created ?
+      if (!created) {
+        // callback with error
+        callback([ 'Cannot create model for  [', task.file, ']' ].join(' '));
+      } else {
+        // change nb added items value
+        nbItems.processed++;
+        // normal process all is ok
+        callback();
+      }
+    }
+  }, 100);
+
+  // Callback at the end of queue processing
+  queue.drain = function () {
+    // message drain ending
+    context.logger.info('[ YMongoose.load.queue.drain ] - Process Queue Complete.');
+    // build statistics
+    context.logger.debug([ '[ YMongoose.load.queue.drain ] - Statistics -',
+                          '[ Added on queue :', nbItems.total,
+                          (nbItems.total > 1) ? 'items' : 'item', '] -',
+                          '[ Processed :', nbItems.processed,
+                          (nbItems.processed > 1) ? 'items' : 'item', '] -',
+                          '[ Errors :', errors.length,
+                          (errors.length > 1) ? 'items' : 'item',']' ].join(' '));
+    // changed loaded status
+    context.loaded = (nbItems.processed === nbItems.total);
+    // all is processed ?
+    if (context.loaded) {
+      // success message
+      context.logger.info('[ YMongoose.load.queue.drain ] - All item was processed.');
+      // all is ok so resolve
+      deferred.resolve();
+    } else {
+      // all was not processed
+      context.logger.error([ '[ YMongoose.load.queue.drain ] -',
+                             'All item was NOT correctly processed.',
+                             'Check your logs.' ].join(' ')
+                          );
+      // reject
+      deferred.reject();
+      // disconnect error occured
+      context.disconnect();
+    }
+  };
+
+  // run each model
+  _.each(model, function (m) {
+    // try & catch error
+    try {
+      // build file name
+      var name = m.replace(path.dirname(m), '');
+      // parsed file
+      var parsed = JSON.parse(fs.readFileSync(m, 'utf-8'));
+      // increment counter
+      nbItems.total++;
+      // parsed not failed push to queue
+      queue.push({ file : name, data : parsed }, function (error) {
+        // has error ?
+        if (error) {
+          // log error message
+          context.logger.warning([ '[ YMongoose.load ] - Cannot add item to queue for [',
+                                    name , ']' ].join(' '));
+          // push error on list for drain reject
+          errors.push(error);
+        }
+      });
+    } catch (e) {
+      // error occured
+      this.logger.warning([ '[ YMongoose.load ] - cannot add item to queue.',
+                            'Error is : [', e, '] for [', name, ']' ].join(' '));
+
+      // check here if item was pushed on queue
+      if (_.last(model) === m && nbItems.total === 0) {
+        // build message
+        var message = 'All loaded data failed during JSON.parse(). Cannot continue.';
+        // log message
+        this.logger.error([ '[ YMongoose.load ] -', message ].join(' '));
+
+        // reject
+        deferred.reject(message);
+        // disconnect
+        this.disconnect();
+      }
+    }
+  }, this);
+
+  // return deferred promise
+  return deferred.promise;
 };
 
 /**

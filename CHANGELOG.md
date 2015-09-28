@@ -1,4 +1,8 @@
-## 0.0.8 (2015-09-28)
+## 0.9.0 (2015-09-28)
+
+- Changing promise middleware from promiseJs to Q
+
+## 0.8.0 (2015-09-28)
 
 - Deleted addStatic method
 - Deleted addMethod method
@@ -6,12 +10,12 @@
 - Added createMethod method : auto add defined method on current schema from given method directory
 - Added a new module "Method". That will automatically add a defined method on a current model model if config json "fn" property was filled.
 
-## 0.0.7 (2015-09-28)
+## 0.7.0 (2015-09-28)
 
 - Generate distribution file on dist directory
 - Some fixes
 
-## 0.0.6 (2015-09-28)
+## 0.6.0 (2015-09-28)
 
 General changes : 
 
@@ -25,26 +29,26 @@ Module changes :
 
 - Added a new validator module to manage auto generation of validate method on create request
 
-## 0.0.5 (2015-09-27)
+## 0.5.0 (2015-09-27)
 
 - Added getModel method to retrieve a valid model
 
-## 0.0.4 (2015-09-27)
+## 0.4.0 (2015-09-27)
 
 - Added addCrud method to enable crud flag from model
 - Finished load method for autoloading of models from given path
 - Added isLoaded method. This method get model load status 
 
-## 0.0.3 (2015-09-27)
+## 0.3.0 (2015-09-27)
 
 - Adding get et getOne statics method on crud Class
 - Adding delete statics method on crud Class
 
-## 0.0.2 (2015-09-27)
+## 0.2.0 (2015-09-27)
 
 - Changed controllers Method name to validators
 
-## 0.0.1 (2015-09-25)
+## 0.1.0 (2015-09-25)
 
 Added all base function.
 - isConnected : get status of connection

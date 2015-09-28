@@ -26,6 +26,12 @@ db.connect('mongodb://localhost:27017/test').then(function() {
       }).catch(function(error) {
         console.log(error);
       });
+      return db.disconnect().then(function() {
+        console.log('diconnect ok');
+      }).catch(function(error) {
+        console.log('disconnect error');
+      });
+      
        //account.myMethod();
        //account.validate();
 
@@ -59,7 +65,7 @@ db.connect('mongodb://localhost:27017/test').then(function() {
       console.log('load error');
     });
   }
-}, function(error) {
+}).catch(function(error) {
   if (db.isConnected()) {
     db.disconnect().then(function() {
   
