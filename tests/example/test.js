@@ -15,22 +15,22 @@ db.connect('mongodb://localhost:27017/test').then(function() {
   // load models
   db.models('./tests/example/models');
   db.validators('./tests/example/controllers');
+  db.methods('./tests/example/methods');
   if (db.isReady(true)) {
     db.load().then(function() {
       console.log('load success');
-
-      db.addStatic('Account', 'a', null);
-      db.addStatic('Accounteee', 'a', null);
-      db.addStatic('Account', 'myMethod', m1);
-      db.addStatic('Account', 'myMethod', m1);
-      db.addMethod('Account', 'my', m2);
-
-      //var account = db.getModel('Account');
+      var account = db.getModel('Account');
+      //console.log(account);
+      account.test1().then(function(data) {
+        console.log(data);
+      }).catch(function(error) {
+        console.log(error);
+      });
        //account.myMethod();
        //account.validate();
 
-      //var account = db.getModel('Account', true);
-      // account.my();
+      var account = db.getModel('Account', true);
+      account.test2();
       //console.log(account);
 
         account = db.getModel('Account');

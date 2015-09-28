@@ -1,6 +1,7 @@
 var logger    = require('yocto-logger');
 var crud      = require('./modules/crud')(logger);
 var validator = require('./modules/validator')(logger);
+var method    = require('./modules/method')(logger);
 var mongoose  = require('mongoose');
 var _         = require('lodash');
 var Promise   = require('promise');
@@ -43,7 +44,8 @@ function YMongoose (logger) {
    */
   this.paths    = {
     model       : '',
-    validator   : ''
+    validator   : '',
+    method      : ''
   };
 
   /**
@@ -101,7 +103,7 @@ YMongoose.prototype.connect = function (url, options) {
     // listen open event
     context.mongoose.connection.on('open', function () {
       // message
-      context.logger.info('[ YMongoose.connect ] - Connection successful.');
+      context.logger.info([ '[ YMongoose.connect ] - Connection successful on', url ].join(' '));
       // success reponse
       fulfill();
     });
@@ -170,15 +172,61 @@ YMongoose.prototype.disconnect = function () {
 };
 
 /**
+ * Define current models path to use for mapping
+ *
+ * @param {String} directory directory path to use
+ * @return {Boolean} true if add was ok false otherwise
+ */
+YMongoose.prototype.models = function (directory) {
+  // message
+  this.logger.info('[ YMongoose.models ] - Try to set model defintion path.');
+  // default statement
+  return this.setPath(directory);
+};
+
+/**
+ * Define current controller path to use for mapping
+ *
+ * @param {String} directory directory path to use
+ * @return {Boolean} true if add was ok false otherwise
+ */
+YMongoose.prototype.validators = function (directory) {
+  // message
+  this.logger.info('[ YMongoose.validators ] - Try to set validator defintion path.');
+  // default statement
+  return this.setPath(directory, 'validator');
+};
+
+/**
+ * Define current methods path to use for mapping
+ *
+ * @param {String} directory directory path to use
+ * @return {Boolean} true if add was ok false otherwise
+ */
+YMongoose.prototype.methods = function (directory) {
+  // message
+  this.logger.info('[ YMongoose.methods ] - Try to set methods defintion path.');
+  // default statement
+  return this.setPath(directory, 'method');
+};
+
+/**
  * Set path of model and directory for loading
  *
  * @param {String} directory directory path to set
- * @param {Boolean} validator true if we want set controller path
+ * @param {String} type defined witch element we prepare to defined
  * @return {Boolean} true if all is ok false otherwise
  */
-YMongoose.prototype.setPath = function (directory, validator) {
+YMongoose.prototype.setPath = function (directory, type) {
+  // default type value
+  var types = {
+    model       : { ext : 'json', name : 'model' },
+    validator   : { ext : 'js', name  : 'validator' },
+    method      : { ext : 'js', name  : 'method' }
+  };
+
   // set default if we need to set controller directory
-  validator = _.isBoolean(validator) && validator ? validator : false;
+  type = _.find(types, 'name', type);
 
   // is valid format ?
   if (_.isString(directory) && !_.isEmpty(directory)) {
@@ -200,28 +248,28 @@ YMongoose.prototype.setPath = function (directory, validator) {
       }
 
       // check if has data on directory for warning prevent
-      var hasFile = glob.sync([ '*.', (validator ? 'js' : 'json') ].join(' '), {
+      var hasFile = glob.sync([ '*.', type.ext ].join(''), {
         cwd : directory
       });
       // so isEmpty ?
       if (hasFile.length === 0) {
         this.logger.warning([ '[ YMongoose.setPath ] - Given directory path for',
-                              (validator ? 'Validators' : 'Models'),
+                              [ type.name, 's' ].join(''),
                               'seems to be empty.',
-                              'Don\'t forget to ad your', (validator ? 'js' : 'json'),
+                              'Don\'t forget to ad your', type.ext,
                               'file before load call' ].join(' '));
       }
 
       // set data
-      this.paths[ (validator ? 'validator' : 'model') ] = directory;
+      this.paths[type.name] = directory;
       // log message
-      this.logger.info([ '[ YMongoose.setPath ] -', (validator ? 'Validators' : 'Models'),
+      this.logger.info([ '[ YMongoose.setPath ] -', _.capitalize([ type.name, 's' ].join('')),
                          'path was set to :',
-                         this.paths[ (validator ? 'validator' : 'model') ] ].join(' '));
+                         this.paths[type.name] ].join(' '));
     } catch (e) {
       // log message
       this.logger.error([ '[ YMongoose.setPath ] - Set path for',
-                          (validator ? 'Validators' : 'Models'),
+                          [ type.name, 's' ].join(''),
                           'failed.', e ].join(' '));
       // error on set path disconnect mongoose
       this.disconnect();
@@ -269,43 +317,23 @@ YMongoose.prototype.isReady = function (showErrors) {
     if (_.isEmpty(this.paths.validator)) {
       this.logger.error('[ YMongoose.isReady ] - Validator definition path is not set.');
     }
+
+    // methods defintion path is properly set ?
+    if (_.isEmpty(this.paths.method)) {
+      this.logger.error('[ YMongoose.isReady ] - Methods definition path is not set.');
+    }
   }
 
   // default statement
-  return this.isConnected() && !_.isEmpty(this.paths.model) && !_.isEmpty(this.paths.validator);
-};
-
-/**
- * Define current models path to use for mapping
- *
- * @param {String} directory directory path to use
- * @return {Boolean} true if add was ok false othewise
- */
-YMongoose.prototype.models = function (directory) {
-  // message
-  this.logger.info('[ YMongoose.models ] - Try to set model defintion path.');
-  // default statement
-  return this.setPath(directory);
-};
-
-/**
- * Define current controller path to use for mapping
- *
- * @param {String} directory directory path to use
- * @return {Boolean} true if add was ok false othewise
- */
-YMongoose.prototype.validators = function (directory) {
-  // message
-  this.logger.info('[ YMongoose.validators ] - Try to set validator defintion path.');
-  // default statement
-  return this.setPath(directory, true);
+  return this.isConnected() && !_.isEmpty(this.paths.model) &&
+         !_.isEmpty(this.paths.validator) && !_.isEmpty(this.paths.method);
 };
 
 /**
  * Create a model from given data
  *
  * @param {Object} value data to used for creation
- * @return {Boolean|Object} created model or false if an error occured
+ * @return {Boolean} created model or false if an error occured
  */
 YMongoose.prototype.addModel = function (value) {
   // is Ready ??
@@ -335,7 +363,7 @@ YMongoose.prototype.addModel = function (value) {
       // is valid ?
       if (cschema) {
         // message
-        this.logger.info('[ YMongoose.addModel ] - Add new schema with generated crud method');
+        this.logger.info('[ YMongoose.addModel ] - Adding new schema with generated crud method');
         // assign
         schema = cschema;
       }
@@ -353,12 +381,32 @@ YMongoose.prototype.addModel = function (value) {
       // is valid ?
       if (vschema) {
         // message
-        this.logger.info('[ YMongoose.addModel ] - Add new schema with given validtor method');
+        this.logger.info('[ YMongoose.addModel ] - Adding new schema with given validtor method');
         // assign
         schema = vschema;
       }
     }
-    // valid statement
+
+    // add methods ??
+    if (!_.isUndefined(value.model.fn) && !_.isNull(value.model.fn) &&
+       _.isArray(value.model.fn) && !_.isEmpty(value.model.fn)) {
+      // messsage
+      this.logger.info([ '[ YMongoose.addModel ] - Methods are defined defined try',
+                         'to add these method' ].join(' '));
+
+      // process
+      var mschema = this.createMethod(schema, value.model.fn);
+
+      // is valid ?
+      if (mschema) {
+        // message
+        this.logger.info('[ YMongoose.addModel ] - Adding new schema with given methods');
+        // assign
+        schema = mschema;
+      }
+    }
+
+    // valid statement & set value to default schema
     return this.mongoose.model(value.model.name, schema);
   }
 
@@ -411,6 +459,31 @@ YMongoose.prototype.createValidator = function (value, name) {
 
     // valid statement
     return validator.add(value, this.paths.validator, name);
+  }
+  // default statement
+  return false;
+};
+
+/**
+ * Adding custom method to current object
+ *
+ * @param {Object} value default schema to use
+ * @param {String} items method name to retreive on validators files
+ * @return {Object|Boolean} if all is ok return new schema false otherwise
+ */
+YMongoose.prototype.createMethod = function (value, items) {
+  // is Ready ??
+  if (this.isReady(true)) {
+    if (!(value instanceof Schema)) {
+      // invalid instance
+      this.logger.warning([ ' [ YMongoose.createMethod ] - Cannot process.',
+                            ' given schema is not an instanceof Schema' ].join(' '));
+      // invalid statement
+      return false;
+    }
+
+    // valid statement
+    return method.add(value, this.paths.method, items);
   }
   // default statement
   return false;
@@ -588,89 +661,6 @@ YMongoose.prototype.getModel = function (name, instance) {
 
   // error here
   this.logger.error('[ YMongoose.getModel ] - Cannot get model. Invalid schema name given.');
-  // invalid statement
-  return false;
-};
-
-/**
- * Add new static on added model
- *
- * @param {String} model model name to retreive for adding
- * @param {String} name function name to use for adding
- * @param {Function} fn function reference to use for adding
- * @return {Boolean} true if all is ok false otherwise
- */
-YMongoose.prototype.addStatic = function (model, name, fn) {
-  // default statement
-  return this.addFn(model, name, fn, false);
-};
-
-/**
- * Add new method on added model
- *
- * @param {String} model model name to retreive for adding
- * @param {String} name function name to use for adding
- * @param {Function} fn function reference to use for adding
- * @return {Boolean} true if all is ok false otherwise
- */
-YMongoose.prototype.addMethod = function (model, name, fn) {
-  // default statement
-  return this.addFn(model, name, fn, true);
-};
-
-/**
- * Add new method or static on added model
- *
- * @param {String} model model name to retreive for adding
- * @param {String} name function name to use for adding
- * @param {Function} fn function reference to use for adding
- * @param {Boolean} methods true if we need method otherwise static
- * @return {Boolean} true if all is ok false otherwise
- */
-YMongoose.prototype.addFn = function (model, name, fn, methods) {
-  // define default type to use
-  methods = _.isBoolean(methods) && methods ? 'method' : 'static';
-
-  // is ready ??
-  if (this.isReady(true) && this.isLoaded() &&
-      _.isFunction(fn) && _.isString(model) && !_.isEmpty(model) &&
-      _.isString(name) && !_.isEmpty(name)) {
-
-    // check valid method name
-    var retreive = this.getModel(model);
-
-    // retreive model ??
-    if (retreive) {
-      // get schema
-      var schema = retreive.schema;
-
-      // fn name does already exists ?
-      if (!_.isFunction(schema.statics[name])) {
-        // add static method
-        schema[methods](name, fn);
-        // delete existing model before new changes
-        delete this.mongoose.models[model];
-        // create new model with new elements
-        this.mongoose.model(model, schema);
-
-        // valid statement
-        return true;
-      } else {
-        // warning message
-        this.logger.warning([ '[ YMongoose.addFn ] - Cannot add ', methods, ' on ', model, '.',
-                              ' Given method [ ', name, ' ] already exists' ].join(''));
-      }
-    } else {
-      // log error
-      this.logger.error([ '[ YMongoose.addFn ] - Cannot add', methods,
-                          'Search model is not found' ].join(' '));
-    }
-  } else {
-    // error here
-    this.logger.error([ '[ YMongoose.addFn ] - Cannot add new method.',
-                          'Invalid name or given Function is not valid' ].join(' '));
-  }
-
   // invalid statement
   return false;
 };

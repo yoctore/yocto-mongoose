@@ -1,3 +1,11 @@
+## 0.0.8 (2015-09-28)
+
+- Deleted addStatic method
+- Deleted addMethod method
+- Deleted addFn method
+- Added createMethod method : auto add defined method on current schema from given method directory
+- Added a new module "Method". That will automatically add a defined method on a current model model if config json "fn" property was filled.
+
 ## 0.0.7 (2015-09-28)
 
 - Generate distribution file on dist directory
@@ -7,25 +15,25 @@
 
 General changes : 
 
-- Adding addStatic method : add a static method to given schema
-- Adding addMethod method : add a instance method to given schema
-- Adding addFn method : default function to process add static or instance method on a schema
+- Added addStatic method : add a static method to given schema
+- Added addMethod method : add a instance method to given schema
+- Added addFn method : default function to process add static or instance method on a schema
 - Some code fixes
-- Adding createValidator method : auto add a validator function on create crud if validator name is given on config file
+- Added createValidator method : auto add a validator function on create crud if validator name is given on config file
 
 Module changes :
 
-- Adding a new validator module to manage auto generation of validate method on create request
+- Added a new validator module to manage auto generation of validate method on create request
 
 ## 0.0.5 (2015-09-27)
 
-- Adding getModel method to retrieve a valid model
+- Added getModel method to retrieve a valid model
 
 ## 0.0.4 (2015-09-27)
 
-- Adding addCrud method to enable crud flag from model
-- Finish load method for autoloading of models from given path
-- Adding isLoaded method. This method get model load status 
+- Added addCrud method to enable crud flag from model
+- Finished load method for autoloading of models from given path
+- Added isLoaded method. This method get model load status 
 
 ## 0.0.3 (2015-09-27)
 
@@ -34,11 +42,11 @@ Module changes :
 
 ## 0.0.2 (2015-09-27)
 
-- Change controllers Method name to validators
+- Changed controllers Method name to validators
 
 ## 0.0.1 (2015-09-25)
 
-Adding all base function.
+Added all base function.
 - isConnected : get status of connection
 - isDisconnected : get status of disconnection
 - connect : connect to database
@@ -49,3 +57,4 @@ Adding all base function.
 - controllers : add controllers directory for mapping with model
 - addModel : Add a model from given json file
 - load : Load model definition given from json file
+- Added createModel method : auto add a model on current schema

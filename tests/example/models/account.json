@@ -6,6 +6,16 @@
       "exclude" : [ "getOne" ]
     },
     "validator" : "account",
+    "fn"        : [
+      {
+        "type"  : "static",
+        "name"  : "test1" 
+      },
+      {
+        "type"  : "method",
+        "name"  : "test2" 
+      }
+    ],
     "properties" : {
       "name" : {
         "type" : "String",
