@@ -1,3 +1,22 @@
+## 0.0.7 (2015-09-28)
+
+- Generate distribution file on dist directory
+- Some fixes
+
+## 0.0.6 (2015-09-28)
+
+General changes : 
+
+- Adding addStatic method : add a static method to given schema
+- Adding addMethod method : add a instance method to given schema
+- Adding addFn method : default function to process add static or instance method on a schema
+- Some code fixes
+- Adding createValidator method : auto add a validator function on create crud if validator name is given on config file
+
+Module changes :
+
+- Adding a new validator module to manage auto generation of validate method on create request
+
 ## 0.0.5 (2015-09-27)
 
 - Adding getModel method to retrieve a valid model

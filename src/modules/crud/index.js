@@ -1,13 +1,5 @@
-var utils     = require('yocto-utils');
 var logger    = require('yocto-logger');
-var mongoose  = require('mongoose');
 var _         = require('lodash');
-var Promise   = require('promise');
-var path      = require('path');
-var fs        = require('fs');
-var glob      = require('glob');
-var joi       = require('joi');
-var async     = require('async');
 var Q         = require('q');
 var Schema    = require('mongoose').Schema;
 
@@ -37,7 +29,7 @@ function Crud (logger) {
  * @return {Promise} promise object to use for handling
  */
 Crud.prototype.getOne = function (conditions) {
-  // call main function
+  // call main get function
   return this.get(conditions, 'findOne');
 };
 
@@ -74,15 +66,15 @@ Crud.prototype.get = function (conditions, method) {
 };
 
 /**
- * Find and Remove a specific model 
+ * Find and Remove a specific model
  *
- * @param {String} rules query rules to add in find
+ * @param {String} id query rules to add in find
  * @return {Promise} promise object to use for handling
  */
 Crud.prototype.delete = function (id) {
   // Create our deferred object, which we will use in our promise chain
   var deferred = Q.defer();
-  
+
   // is valid type ?
   if (_.isString(id) && !_.isEmpty(id)) {
     // try to find
@@ -95,10 +87,11 @@ Crud.prototype.delete = function (id) {
         // valid
         deferred.resolve(data);
       }
-    });    
+    });
   } else {
-    deferred.reject( [ 'Given id is not a string',
-                      _.isString(id) && _.isEmpty(id) ? ' and is empty' : '' ].join(' '));
+    // reject
+    deferred.reject([ 'Given id is not a string',
+                     _.isString(id) && _.isEmpty(id) ? ' and is empty' : '' ].join(' '));
   }
 
   // return deferred promise
@@ -112,10 +105,10 @@ Crud.prototype.delete = function (id) {
  * @param {String} update data to use for update
  * @return {Promise} promise object to use for handling
  */
-Crud.prototype.update = function(conditions, update) {
+Crud.prototype.update = function (conditions, update) {
   // is string ? so if for findByIdAndUpdate request. change method name
   var method = _.isString(conditions) ? 'findByIdAndUpdate' : 'findOneAndUpdate';
-  
+
   // Create our deferred object, which we will use in our promise chain
   var deferred = Q.defer();
 
@@ -146,26 +139,47 @@ Crud.prototype.create = function (value) {
   var deferred = Q.defer();
   // create default instance model
   var model = !_.isFunction(this.save) ? new this() : this;
-  
-  // model is a valid instance ?
-  if (model instanceof this) {
-    // merge data before save
-    _.merge(model, value);
-  
-    // try to find
-    model.save(function (error, data) {
-      // has error ?
-      if (error) {
-        // reject
-        deferred.reject(error);
-      } else {
-        // valid
-        deferred.resolve(data);
-      }
-    });
+
+  // default status
+  var status = true;
+  var errors = [];
+
+  // has a validate function ?
+  if (_.isFunction(this.validate)) {
+    // so try to validate
+    status = this.validate(value);
+    // save error
+    errors = status.error;
+    // get status
+    status = _.isNull(status.error);
+  }
+
+  // is valid ?
+  if (status) {
+    // model is a valid instance ?
+    if (model instanceof this) {
+      // merge data before save
+      _.merge(model, value);
+
+      // try to find
+      model.save(function (error, data) {
+        // has error ?
+        if (error) {
+          // reject
+          deferred.reject(error);
+        } else {
+          // valid
+          deferred.resolve(data);
+        }
+      });
+    } else {
+      // reject invalid instance model
+      deferred.reject('[ Crud.create ] - Cannot save. invalid instance model');
+    }
   } else {
-    // reject invalid instance model
-    deferred.reject('[ Crud.create ] - cannot save. invalid instance model');
+    // reject schema validation error
+    deferred.reject([ '[ Crud.create ] - Cannot save new schema.',
+                      errors ].join(' '));
   }
 
   // return deferred promise
@@ -177,11 +191,11 @@ Crud.prototype.create = function (value) {
  *
  * @param {Object} schema default schema to use
  * @param {Array} exclude array of method to exclude
- * @return {Object} modified schema with new requested method
+ * @return {Object|Boolean} modified schema with new requested method
  */
 Crud.prototype.add = function (schema, exclude) {
   // valid data ?
-  if ((!_.isObject(schema) && !(scheme instanceof Schema)) || !_.isArray(exclude)) {
+  if ((!_.isObject(schema) && !(schema instanceof Schema)) || !_.isArray(exclude)) {
     this.logger.warning('[ Crud.add ] - Schema or exclude item given is invalid');
     // invalid statement
     return false;
@@ -214,9 +228,9 @@ Crud.prototype.add = function (schema, exclude) {
 module.exports = function (l) {
   // is a valid logger ?
   if (_.isUndefined(l) || _.isNull(l)) {
-    logger.warning('[ Crud.add ] - Invalid logger given. Use internal logger');
+    logger.warning('[ Crud.constructor ] - Invalid logger given. Use internal logger');
     // assign
-    l = logger; 
+    l = logger;
   }
   // default statement
   return new (Crud)(l);

@@ -9,7 +9,7 @@ module.exports = function (grunt) {
     // hint our app
     yoctohint : {
       options  : {},
-      all      : [ 'src/index.js', 'Gruntfile.js' ]
+      all      : [ 'src/***', 'Gruntfile.js' ]
     },
 
     // Uglify our app
@@ -18,8 +18,12 @@ module.exports = function (grunt) {
         banner  : '/* <%= pkg.name %> - <%= pkg.description %> - V<%= pkg.version %> */\n'
       },
       api     : {
-        src    : 'src/index.js',
-        dest   : 'dist/index.js'
+        files : [ {
+          expand  : true,
+          cwd     : 'src',
+          src     : '**/*.js',
+          dest    : 'dist'
+        } ]
       }
     },
 

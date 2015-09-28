@@ -1,6 +1,6 @@
-var utils     = require('yocto-utils');
 var logger    = require('yocto-logger');
 var crud      = require('./modules/crud')(logger);
+var validator = require('./modules/validator')(logger);
 var mongoose  = require('mongoose');
 var _         = require('lodash');
 var Promise   = require('promise');
@@ -45,7 +45,7 @@ function YMongoose (logger) {
     model       : '',
     validator   : ''
   };
-  
+
   /**
    * Define is we create automatique crud function
    *
@@ -70,7 +70,7 @@ function YMongoose (logger) {
  */
 YMongoose.prototype.isConnected = function () {
   // default statement
-  return this.mongoose.connection.readyState == this.mongoose.Connection.STATES.connected;
+  return this.mongoose.connection.readyState === this.mongoose.Connection.STATES.connected;
 };
 
 /**
@@ -80,7 +80,7 @@ YMongoose.prototype.isConnected = function () {
  */
 YMongoose.prototype.isDisconnected = function () {
   // default statement
-  return this.mongoose.connection.readyState == this.mongoose.Connection.STATES.disconnected;
+  return this.mongoose.connection.readyState === this.mongoose.Connection.STATES.disconnected;
 };
 
 /**
@@ -187,9 +187,9 @@ YMongoose.prototype.setPath = function (directory, validator) {
                 directory : path.normalize([ process.cwd(), directory ].join('/'));
 
     // main process
-    try  {
-      // check access sync 
-      var access  = fs.accessSync(directory, fs.R_OK);
+    try {
+      // check access sync
+      fs.accessSync(directory, fs.R_OK);
       // retreiving stats of directory
       var stats   = fs.statSync(directory);
 
@@ -204,7 +204,7 @@ YMongoose.prototype.setPath = function (directory, validator) {
         cwd : directory
       });
       // so isEmpty ?
-      if (_.isEmpty(hasFile.length)) {
+      if (hasFile.length === 0) {
         this.logger.warning([ '[ YMongoose.setPath ] - Given directory path for',
                               (validator ? 'Validators' : 'Models'),
                               'seems to be empty.',
@@ -215,9 +215,9 @@ YMongoose.prototype.setPath = function (directory, validator) {
       // set data
       this.paths[ (validator ? 'validator' : 'model') ] = directory;
       // log message
-      this.logger.info( [ '[ YMongoose.setPath ] -', (validator ? 'Validators' : 'Models'),
-                          'path was set to :',
-                          this.paths[ (validator ? 'validator' : 'model') ] ].join(' '));
+      this.logger.info([ '[ YMongoose.setPath ] -', (validator ? 'Validators' : 'Models'),
+                         'path was set to :',
+                         this.paths[ (validator ? 'validator' : 'model') ] ].join(' '));
     } catch (e) {
       // log message
       this.logger.error([ '[ YMongoose.setPath ] - Set path for',
@@ -323,27 +323,55 @@ YMongoose.prototype.addModel = function (value) {
     this.logger.info([ '[ YMongoose.addModel ] - Creating model :', value.model.name ].join(' '));
 
     // schema value
-    var schema = new Schema(value.model.properties)
+    var schema = new Schema(value.model.properties);
 
     // add crud ?
     if (value.model.crud.enable) {
-      schema = this.createCrud(schema, value.model.crud.exclude);
+      // message
+      this.logger.info('[ YMongoose.addModel ] - Crud mode is enabled. try to ass defined method');
+      // process
+      var cschema = this.createCrud(schema, value.model.crud.exclude);
+
+      // is valid ?
+      if (cschema) {
+        // message
+        this.logger.info('[ YMongoose.addModel ] - Add new schema with generated crud method');
+        // assign
+        schema = cschema;
+      }
     }
 
+    // add validator ?
+    if (!_.isUndefined(value.model.validator) && !_.isNull(value.model.validator) &&
+       _.isString(value.model.validator) && !_.isEmpty(value.model.validator)) {
+      // messsage
+      this.logger.info([ '[ YMongoose.addModel ] - A validator is defined try',
+                         'to add validate method' ].join(' '));
+      // process
+      var vschema = this.createValidator(schema, value.model.validator);
+
+      // is valid ?
+      if (vschema) {
+        // message
+        this.logger.info('[ YMongoose.addModel ] - Add new schema with given validtor method');
+        // assign
+        schema = vschema;
+      }
+    }
     // valid statement
     return this.mongoose.model(value.model.name, schema);
   }
 
   // default statement
   return false;
-}
+};
 
 /**
  * Adding crud method to current object
  *
  * @param {Object} value a valid schema instance to use
  * @param {Array} exclude method to exclude on add crud request
- * @return {Boolean} true if all is ok false otherwise
+ * @return {Object|Boolean} if all is ok return new schema false otherwise
  */
 YMongoose.prototype.createCrud = function (value, exclude) {
   // is Ready ??
@@ -358,6 +386,31 @@ YMongoose.prototype.createCrud = function (value, exclude) {
 
     // valid statement
     return crud.add(value, exclude);
+  }
+  // default statement
+  return false;
+};
+
+/**
+ * Create & add a validate function on current schema for create usage
+ *
+ * @param {Object} value default schema to use
+ * @param {String} name validator name to retreive on validators files
+ * @return {Object|Boolean} if all is ok return new schema false otherwise
+ */
+YMongoose.prototype.createValidator = function (value, name) {
+  // is Ready ??
+  if (this.isReady(true)) {
+    if (!(value instanceof Schema)) {
+      // invalid instance
+      this.logger.warning([ ' [ YMongoose.createValidator ] - Cannot process.',
+                            ' given schema is not an instanceof Schema' ].join(' '));
+      // invalid statement
+      return false;
+    }
+
+    // valid statement
+    return validator.add(value, this.paths.validator, name);
   }
   // default statement
   return false;
@@ -395,24 +448,24 @@ YMongoose.prototype.load = function () {
           enable  : joi.boolean().required(),
           exclude : joi.array().empty()
         }).allow('enable', 'exclude'),
-        validator   : joi.string().required(),
+        validator   : joi.string().optional(),
       }).unknown()
     }).unknown();
 
     // create execution queue with 100 concurrency
     var queue = async.queue(function (task, callback) {
-      // validate 
+      // validate
       var status = joi.validate(task.data, vschema);
 
       // has error ?
       if (!_.isNull(status.error)) {
-          // default error message
-          var message = [ 'Invalid schema for [', task.file, '] Error is :',
-                          status.error ].join(' ');
-          // warning message
-          context.logger.warning([ '[ YMongoose.load.queue ] -', message ].join(' '));
-          // callback with error
-          callback(message);
+        // default error message
+        var message = [ 'Invalid schema for [', task.file, '] Error is :',
+                        status.error ].join(' ');
+        // warning message
+        context.logger.warning([ '[ YMongoose.load.queue ] -', message ].join(' '));
+        // callback with error
+        callback(message);
       } else {
         // add new model
         var created = context.addModel(task.data);
@@ -489,18 +542,18 @@ YMongoose.prototype.load = function () {
         this.logger.warning([ '[ YMongoose.load ] - cannot add item to queue.',
                               'Error is : [', e, '] for [', name, ']' ].join(' '));
 
-         // check here if item was pushed on queue
-         if (_.last(model) == m && nbItems.total == 0) {
-            // build message
-            var message = 'All loaded data failed during JSON.parse(). Cannot continue.';
-            // log message
-            this.logger.error([ '[ YMongoose.load ] -', message ].join(' '));
+        // check here if item was pushed on queue
+        if (_.last(model) === m && nbItems.total === 0) {
+          // build message
+          var message = 'All loaded data failed during JSON.parse(). Cannot continue.';
+          // log message
+          this.logger.error([ '[ YMongoose.load ] -', message ].join(' '));
 
-            // reject
-            reject(message);
-            // disconnect
-            this.disconnect();
-         }
+          // reject
+          reject(message);
+          // disconnect
+          this.disconnect();
+        }
       }
     }, context);
   });
@@ -515,23 +568,22 @@ YMongoose.prototype.load = function () {
  */
 YMongoose.prototype.getModel = function (name, instance) {
   // is ready ??
-  if (this.isReady(true) && this.isLoaded() && this.isConnected() &&
+  if (this.isReady(true) && this.isLoaded() &&
       _.isString(name) && !_.isEmpty(name)) {
     // do it in try catch
     try {
       // try to get model
-      var model = this.mongoose.model(name);
+      var Model = this.mongoose.model(name);
+      // valid statement
+      return (_.isBoolean(instance) && instance) ? new Model() : Model;
     } catch (e) {
       // show error
       this.logger.error('[ YMongoose.getModel ] - Model not found. Invalid schema name given.');
-      // debug message 
+      // debug message
       this.logger.debug([ '[ YMongoose.getModel ] -', e ].join(' '));
       // invalid statement
       return false;
     }
-
-    // valid statement
-    return (_.isBoolean(instance) && instance) ? new model() : model;
   }
 
   // error here
@@ -540,11 +592,47 @@ YMongoose.prototype.getModel = function (name, instance) {
   return false;
 };
 
-// TODO
-// ADD CHANGELOG
+/**
+ * Add new static on added model
+ *
+ * @param {String} model model name to retreive for adding
+ * @param {String} name function name to use for adding
+ * @param {Function} fn function reference to use for adding
+ * @return {Boolean} true if all is ok false otherwise
+ */
 YMongoose.prototype.addStatic = function (model, name, fn) {
+  // default statement
+  return this.addFn(model, name, fn, false);
+};
+
+/**
+ * Add new method on added model
+ *
+ * @param {String} model model name to retreive for adding
+ * @param {String} name function name to use for adding
+ * @param {Function} fn function reference to use for adding
+ * @return {Boolean} true if all is ok false otherwise
+ */
+YMongoose.prototype.addMethod = function (model, name, fn) {
+  // default statement
+  return this.addFn(model, name, fn, true);
+};
+
+/**
+ * Add new method or static on added model
+ *
+ * @param {String} model model name to retreive for adding
+ * @param {String} name function name to use for adding
+ * @param {Function} fn function reference to use for adding
+ * @param {Boolean} methods true if we need method otherwise static
+ * @return {Boolean} true if all is ok false otherwise
+ */
+YMongoose.prototype.addFn = function (model, name, fn, methods) {
+  // define default type to use
+  methods = _.isBoolean(methods) && methods ? 'method' : 'static';
+
   // is ready ??
-  if (this.isReady(true) && this.isLoaded() && this.isConnected() &&
+  if (this.isReady(true) && this.isLoaded() &&
       _.isFunction(fn) && _.isString(model) && !_.isEmpty(model) &&
       _.isString(name) && !_.isEmpty(name)) {
 
@@ -552,30 +640,37 @@ YMongoose.prototype.addStatic = function (model, name, fn) {
     var retreive = this.getModel(model);
 
     // retreive model ??
-    if (!retreive) {
+    if (retreive) {
+      // get schema
+      var schema = retreive.schema;
+
+      // fn name does already exists ?
+      if (!_.isFunction(schema.statics[name])) {
+        // add static method
+        schema[methods](name, fn);
+        // delete existing model before new changes
+        delete this.mongoose.models[model];
+        // create new model with new elements
+        this.mongoose.model(model, schema);
+
+        // valid statement
+        return true;
+      } else {
+        // warning message
+        this.logger.warning([ '[ YMongoose.addFn ] - Cannot add ', methods, ' on ', model, '.',
+                              ' Given method [ ', name, ' ] already exists' ].join(''));
+      }
+    } else {
       // log error
-      this.logger.error('[ YMongoose.addMethod ] - Cannot add method. Search model is not found');
-      // invalid statement
-      return false;
+      this.logger.error([ '[ YMongoose.addFn ] - Cannot add', methods,
+                          'Search model is not found' ].join(' '));
     }
-    // TODO IF ALL IS OK
-    // IMPLEMENT METHOD ADD TWO
-    // TODO Check if method not already exists
-    var schema = retreive.schema;
-    // add static method
-    schema.static(name, fn);
-    // delete existing model before new changes
-    delete this.mongoose.models[model];
-    // create new model
-    this.mongoose.model(model, schema);
-    
-    // valid statement
-    return true;
+  } else {
+    // error here
+    this.logger.error([ '[ YMongoose.addFn ] - Cannot add new method.',
+                          'Invalid name or given Function is not valid' ].join(' '));
   }
 
-  // error here
-  this.logger.warning([ '[ YMongoose.addMethod ] - Cannot add new method.',
-                        'Invalid name or given Function is not valid' ].join(' '));
   // invalid statement
   return false;
 };
@@ -586,7 +681,7 @@ module.exports = function (l) {
   if (_.isUndefined(l) || _.isNull(l)) {
     logger.warning('[ YMongoose.constructor ] - Invalid logger given. Use internal logger');
     // assign
-    l = logger; 
+    l = logger;
   }
   // default statement
   return new (YMongoose)(l);

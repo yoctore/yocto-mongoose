@@ -2,8 +2,8 @@
 var joi = require('joi');
 
 // valid account schema
-exports.account = function(data) {
+exports.card = function(data) {
   return joi.object().keys({
-    name : joi.string().required().empty()
+    a : joi.string()
   });
 };

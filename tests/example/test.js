@@ -18,14 +18,23 @@ db.connect('mongodb://localhost:27017/test').then(function() {
   if (db.isReady(true)) {
     db.load().then(function() {
       console.log('load success');
+
       db.addStatic('Account', 'a', null);
+      db.addStatic('Accounteee', 'a', null);
       db.addStatic('Account', 'myMethod', m1);
-      var account = db.getModel('Account');
-       account.myMethod();
+      db.addStatic('Account', 'myMethod', m1);
+      db.addMethod('Account', 'my', m2);
+
+      //var account = db.getModel('Account');
+       //account.myMethod();
+       //account.validate();
+
+      //var account = db.getModel('Account', true);
+      // account.my();
       //console.log(account);
-/*
+
         account = db.getModel('Account');
-        account.create({ name : "a"}).then(function(a) {
+        account.create({ name : ""}).then(function(a) {
         console.log('A =>', a);
         account.update(a._id.toString(), { name : 'rezrezre' }).then(function(u) {
           console.log('U =>', u);
@@ -45,7 +54,7 @@ db.connect('mongodb://localhost:27017/test').then(function() {
       }).catch(function(e) {
         console.log('crate failed', e);
       });
-*/
+
     }, function() {
       console.log('load error');
     });
