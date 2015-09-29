@@ -516,7 +516,7 @@ YMongoose.prototype.load = function () {
   };
 
   // check model definition & controller first
-  var model = glob.sync('*.json', {
+  var model = glob.sync('**/*.json', {
     cwd       : this.paths.model,
     realpath  : true
   });

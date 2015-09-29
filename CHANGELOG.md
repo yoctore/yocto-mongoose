@@ -1,3 +1,7 @@
+## 0.9.1 (2015-09-29)
+
+- Changing path rules for file matching during model load
+
 ## 0.9.0 (2015-09-28)
 
 - Changing promise middleware from promiseJs to Q
