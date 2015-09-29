@@ -365,7 +365,7 @@ YMongoose.prototype.addModel = function (value) {
     if (_.has(value.model, 'crud') && _.has(value.model.crud, 'enable') &&
         _.isObject(value.model.crud) && value.model.crud.enable) {
       // message
-      this.logger.info('[ YMongoose.addModel ] - Crud mode is enabled. try to ass defined method');
+      this.logger.info('[ YMongoose.addModel ] - Crud mode is enabled. try to add defined method');
       // process
       var cschema = this.createCrud(schema, value.model.crud.exclude);
 
@@ -529,7 +529,7 @@ YMongoose.prototype.load = function () {
       properties  : joi.object().required(),
       crud        : joi.object().required().keys({
         enable  : joi.boolean().required(),
-        exclude : joi.array().empty()
+        exclude : joi.array().required().empty()
       }).allow('enable', 'exclude'),
       validator   : joi.string().optional(),
     }).unknown()

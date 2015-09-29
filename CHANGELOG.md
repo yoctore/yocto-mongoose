@@ -1,3 +1,7 @@
+## 0.9.4 (2015-09-29)
+
+- Fixing tests cases for model defintion for crud object
+
 ## 0.9.3 (2015-09-29)
 
 - Changing logger usage from warning to error for invalid schema during addModel process
