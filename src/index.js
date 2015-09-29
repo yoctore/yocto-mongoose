@@ -99,9 +99,8 @@ YMongoose.prototype.connect = function (url, options) {
   var context =  this;
 
   // try connect
-  this.logger.info([ '---------------------------- [',
-                     'Try to create a database connection',
-                     '] ----------------------------' ].join(' '));
+  this.logger.info([ '[ YMongoose.connect ] -',
+                     'Try to create a database connection on [', url, ']' ].join(' '));
 
   // catch open connection
   context.mongoose.connection.on('open', function () {
@@ -150,9 +149,7 @@ YMongoose.prototype.disconnect = function () {
   var context = this;
 
   // try to disconnect
-  this.logger.info([ '---------------------------- [',
-                     'Try to disconnect all connections',
-                     '] ----------------------------' ].join(' '));
+  this.logger.info('YMongoose.disconnect ] - Try to disconnect all connections');
 
   // is connected ?
   if (this.isConnected()) {
@@ -595,14 +592,12 @@ YMongoose.prototype.load = function () {
     // all is processed ?
     if (context.loaded) {
       // success message
-      context.logger.info([ '---------------------------- [',
-                            'All Model was processed & loaded.',
-                            '] ----------------------------' ].join(' '));
+      context.logger.info('[ YMongoose.load ] - All Model was processed & loaded.');
       // all is ok so resolve
       deferred.resolve();
     } else {
       // all was not processed
-      context.logger.error([ '[ YMongoose.load.queue.drain ] -',
+      context.logger.error([ '[ YMongoose.load ] -',
                              'All item was NOT correctly processed.',
                              'Check your logs.' ].join(' ')
                           );
