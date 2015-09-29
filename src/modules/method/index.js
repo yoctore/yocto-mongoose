@@ -61,7 +61,7 @@ Method.prototype.add = function (schema, path, items) {
           if (_.isNull(validate.error)) {
             // has wanted validator ?
             if (_.has(fo, item.name) && _.isFunction(fo[item.name])) {
-              this.logger.info([ '[ Method.add ] - Method [', item.name,
+              this.logger.debug([ '[ Method.add ] - Method [', item.name,
                                  '] founded adding new',
                                  (item.type === 'method' ? 'instance' : item.type),
                                  'method for given schema' ].join(' '));

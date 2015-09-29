@@ -36,7 +36,7 @@ Validator.prototype.add = function (schema, path, name) {
   if (_.isString(path) && _.isString(name) && !_.isEmpty(path) && !_.isEmpty(name) &&
      _.isObject(schema) && (schema instanceof Schema)) {
     // retrieving files
-    var files = glob.sync('*.js', { cwd : path, realpath : true });
+    var files = glob.sync('**/*.js', { cwd : path, realpath : true });
 
     // so isEmpty ?
     if (files.length > 0) {
@@ -46,8 +46,9 @@ Validator.prototype.add = function (schema, path, name) {
 
         // has wanted validator ?
         if (_.has(fo, name) && _.isFunction(fo[name])) {
-          this.logger.info([ '[ Validator.add ] - Validator [', name,
-                             '] founded adding new validate function on static method',
+          this.logger.debug([ '[ Validator.add ] - [', name,
+                             '] validator was founded.',
+                             'Adding a new validate function on static property',
                              'for given schema' ].join(' '));
           // adding on static method
           schema.static('validate', function (data) {
@@ -69,7 +70,8 @@ Validator.prototype.add = function (schema, path, name) {
                           'Cannot add validator on schema.' ].join(' '));
   } else {
     // cannot process
-    this.logger.error('[ Validator.add ] - cannot process invalid path / name or schema given.');
+    this.logger.error([ '[ Validator.add ] - cannot process invalid path / name',
+                        '/ model name or schema given.' ].join(' '));
   }
 
   // invalid statement

@@ -1,4 +1,6 @@
 var logger    = require('yocto-logger');
+//logger.less();
+//logger.less();
 var db        = require('../../src/index.js')(logger);
 
 var m1 = function() {

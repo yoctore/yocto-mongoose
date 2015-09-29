@@ -1,6 +1,10 @@
 {
   "model" : {
     "name" : "Address",
+    "crud" : {
+      "enable"  : true,
+      "exclude" : []
+    },
     "properties" : {
       "street" : {
         "type" : {

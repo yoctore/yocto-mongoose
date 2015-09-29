@@ -1,3 +1,7 @@
+## 0.9.5 (2015-09-29)
+
+- Change logger usage to display debug message on debug mode and all necessary item to info
+
 ## 0.9.4 (2015-09-29)
 
 - Fixing tests cases for model defintion for crud object

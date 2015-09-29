@@ -99,7 +99,9 @@ YMongoose.prototype.connect = function (url, options) {
   var context =  this;
 
   // try connect
-  this.logger.info('[ YMongoose.connect ] - Try to create a connection.');
+  this.logger.info([ '---------------------------- [',
+                     'Try to create a database connection',
+                     '] ----------------------------' ].join(' '));
 
   // catch open connection
   context.mongoose.connection.on('open', function () {
@@ -148,7 +150,9 @@ YMongoose.prototype.disconnect = function () {
   var context = this;
 
   // try to disconnect
-  this.logger.info('[ YMongoose.disconnect ] - Try to disconnect all connections.');
+  this.logger.info([ '---------------------------- [',
+                     'Try to disconnect all connections',
+                     '] ----------------------------' ].join(' '));
 
   // is connected ?
   if (this.isConnected()) {
@@ -187,7 +191,7 @@ YMongoose.prototype.disconnect = function () {
  */
 YMongoose.prototype.models = function (directory) {
   // message
-  this.logger.info('[ YMongoose.models ] - Try to set model defintion path.');
+  this.logger.debug('[ YMongoose.models ] - Try to set model defintion path.');
   // default statement
   return this.setPath(directory);
 };
@@ -200,7 +204,7 @@ YMongoose.prototype.models = function (directory) {
  */
 YMongoose.prototype.validators = function (directory) {
   // message
-  this.logger.info('[ YMongoose.validators ] - Try to set validator defintion path.');
+  this.logger.debug('[ YMongoose.validators ] - Try to set validator defintion path.');
   // default statement
   return this.setPath(directory, 'validator');
 };
@@ -213,7 +217,7 @@ YMongoose.prototype.validators = function (directory) {
  */
 YMongoose.prototype.methods = function (directory) {
   // message
-  this.logger.info('[ YMongoose.methods ] - Try to set methods defintion path.');
+  this.logger.debug('[ YMongoose.methods ] - Try to set methods defintion path.');
   // default statement
   return this.setPath(directory, 'method');
 };
@@ -256,7 +260,7 @@ YMongoose.prototype.setPath = function (directory, type) {
       }
 
       // check if has data on directory for warning prevent
-      var hasFile = glob.sync([ '*.', type.ext ].join(''), {
+      var hasFile = glob.sync([ '**/*.', type.ext ].join(''), {
         cwd : directory
       });
       // so isEmpty ?
@@ -271,7 +275,7 @@ YMongoose.prototype.setPath = function (directory, type) {
       // set data
       this.paths[type.name] = directory;
       // log message
-      this.logger.info([ '[ YMongoose.setPath ] -', _.capitalize([ type.name, 's' ].join('')),
+      this.logger.debug([ '[ YMongoose.setPath ] -', _.capitalize([ type.name, 's' ].join('')),
                          'path was set to :',
                          this.paths[type.name] ].join(' '));
     } catch (e) {
@@ -356,7 +360,8 @@ YMongoose.prototype.addModel = function (value) {
     }
 
     // message
-    this.logger.info([ '[ YMongoose.addModel ] - Creating model :', value.model.name ].join(' '));
+    this.logger.debug([ '[ YMongoose.addModel ] - Creating model [',
+                        value.model.name, ']' ].join(' '));
 
     // schema value
     var schema = new Schema(value.model.properties);
@@ -365,14 +370,15 @@ YMongoose.prototype.addModel = function (value) {
     if (_.has(value.model, 'crud') && _.has(value.model.crud, 'enable') &&
         _.isObject(value.model.crud) && value.model.crud.enable) {
       // message
-      this.logger.info('[ YMongoose.addModel ] - Crud mode is enabled. try to add defined method');
+      this.logger.debug([ '[ YMongoose.addModel ] - Crud mode is enabled.',
+                         'Try to add default methods' ].join(' '));
       // process
       var cschema = this.createCrud(schema, value.model.crud.exclude);
 
       // is valid ?
       if (cschema) {
         // message
-        this.logger.info('[ YMongoose.addModel ] - Adding new schema with generated crud method');
+        this.logger.debug([ '[ YMongoose.addModel ] - Adding Crud method success' ].join(' '));
         // assign
         schema = cschema;
       }
@@ -382,15 +388,15 @@ YMongoose.prototype.addModel = function (value) {
     if (!_.isUndefined(value.model.validator) && !_.isNull(value.model.validator) &&
        _.isString(value.model.validator) && !_.isEmpty(value.model.validator)) {
       // messsage
-      this.logger.info([ '[ YMongoose.addModel ] - A validator is defined try',
-                         'to add validate method' ].join(' '));
+      this.logger.debug([ '[ YMongoose.addModel ] - A validator is defined.',
+                         'Try to add a validate method.' ].join(' '));
       // process
       var vschema = this.createValidator(schema, value.model.validator);
 
       // is valid ?
       if (vschema) {
         // message
-        this.logger.info('[ YMongoose.addModel ] - Adding new schema with given validtor method');
+        this.logger.debug([ '[ YMongoose.addModel ] - Adding validate method success' ].join(' '));
         // assign
         schema = vschema;
       }
@@ -400,8 +406,8 @@ YMongoose.prototype.addModel = function (value) {
     if (!_.isUndefined(value.model.fn) && !_.isNull(value.model.fn) &&
        _.isArray(value.model.fn) && !_.isEmpty(value.model.fn)) {
       // messsage
-      this.logger.info([ '[ YMongoose.addModel ] - Methods are defined defined try',
-                         'to add these method' ].join(' '));
+      this.logger.debug([ '[ YMongoose.addModel ] - External methods are defined.',
+                         'Try to add them.' ].join(' '));
 
       // process
       var mschema = this.createMethod(schema, value.model.fn);
@@ -409,7 +415,7 @@ YMongoose.prototype.addModel = function (value) {
       // is valid ?
       if (mschema) {
         // message
-        this.logger.info('[ YMongoose.addModel ] - Adding new schema with given methods');
+        this.logger.debug([ '[ YMongoose.addModel ] - Adding external methods success' ].join(' '));
         // assign
         schema = mschema;
       }
@@ -540,6 +546,10 @@ YMongoose.prototype.load = function () {
     // validate
     var status = joi.validate(task.data, vschema);
 
+    // display big message for more readable log
+    context.logger.debug([ '----------------------------',
+                          'Processing : [', task.file, ']',
+                          '----------------------------' ].join(' '));
     // has error ?
     if (!_.isNull(status.error)) {
       // default error message
@@ -569,7 +579,9 @@ YMongoose.prototype.load = function () {
   // Callback at the end of queue processing
   queue.drain = function () {
     // message drain ending
-    context.logger.info('[ YMongoose.load.queue.drain ] - Process Queue Complete.');
+    context.logger.debug([ '---------------------------- [',
+                          'Process Queue Complete.',
+                          '] ----------------------------' ].join(' '));
     // build statistics
     context.logger.debug([ '[ YMongoose.load.queue.drain ] - Statistics -',
                           '[ Added on queue :', nbItems.total,
@@ -583,7 +595,9 @@ YMongoose.prototype.load = function () {
     // all is processed ?
     if (context.loaded) {
       // success message
-      context.logger.info('[ YMongoose.load.queue.drain ] - All item was processed.');
+      context.logger.info([ '---------------------------- [',
+                            'All Model was processed & loaded.',
+                            '] ----------------------------' ].join(' '));
       // all is ok so resolve
       deferred.resolve();
     } else {
