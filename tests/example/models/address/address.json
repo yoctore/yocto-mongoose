@@ -1,0 +1,131 @@
+{
+  "model" : {
+    "name" : "Address",
+    "properties" : {
+      "street" : {
+        "type" : {
+          "number" : {
+            "type" : "String",
+            "required" : true
+          },
+          "supplement" : "String",
+          "name" : {
+            "type" : "String",
+            "required" : true
+          },
+          "comment" : "String"
+        },
+        "required" : true
+      },
+      "coodrinate" : {
+        "latitude" : {
+          "type" : "Number",
+          "required" : true
+        },
+        "longitude" : {
+          "type" : "Number",
+          "required" : true
+        }
+      },
+      "city" : {
+        "type" : {
+          "name" : {
+            "type" : "String",
+            "required" : true
+          },
+          "postal_code" : {
+            "type" : "String",
+            "required" : true
+          }
+        },
+        "required" : true
+      },
+      "country" : {
+        "required" : true,
+        "type" : {
+          "name" : {
+            "type" : "String",
+            "required" : true
+          },
+          "department" : "String",
+          "region" : "String",
+          "code" : {
+            "type" : "String",
+            "required" : true
+          }
+        }
+      },
+      "building" : {
+        "apartment" : "String",
+        "floor" : "Number",
+        "stair" : "Number",
+        "name" : "String",
+        "comment" : "String"
+      },
+      "formatted_address" : {
+        "type" : "String",
+        "required" : true
+      },
+      "phone" : {
+        "required" : true,
+        "type" : {
+          "prefix" : {
+            "required" : true,
+            "type" : "String"
+          },
+          "number" : {
+            "required" : true,
+            "type" : "Number"
+          },
+          "validation_type" : {
+            "required" : true,
+            "type" : "String"
+          },
+          "validated_date" : "Date",
+          "primary" : {
+            "required" : true,
+            "type" : "Boolean"
+          },
+          "phone_type" : {
+            "required" : true,
+            "type" : "String"
+          },
+          "sub_type" : {
+            "required" : true,
+            "type" :"String"
+          },
+          "token_lost" : "String",
+          "codes" : {
+            "required" : true,
+            "type" : [
+              {
+                "codes"  : {
+                  "required" : true,
+                  "type" : "String"
+                },
+                "validated_date" : "Date",
+                "retry" : {
+                  "required" : true,
+                  "type" : "Number"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "validated_date" : {
+        "type" : "Date",
+        "required" : true
+      },
+      "created_date" : {
+        "type" : "Date",
+        "required" : true
+      },
+      "updated_date" : {
+        "type" : "Date",
+        "required" : true
+      },
+      "deleted_date" : "Date"
+    }
+  }
+}

@@ -1,3 +1,7 @@
+## 0.9.2 (2015-09-29)
+
+- Adding more test on object property for some cases.
+
 ## 0.9.1 (2015-09-29)
 
 - Changing path rules for file matching during model load
