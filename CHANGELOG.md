@@ -1,3 +1,7 @@
+## 0.9.3 (2015-09-29)
+
+- Changing logger usage from warning to error for invalid schema during addModel process
+
 ## 0.9.2 (2015-09-29)
 
 - Adding more test on object property for some cases.

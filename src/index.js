@@ -546,7 +546,7 @@ YMongoose.prototype.load = function () {
       var message = [ 'Invalid schema for [', task.file, '] Error is :',
                       status.error ].join(' ');
       // warning message
-      context.logger.warning([ '[ YMongoose.load.queue ] -', message ].join(' '));
+      context.logger.error([ '[ YMongoose.load.queue ] -', message ].join(' '));
       // callback with error
       callback(message);
     } else {
@@ -614,7 +614,7 @@ YMongoose.prototype.load = function () {
         // has error ?
         if (error) {
           // log error message
-          context.logger.warning([ '[ YMongoose.load ] - Cannot add item to queue for [',
+          context.logger.error([ '[ YMongoose.load ] - Cannot add item to queue for [',
                                     name , ']' ].join(' '));
           // push error on list for drain reject
           errors.push(error);
