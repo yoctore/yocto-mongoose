@@ -281,7 +281,7 @@ YMongoose.prototype.setPath = function (directory, stype) {
       // so isEmpty ?
       if (hasFile.length === 0) {
         this.logger.warning([ '[ YMongoose.setPath ] - Given directory path for',
-                              [ type.name, 's' ].join(''),
+                              [ type.name, (type.name !== 'enums' ? 's' : '') ].join(''),
                               'seems to be empty.',
                               'Don\'t forget to ad your', type.ext,
                               'file before load call' ].join(' '));
@@ -290,13 +290,14 @@ YMongoose.prototype.setPath = function (directory, stype) {
       // set data
       this.paths[type.name] = directory;
       // log message
-      this.logger.debug([ '[ YMongoose.setPath ] -', _.capitalize([ type.name, 's' ].join('')),
+      this.logger.debug([ '[ YMongoose.setPath ] -',
+                          _.capitalize([ type.name, (type.name !== 'enums' ? 's' : '') ].join('')),
                          'path was set to :',
                          this.paths[type.name] ].join(' '));
     } catch (e) {
       // log message
       this.logger.error([ '[ YMongoose.setPath ] - Set path for',
-                          [ type.name, 's' ].join(''),
+                          [ type.name, (type.name !== 'enums' ? 's' : '') ].join(''),
                           'failed.', e ].join(' '));
       // error on set path disconnect mongoose
       this.disconnect();
