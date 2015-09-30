@@ -1,3 +1,7 @@
+## 1.0.4 (2015-09-30)
+
+- Change usage of merge data on create method to retrieve value
+
 ## 1.0.3 (2015-09-30)
 
 - Changing regex for method listing
