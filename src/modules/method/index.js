@@ -39,7 +39,7 @@ Method.prototype.add = function (schema, path, items) {
   if (_.isString(path) && _.isArray(items) && !_.isEmpty(path) && !_.isEmpty(items) &&
      _.isObject(schema) && (schema instanceof Schema)) {
     // retrieving files
-    var files = glob.sync('*.js', { cwd : path, realpath : true });
+    var files = glob.sync('**/*.js', { cwd : path, realpath : true });
 
     // so isEmpty ?
     if (files.length > 0) {

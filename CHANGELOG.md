@@ -1,3 +1,7 @@
+## 1.0.3 (2015-09-30)
+
+- Changing regex for method listing
+
 ## 1.0.2 (2015-09-30)
 
 - Adding instance of enums automaticly on validator function
