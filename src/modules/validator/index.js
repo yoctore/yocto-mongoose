@@ -55,7 +55,8 @@ Validator.prototype.add = function (schema, path, name) {
           // adding on static method
           schema.static('validate', function (data) {
             // get rules for validation
-            var rules = fo[name]();
+            // we add reference of enums instance automaticly in validator function param
+            var rules = fo[name](this.enums);
             // default statement
             return joi.validate(data, rules);
           });

@@ -1,3 +1,7 @@
+## 1.0.2 (2015-09-30)
+
+- Adding instance of enums automaticly on validator function
+
 ## 1.0.1 (2015-09-30)
 
 - Change display of king of message when is enums process

@@ -26,7 +26,7 @@ db.connect('mongodb://localhost:27017/test').then(function() {
       console.log('===== value ===== ');
       console.log(account.enums().get('notify_type_list'));
       //console.log(account);
-      account.test1().then(function(data) {
+      /*account.test1().then(function(data) {
         console.log(data);
       }).catch(function(error) {
         console.log(error);
@@ -36,7 +36,7 @@ db.connect('mongodb://localhost:27017/test').then(function() {
       }).catch(function(error) {
         console.log('disconnect error');
       });
-      
+      */
        //account.myMethod();
        //account.validate();
 
