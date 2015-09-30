@@ -1,3 +1,5 @@
+'use strict';
+
 var logger    = require('yocto-logger');
 var _         = require('lodash');
 var Q         = require('q');

@@ -1,3 +1,5 @@
+'use strict';
+
 var glob      = require('glob');
 var logger    = require('yocto-logger');
 var _         = require('lodash');

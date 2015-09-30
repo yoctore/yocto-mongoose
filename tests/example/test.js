@@ -18,10 +18,13 @@ db.connect('mongodb://localhost:27017/test').then(function() {
   db.models('./tests/example/models');
   db.validators('./tests/example/controllers');
   db.methods('./tests/example/methods');
+  db.enums('./tests/example/enums');
   if (db.isReady(true)) {
     db.load().then(function() {
       console.log('load success');
       var account = db.getModel('Account');
+      console.log('===== value ===== ');
+      console.log(account.enums().get('notify_type_list'));
       //console.log(account);
       account.test1().then(function(data) {
         console.log(data);

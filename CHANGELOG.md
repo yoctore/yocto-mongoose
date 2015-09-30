@@ -1,3 +1,8 @@
+## 1.0.0 (2015-09-30)
+
+Adding enums process.
+- Adding Enums class to manage enum action. All schema a by default a static called 'enums' to retrieve enums data by 'get' method
+
 ## 0.9.5 (2015-09-29)
 
 - Change logger usage to display debug message on debug mode and all necessary item to info

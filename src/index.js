@@ -1,7 +1,10 @@
+'use strict';
+
 var logger    = require('yocto-logger');
 var crud      = require('./modules/crud')(logger);
 var validator = require('./modules/validator')(logger);
 var method    = require('./modules/method')(logger);
+var enums     = require('./modules/enum')(logger);
 var mongoose  = require('mongoose');
 var _         = require('lodash');
 var path      = require('path');
@@ -45,7 +48,8 @@ function YMongoose (logger) {
   this.paths    = {
     model       : '',
     validator   : '',
-    method      : ''
+    method      : '',
+    enums       : ''
   };
 
   /**
@@ -149,7 +153,7 @@ YMongoose.prototype.disconnect = function () {
   var context = this;
 
   // try to disconnect
-  this.logger.info('YMongoose.disconnect ] - Try to disconnect all connections');
+  this.logger.info('[ YMongoose.disconnect ] - Try to disconnect all connections');
 
   // is connected ?
   if (this.isConnected()) {
@@ -220,25 +224,39 @@ YMongoose.prototype.methods = function (directory) {
 };
 
 /**
+ * Define current enums definition path to use for mapping
+ *
+ * @param {String} directory directory path to use
+ * @return {Boolean} true if add was ok false otherwise
+ */
+YMongoose.prototype.enums = function (directory) {
+  // message
+  this.logger.debug('[ YMongoose.enums ] - Try to set enums defintion path.');
+  // default statement
+  return this.setPath(directory, 'enums');
+};
+
+/**
  * Set path of model and directory for loading
  *
  * @param {String} directory directory path to set
- * @param {String} type defined witch element we prepare to defined
+ * @param {String} stype defined witch element we prepare to defined
  * @return {Boolean} true if all is ok false otherwise
  */
-YMongoose.prototype.setPath = function (directory, type) {
+YMongoose.prototype.setPath = function (directory, stype) {
   // default type value
   var types = {
     model       : { ext : 'json', name : 'model' },
     validator   : { ext : 'js', name  : 'validator' },
-    method      : { ext : 'js', name  : 'method' }
+    method      : { ext : 'js', name  : 'method' },
+    enums       : { ext : 'json', name : 'enums' }
   };
 
   // set default if we need to set controller directory
-  type = _.find(types, 'name', type);
+  var type = _.find(types, 'name', stype);
 
   // is valid format ?
-  if (_.isString(directory) && !_.isEmpty(directory)) {
+  if (!_.isUndefined(type) && _.isObject(type) && _.isString(directory) && !_.isEmpty(directory)) {
     // normalize directory path
     directory = path.isAbsolute(directory) ?
                 directory : path.normalize([ process.cwd(), directory ].join('/'));
@@ -290,7 +308,8 @@ YMongoose.prototype.setPath = function (directory, type) {
   }
 
   // error if we exec here
-  this.logger.error('[ YMongoose.setPath ] - Cannot set model directory. Invalid directory given.');
+  this.logger.error([ '[ YMongoose.setPath ] - Cannot set directory for [', stype, ']',
+                      'Invalid directory given or cannot retreive types rules' ].join(' '));
   // default statement
   return false;
 };
@@ -331,6 +350,11 @@ YMongoose.prototype.isReady = function (showErrors) {
     if (_.isEmpty(this.paths.method)) {
       this.logger.error('[ YMongoose.isReady ] - Methods definition path is not set.');
     }
+    // enums defintion path is properly set ?
+    if (_.isEmpty(this.paths.enums)) {
+      this.logger.warning('[ YMongoose.isReady ] - Enum definition path is not set.');
+    }
+
   }
 
   // default statement
@@ -417,6 +441,23 @@ YMongoose.prototype.addModel = function (value) {
         schema = mschema;
       }
     }
+
+    // path is not empty so load
+    if (!_.isEmpty(this.paths.enums)) {
+      if (enums.load(this.paths.enums)) {
+        // load ok
+        this.logger.debug('[ YMongoose.addModel ] - loading enums value success');
+      } else {
+        // load nok
+        this.logger.warning('[ YMongoose.addModel ] - loading enums value failed');
+      }
+    }
+
+    // add default enums instance value
+    schema.static('enums', function () {
+      // return enums instance
+      return enums;
+    });
 
     // valid statement & set value to default schema
     return this.mongoose.model(value.model.name, schema);

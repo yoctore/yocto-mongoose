@@ -1,0 +1,10 @@
+[
+  {
+    "name"  : "notifyaaa_type_list",
+    "value" : [ "email", "sms", "notification" ]
+  },
+  {
+    "name"  : "notifyaaa_status_list",
+    "value" : [ "pending", "processed", "error" ]
+  }	
+]
