@@ -70,7 +70,7 @@ Method.prototype.add = function (schema, path, items) {
               // define method
               schema[item.type](item.name, function (data) {
                 // default statement
-                return fo[item.name](data);
+                return fo[item.name](this, data);
               });
             }
           } else {

@@ -1,6 +1,7 @@
 ## 1.0.3 (2015-09-30)
 
 - Changing regex for method listing
+- Adding schema instance on given method by dependencies injection
 
 ## 1.0.2 (2015-09-30)
 
