@@ -152,10 +152,10 @@ Crud.prototype.create = function (value) {
     status = this.validate(value);
     // save error
     errors = status.error;
-    // get status
-    status = _.isNull(status.error);
     // change value here if validate is was call
     value  = _.has(status, 'value') ? status.value : value;
+    // get status
+    status = _.isNull(status.error);
   }
 
   // is valid ?
