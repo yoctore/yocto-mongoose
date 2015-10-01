@@ -75,7 +75,7 @@ Method.prototype.add = function (schema, path, items) {
             }
           } else {
             // error schema is invalid
-            this.logger.error([ '[ Method.add ] - Cannot add method for item ',
+            this.logger.error([ '[ Method.add ] - Cannot add method for item',
                                 utils.obj.inspect(item), validate.error ].join(' '));
           }
         }, this);

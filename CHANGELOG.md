@@ -1,3 +1,7 @@
+## 1.0.5 (2015-09-30)
+
+- Fixing logging usage on Method.add
+
 ## 1.0.4 (2015-09-30)
 
 - Change usage of merge data on create method to retrieve value

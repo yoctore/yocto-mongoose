@@ -45,7 +45,7 @@ db.connect('mongodb://localhost:27017/test').then(function() {
       //console.log(account);
 
         account = db.getModel('Account');
-        account.create({ name : ""}).then(function(a) {
+        account.create({ name : "aee"}).then(function(a) {
         console.log('A =>', a);
         account.update(a._id.toString(), { name : 'rezrezre' }).then(function(u) {
           console.log('U =>', u);
