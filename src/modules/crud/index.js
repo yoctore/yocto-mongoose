@@ -44,11 +44,10 @@ Crud.prototype.getOne = function (conditions) {
  */
 Crud.prototype.get = function (conditions, method) {
   // defined default method name to use
-  method = _.isString(method) && !_.isEmpty(method) ? method : 'find';
+  method  = _.isString(method) && !_.isEmpty(method) ? method : 'find';
 
   // is string ? so if for findById request. change method name
   method = _.isString(conditions) ? 'findById' : method;
-
   // Create our deferred object, which we will use in our promise chain
   var deferred = Q.defer();
 
