@@ -68,9 +68,9 @@ Method.prototype.add = function (schema, path, items) {
                                  (item.type === 'method' ? 'instance' : item.type),
                                  'method for given schema' ].join(' '));
               // define method
-              schema[item.type](item.name, function (data) {
-                // default statement
-                return fo[item.name](this, data);
+              schema[item.type](item.name, function () {
+                // default statement process function with given arguments in current context
+                return fo[item.name].apply(this, arguments);
               });
             }
           } else {
