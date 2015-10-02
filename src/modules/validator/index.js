@@ -52,13 +52,20 @@ Validator.prototype.add = function (schema, path, name) {
                              '] validator was founded.',
                              'Adding a new validate function on static property',
                              'for given schema' ].join(' '));
-          // adding on static method
+          // adding a validate static method
           schema.static('validate', function (data) {
             // get rules for validation
             // we add reference of enums instance automaticly in validator function param
             var rules = fo[name](this.enums);
             // default statement
             return joi.validate(data, rules);
+          });
+
+          // adding a get validate schema static method
+          schema.static('getValidateSchema', function () {
+            // get rules for validation
+            // we add reference of enums instance automaticly in validator function param
+            return fo[name](this.enums);
           });
         }
       }, this);

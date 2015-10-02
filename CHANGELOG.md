@@ -1,3 +1,7 @@
+## 1.1.0 (2015-09-02)
+
+- Add a new method getValidateSchema when a validator was add.
+
 ## 1.0.6 (2015-09-02)
 
 - Add dynamic call of custom function with apply and all given arguments
