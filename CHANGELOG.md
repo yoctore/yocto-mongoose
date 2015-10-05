@@ -1,3 +1,12 @@
+## 1.2.1 (2015-09-02)
+
+- Fix bug on alias function
+- Add auto exclude of alias when main method is on exclude list
+
+## 1.2.0 (2015-09-02)
+
+- Add alias function for crud methods
+
 ## 1.1.0 (2015-09-02)
 
 - Add a new method getValidateSchema when a validator was add.

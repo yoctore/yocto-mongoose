@@ -3,7 +3,7 @@
     "name"      : "A",
     "crud"      : {
       "enable"  : true,
-      "exclude" : [ "getOne" ]
+      "exclude" : [ "getOne", "get" ]
     },
     "validator" : "account",
     "fn"        : [

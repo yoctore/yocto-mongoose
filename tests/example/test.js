@@ -45,13 +45,13 @@ db.connect('mongodb://localhost:27017/test').then(function() {
       //console.log(account);
 
         account = db.getModel('Account');
-        account.create({ name : "aee"}).then(function(a) {
+        account.insert({ name : "aee"}).then(function(a) {
         console.log('A =>', a);
-        account.update(a._id.toString(), { name : 'rezrezre' }).then(function(u) {
+        account.modify(a._id.toString(), { name : 'rezrezre' }).then(function(u) {
           console.log('U =>', u);
-          account.get(u._id.toString()).then(function(g) {
+          account.read(u._id.toString()).then(function(g) {
             console.log('G =>' , g);
-            account.delete(g._id.toString()).then(function(d) {
+            account.destroy(g._id.toString()).then(function(d) {
               console.log('D =>', d);
             }).catch(function(e) {
               console.log('delete failed', e);

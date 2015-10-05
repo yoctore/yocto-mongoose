@@ -22,7 +22,70 @@ function Crud (logger) {
    * @property logger
    */
   this.logger     = logger;
+
+  /**
+   * Alias object for exclusion process
+   *
+   * @property alias
+   */
+  this.alias      = {
+    'create'  : [ 'insert' ],
+    'get'     : [ 'read' ],
+    'getOne'  : [ 'readOne' ],
+    'delete'  : [ 'destroy' ],
+    'update'  : [ 'modify' ]
+  };
 }
+
+/**
+ * Alias method for create method
+ *
+ * @return {Promise} promise object to use for handling
+ */
+Crud.prototype.insert = function () {
+  // default instance
+  return this.create.apply(this, arguments);
+};
+
+/**
+ * Alias method for get method
+ *
+ * @return {Promise} promise object to use for handling
+ */
+Crud.prototype.read = function () {
+  // default instance
+  return this.get.apply(this, arguments);
+};
+
+/**
+ * Alias method for getOne method
+ *
+ * @return {Promise} promise object to use for handling
+ */
+Crud.prototype.readOne = function () {
+  // default instance
+  return this.getOne.apply(this, arguments);
+};
+
+/**
+ * Alias method for update method
+ *
+ * @return {Promise} promise object to use for handling
+ */
+Crud.prototype.modify = function () {
+  // default instance
+  return this.update.apply(this, arguments);
+};
+
+/**
+ * Alias method for delete method
+ *
+ * @return {Promise} promise object to use for handling
+ */
+Crud.prototype.destroy = function () {
+  // default instance
+  return this.delete.apply(this, arguments);
+};
 
 /**
  * Get One item from given rules
@@ -208,6 +271,21 @@ Crud.prototype.add = function (schema, exclude) {
   var existing  = _.difference(Object.keys(Crud.prototype), [ 'add' ]);
   // normalize data
   exclude       = _.isArray(exclude) ? exclude : [];
+
+  // try to add alias on exclude array
+  if (!_.isEmpty(exclude) && _.isArray(exclude)) {
+    // build excluded alias
+    var excludeAlias = _.intersection(Object.keys(this.alias), exclude);
+    // parse alias to add item
+    _.each(excludeAlias, function (ex) {
+      // push it
+      exclude.push(this.alias[ex]);
+    }, this);
+
+    // flatten array to have unique level
+    exclude = _.flatten(exclude);
+  }
+
   // keep only needed methods
   var saved     = _.difference(existing, exclude);
 
