@@ -1,7 +1,7 @@
 {
   "name": "yocto-mongoose",
   "description": "Utility tool to manage mongoose connection and auto loading models.",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "scripts": {},
   "author": {
     "name": "ROBERT Mathieu",

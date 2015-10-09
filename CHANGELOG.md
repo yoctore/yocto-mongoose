@@ -1,3 +1,7 @@
+## 1.2.2 (2015-10-09)
+
+- Fix a bug on glob.sync on method add function. Now app retrieve correct method file associated with the current method
+
 ## 1.2.1 (2015-09-02)
 
 - Fix bug on alias function

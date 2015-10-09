@@ -432,7 +432,7 @@ YMongoose.prototype.addModel = function (value) {
                          'Try to add them.' ].join(' '));
 
       // process
-      var mschema = this.createMethod(schema, value.model.fn);
+      var mschema = this.createMethod(schema, value.model.fn, value.model.name.toLowerCase());
 
       // is valid ?
       if (mschema) {
@@ -523,9 +523,10 @@ YMongoose.prototype.createValidator = function (value, name) {
  *
  * @param {Object} value default schema to use
  * @param {String} items method name to retreive on validators files
+ * @param {String} name model name to retreive on method files
  * @return {Object|Boolean} if all is ok return new schema false otherwise
  */
-YMongoose.prototype.createMethod = function (value, items) {
+YMongoose.prototype.createMethod = function (value, items, name) {
   // is Ready ??
   if (this.isReady(true)) {
     if (!(value instanceof Schema)) {
@@ -537,7 +538,7 @@ YMongoose.prototype.createMethod = function (value, items) {
     }
 
     // valid statement
-    return method.add(value, this.paths.method, items);
+    return method.add(value, this.paths.method, items, name);
   }
   // default statement
   return false;
