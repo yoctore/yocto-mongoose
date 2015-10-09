@@ -1,6 +1,7 @@
-## 1.2.2 (2015-10-09)
+## 1.2.2 & 1.2.3 (2015-10-09)
 
 - Fix a bug on glob.sync on method add function. Now app retrieve correct method file associated with the current method
+- Fix join string on glob.sync
 
 ## 1.2.1 (2015-09-02)
 
