@@ -31,14 +31,20 @@ function Validator (logger) {
  * @param {Object} schema schema to use for method adding
  * @param {String} path path to use for validator loading
  * @param {String} name validator name to use for matching
+ * @param {String} modelName model name for file matching
  * @return {Boolean|Object} new schema if all is ok false othewise
  */
-Validator.prototype.add = function (schema, path, name) {
+Validator.prototype.add = function (schema, path, name, modelName) {
   // valid params first
   if (_.isString(path) && _.isString(name) && !_.isEmpty(path) && !_.isEmpty(name) &&
-     _.isObject(schema) && (schema instanceof Schema)) {
+     _.isObject(schema) && (schema instanceof Schema) &&
+     _.isString(modelName) && !_.isEmpty(modelName)) {
     // retrieving files
-    var files = glob.sync('**/*.js', { cwd : path, realpath : true });
+    var files = glob.sync([ '**/', modelName, '.js'].join(''), {
+      cwd       : path,
+      realpath  : true,
+      nocase    : true
+    });
 
     // so isEmpty ?
     if (files.length > 0) {

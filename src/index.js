@@ -413,7 +413,8 @@ YMongoose.prototype.addModel = function (value) {
       this.logger.debug([ '[ YMongoose.addModel ] - A validator is defined.',
                          'Try to add a validate method.' ].join(' '));
       // process
-      var vschema = this.createValidator(schema, value.model.validator);
+      var vschema = this.createValidator(schema, value.model.validator,
+                                         value.model.name.toLowerCase());
 
       // is valid ?
       if (vschema) {
@@ -497,10 +498,11 @@ YMongoose.prototype.createCrud = function (value, exclude) {
  * Create & add a validate function on current schema for create usage
  *
  * @param {Object} value default schema to use
- * @param {String} name validator name to retreive on validators files
+ * @param {String} validatorName validator name to retreive on validators files
+ * @param {String} modelName model name to use for validator filter files
  * @return {Object|Boolean} if all is ok return new schema false otherwise
  */
-YMongoose.prototype.createValidator = function (value, name) {
+YMongoose.prototype.createValidator = function (value, validatorName, modelName) {
   // is Ready ??
   if (this.isReady(true)) {
     if (!(value instanceof Schema)) {
@@ -512,7 +514,7 @@ YMongoose.prototype.createValidator = function (value, name) {
     }
 
     // valid statement
-    return validator.add(value, this.paths.validator, name);
+    return validator.add(value, this.paths.validator, validatorName, modelName);
   }
   // default statement
   return false;
@@ -523,10 +525,10 @@ YMongoose.prototype.createValidator = function (value, name) {
  *
  * @param {Object} value default schema to use
  * @param {String} items method name to retreive on validators files
- * @param {String} name model name to retreive on method files
+ * @param {String} modelName model name to use for validator filter files
  * @return {Object|Boolean} if all is ok return new schema false otherwise
  */
-YMongoose.prototype.createMethod = function (value, items, name) {
+YMongoose.prototype.createMethod = function (value, items, modelName) {
   // is Ready ??
   if (this.isReady(true)) {
     if (!(value instanceof Schema)) {
@@ -538,7 +540,7 @@ YMongoose.prototype.createMethod = function (value, items, name) {
     }
 
     // valid statement
-    return method.add(value, this.paths.method, items, name);
+    return method.add(value, this.paths.method, items, modelName);
   }
   // default statement
   return false;

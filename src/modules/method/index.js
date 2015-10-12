@@ -32,15 +32,16 @@ function Method (logger) {
  * @param {Object} schema schema to use for method adding
  * @param {String} path path to use for validator loading
  * @param {String} items item list to use for matching
- * @param {String} name model name for file matching
+ * @param {String} modelName model name for file matching
  * @return {Boolean|Object} new schema if all is ok false othewise
  */
-Method.prototype.add = function (schema, path, items, name) {
+Method.prototype.add = function (schema, path, items, modelName) {
   // valid params first
   if (_.isString(path) && _.isArray(items) && !_.isEmpty(path) && !_.isEmpty(items) &&
-     _.isObject(schema) && (schema instanceof Schema) && _.isString(name) && !_.isEmpty(name)) {
+     _.isObject(schema) && (schema instanceof Schema) &&
+     _.isString(modelName) && !_.isEmpty(modelName)) {
     // retrieving files
-    var files = glob.sync([ '**/', name, '.js'].join(''), {
+    var files = glob.sync([ '**/', modelName, '.js'].join(''), {
       cwd       : path,
       realpath  : true,
       nocase    : true
