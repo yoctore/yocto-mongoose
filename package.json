@@ -25,7 +25,7 @@
   },
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=0.12.2"
+    "node": ">=4.2.1"
   },
   "files": [
     "dist",
@@ -59,7 +59,7 @@
     "mongoose": "^4.1.8",
     "q": "^1.4.1",
     "yocto-logger": "^1.0.2",
-    "yocto-utils": "git+ssh://gitlab.com/yocto-node-modules/yocto-utils.git"
+    "yocto-utils": "^0.8.1"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
