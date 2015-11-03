@@ -1,6 +1,7 @@
 ## 1.2.4 (2015-10-12)
 
 - Change content of readme.md
+- Change package content
 
 ## 1.2.2 & 1.2.3 (2015-10-09)
 
