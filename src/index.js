@@ -15,6 +15,9 @@ var async     = require('async');
 var Schema    = mongoose.Schema;
 var Q         = require('q');
 
+// Use q. to handle default promise in mongoose
+mongoose.Promise = require('q').Promise;
+
 /**
  *
  * Utility tool to manage mongoose connection and auto loading models.

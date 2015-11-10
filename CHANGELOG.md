@@ -1,3 +1,7 @@
+## 1.2.5 (2015-11-10)
+
+- Set the library Q. to handle promise in mongoose
+
 ## 1.2.4 (2015-10-12)
 
 - Change content of readme.md
@@ -90,7 +94,7 @@ Add enums process.
 
 ## 0.6.0 (2015-09-28)
 
-General changes : 
+General changes :
 
 - Add addStatic method : add a static method to given schema
 - Add addMethod method : add a instance method to given schema
@@ -110,7 +114,7 @@ Module changes :
 
 - Add addCrud method to enable crud flag from model
 - Finish load method for autoloading of models from given path
-- Add isLoaded method. This method get model load status 
+- Add isLoaded method. This method get model load status
 
 ## 0.3.0 (2015-09-27)
 
@@ -128,7 +132,7 @@ Add all base function.
 - isDisconnected : get status of disconnection
 - connect : connect to database
 - disconnect : disconnect if connected on database
-- setPath : Min function call during add path action 
+- setPath : Min function call during add path action
 - isReady : Check if connection is ready
 - models :  add model directory for load
 - controllers : add controllers directory for mapping with model
