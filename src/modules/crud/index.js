@@ -224,8 +224,8 @@ Crud.prototype.create = function (value) {
   if (status) {
     // model is a valid instance ?
     if (model instanceof this) {
-      // merge data before save
-      _.merge(model, value);
+      // extend data before save
+      _.extend(model, value);
 
       // try to find
       model.save(function (error, data) {
