@@ -1,3 +1,7 @@
+## 1.2.6 (2015-12-09)
+
+- Bug fixe : use 'lodash.extend()' instead of 'lodash.merge()' in the create CRUD method to solve bug with array values
+
 ## 1.2.5 (2015-11-10)
 
 - Set the library Q. to handle promise in mongoose
