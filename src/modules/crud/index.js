@@ -91,21 +91,23 @@ Crud.prototype.destroy = function () {
  * Get One item from given rules
  *
  * @param {String|Object} conditions conditions to use for search
+ * @param {String|Object} filter filter to use to process filter
  * @return {Promise} promise object to use for handling
  */
-Crud.prototype.getOne = function (conditions) {
+Crud.prototype.getOne = function (conditions, filter) {
   // call main get function
-  return this.get(conditions, 'findOne');
+  return this.get(conditions, filter, 'findOne');
 };
 
 /**
  * Get data from a model
  *
  * @param {Object|String} conditions query rules to add in find
+ * @param {Object} filter object property to process filter action
  * @param {String} method id a method name is ginve force method name usage
  * @return {Promise} promise object to use for handleling
  */
-Crud.prototype.get = function (conditions, method) {
+Crud.prototype.get = function (conditions, filter, method) {
   // defined default method name to use
   method  = _.isString(method) && !_.isEmpty(method) ? method : 'find';
 
@@ -114,8 +116,12 @@ Crud.prototype.get = function (conditions, method) {
   // Create our deferred object, which we will use in our promise chain
   var deferred = Q.defer();
 
+  // normalize filter object
+  filter = _.isObject(filter) && !_.isEmpty(filter) ? filter : {};
+
   // try to find
-  this[method](conditions, function (error, data) {
+  this[method](conditions, filter, function (error, data) {
+    // has error ?
     if (error) {
       // reject
       deferred.reject(error);
@@ -167,17 +173,21 @@ Crud.prototype.delete = function (id) {
  *
  * @param {Object|String} conditions query rules to add in find
  * @param {String} update data to use for update
+ * @param {Boolean} multi set to true to process to un multi update action
  * @return {Promise} promise object to use for handling
  */
-Crud.prototype.update = function (conditions, update) {
+Crud.prototype.update = function (conditions, update, multi) {
   // is string ? so if for findByIdAndUpdate request. change method name
   var method = _.isString(conditions) ? 'findByIdAndUpdate' : 'findOneAndUpdate';
 
   // Create our deferred object, which we will use in our promise chain
   var deferred = Q.defer();
 
+  // default options
+  var options = _.isBoolean(multi) && multi ? { multi : true } : { new : true };
+
   // try to find
-  this[method](conditions, update, { new : true }, function (error, data) {
+  this[method](conditions, update, options, function (error, data) {
     // has error ?
     if (error) {
       // reject
