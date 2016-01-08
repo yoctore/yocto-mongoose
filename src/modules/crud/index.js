@@ -117,7 +117,7 @@ Crud.prototype.get = function (conditions, filter, method) {
   var deferred = Q.defer();
 
   // normalize filter object
-  filter = _.isObject(filter) && !_.isEmpty(filter) ? filter : {};
+  filter = _.isString(filter) && !_.isEmpty(filter) ? filter : '';
 
   // try to find
   this[method](conditions, filter, function (error, data) {
@@ -183,20 +183,32 @@ Crud.prototype.update = function (conditions, update, multi) {
   // Create our deferred object, which we will use in our promise chain
   var deferred = Q.defer();
 
-  // default options
-  var options = _.isBoolean(multi) && multi ? { multi : true } : { new : true };
-
-  // try to find
-  this[method](conditions, update, options, function (error, data) {
-    // has error ?
-    if (error) {
-      // reject
-      deferred.reject(error);
-    } else {
-      // valid
-      deferred.resolve(data);
-    }
-  });
+  // is multi request ??
+  if (_.isBoolean(multi) && multi) {
+    // process specific where
+    this.where().setOptions({ multi : true }).update(conditions, update, function (error, data) {
+      // has error ?
+      if (error) {
+        // reject
+        deferred.reject(error);
+      } else {
+        // valid
+        deferred.resolve(data);
+      }
+    });
+  } else {
+    // try to find
+    this[method](conditions, update, { new : true }, function (error, data) {
+      // has error ?
+      if (error) {
+        // reject
+        deferred.reject(error);
+      } else {
+        // valid
+        deferred.resolve(data);
+      }
+    });
+  }
 
   // return deferred promise
   return deferred.promise;

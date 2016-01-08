@@ -14,3 +14,7 @@ console.log(this.get);
 exports.test2 = function(data) {
   console.log('test2');
 };
+
+exports.saveTest =  function (doc) {
+  console.log('dans save Test =>', doc);
+};

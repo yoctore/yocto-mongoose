@@ -14,6 +14,11 @@
       {
         "type"  : "method",
         "name"  : "test2" 
+      },
+      {
+        "type"  : "post",
+        "event" : "save",
+        "name"  : "saveTest" 
       }
     ],
     "properties" : {

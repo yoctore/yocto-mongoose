@@ -58,8 +58,18 @@ Method.prototype.add = function (schema, path, items, modelName) {
 
           // define schema
           var vschema = joi.object().keys({
-            type : joi.string().required().empty().allow([ 'static', 'method' ]),
-            name : joi.string().required().empty()
+            type  : joi.string().required().empty().allow([ 'static', 'method', 'post' ]),
+            name  : joi.string().required().empty(),
+            event : joi.alternatives().when('type', {
+              is        : 'post',
+              then      : joi.string().required().empty().valid([
+                'init',
+                'validate',
+                'save',
+                'remove'
+              ]),
+              otherwise : joi.optional()
+            })
           });
 
           // validate schema
@@ -73,11 +83,21 @@ Method.prototype.add = function (schema, path, items, modelName) {
                                  '] founded adding new',
                                  (item.type === 'method' ? 'instance' : item.type),
                                  'method for given schema' ].join(' '));
-              // define method
-              schema[item.type](item.name, function () {
-                // default statement process function with given arguments in current context
-                return fo[item.name].apply(this, arguments);
-              });
+
+              // is post item
+              if (item.type === 'post') {
+                // build post process with needed event
+                schema.post(item.event, function () {
+                  // default statement process function with given arguments in current context
+                  return fo[item.name].apply(this, arguments);
+                });
+              } else {
+                // define method
+                schema[item.type](item.name, function () {
+                  // default statement process function with given arguments in current context
+                  return fo[item.name].apply(this, arguments);
+                });
+              }
             }
           } else {
             // error schema is invalid

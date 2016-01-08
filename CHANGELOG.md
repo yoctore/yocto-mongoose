@@ -1,3 +1,9 @@
+## 1.3.0 (2015-01-16)
+
+- Add middleware post configuration on schema config.
+- Add filter on get(s) method
+- Add multi update process from upate method
+
 ## 1.2.6 (2015-12-09)
 
 - Bug fixe : use 'lodash.extend()' instead of 'lodash.merge()' in the create CRUD method to solve bug with array values
