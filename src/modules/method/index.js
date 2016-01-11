@@ -66,7 +66,13 @@ Method.prototype.add = function (schema, path, items, modelName) {
                 'init',
                 'validate',
                 'save',
-                'remove'
+                'remove',
+                'count',
+                'find',
+                'findOne',
+                'findOneAndRemove',
+                'findOneAndUpdate',
+                'update'
               ]),
               otherwise : joi.optional()
             })
