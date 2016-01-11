@@ -92,12 +92,14 @@ Method.prototype.add = function (schema, path, items, modelName) {
 
               // is post item
               if (item.type === 'post') {
+                // save logger to send to external method
+                var logger = this.logger;
                 // build post process with needed event
                 schema.post(item.event, function () {
 
                   // default statement process function with given arguments in current context
-                  return fo[item.name].apply(this, _.flatten([ arguments, this.logger ]));
-                }.bind(this));
+                  return fo[item.name].apply(this, _.flatten([ arguments, logger ]));
+                });
               } else {
                 // define method
                 schema[item.type](item.name, function () {
