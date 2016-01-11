@@ -17,4 +17,5 @@ exports.test2 = function(data) {
 
 exports.saveTest =  function (doc) {
   console.log('dans save Test =>', doc);
+  console.log(arguments);
 };

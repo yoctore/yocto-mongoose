@@ -94,9 +94,10 @@ Method.prototype.add = function (schema, path, items, modelName) {
               if (item.type === 'post') {
                 // build post process with needed event
                 schema.post(item.event, function () {
+
                   // default statement process function with given arguments in current context
-                  return fo[item.name].apply(this, arguments);
-                });
+                  return fo[item.name].apply(this, _.flatten([ arguments, this.logger ]));
+                }.bind(this));
               } else {
                 // define method
                 schema[item.type](item.name, function () {
