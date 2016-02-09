@@ -1,7 +1,7 @@
 {
   "name": "yocto-mongoose",
   "description": "Utility tool to manage mongoose connection and auto loading models.",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "scripts": {},
   "author": {
     "name": "Yocto SAS",
@@ -23,10 +23,10 @@
   "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/yocto-node-modules/yocto-mongoose.git"
+    "url": "https://github.com/yoctore/yocto-mongoose.git"
   },
   "bugs": {
-    "url": "https://gitlab.com/yocto-node-modules/yocto-mongoose/issues"
+    "url": "https://github.com/yoctore/yocto-mongoose/issues"
   },
   "license": "Apache-2.0",
   "engines": {
