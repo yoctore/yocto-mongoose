@@ -146,10 +146,10 @@ rules:
   linebreak-style: 0
   lines-around-comment: 0
   max-depth: 0
-  max-len: 0
+  max-len: 100
   max-nested-callbacks: 0
   max-params: 0
-  max-statements: [2, 30]
+  max-statements: [2, 50]
   new-cap: 0
   new-parens: 0
   newline-after-var: 0

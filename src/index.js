@@ -712,7 +712,7 @@ YMongoose.prototype.load = function () {
       // warning message
       this.logger.error([ '[ YMongoose.load.queue ] -', message ].join(' '));
       // callback with error
-      callback(message);
+      return callback(message);
     } else {
       // add new model
       this.addModel(task.data).then(function () {
