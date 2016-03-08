@@ -1,0 +1,41 @@
+{
+  "model" : {
+    "name" : "Address",
+    "crud" : {
+      "enable"  : true,
+      "exclude" : []
+    },
+    "elastic" : true,
+    "fn" : [],
+    "validator" : "account",
+    "properties" : {
+      "updator_id"                     : {
+        "required"                   : false,
+        "type"                       : "ObjectId"
+      },
+      "street" : {
+        "type"   : {
+          "number"        : {
+            "type"      : "String",
+            "required"  : true
+          },
+          "supplement"    : {
+            "type"      : "String",
+            "required"  : false
+          },
+          "name"          : {
+            "type"      : "String",
+            "required"  : true
+          },
+          "comment"       : {
+            "type"      : "String",
+            "required"  : false
+          }
+        },
+        "required" : true,
+        "es_indexed" : true,
+        "es_type" : "nested"
+      }
+    }
+  }
+}

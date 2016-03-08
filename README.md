@@ -1,4 +1,9 @@
+[![NPM](https://nodei.co/npm/yocto-mongoose.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/yocto-mongoose/)
+
 ![alt text](https://david-dm.org/yoctore/yocto-mongoose.svg "Dependencies Status")
+[![Code Climate](https://codeclimate.com/github/yoctore/yocto-mongoose/badges/gpa.svg)](https://codeclimate.com/github/yoctore/yocto-mongoose)
+[![Test Coverage](https://codeclimate.com/github/yoctore/yocto-mongoose/badges/coverage.svg)](https://codeclimate.com/github/yoctore/yocto-mongoose/coverage)
+[![Issue Count](https://codeclimate.com/github/yoctore/yocto-mongoose/badges/issue_count.svg)](https://codeclimate.com/github/yoctore/yocto-mongoose)
 
 ## Overview
 
@@ -196,3 +201,59 @@ See Below list of method & aliases :
 | Read (Retrieve)  | get              | read            |
 | Update (Modify   | update           | modify          |
 | Delete (Destroy) | delete           | destroy         |
+
+
+## Elasticsearch implementation 
+
+### Basic usage
+
+Elastic search implemantion are builed with [mongoosastic](https://www.npmjs.com/package/mongoosastic) package
+
+Elastic search rules are setted up during model build.
+You can define index directly on model definition. See a simple example below : 
+
+```javascript
+{
+  "model" : {
+    "name" :
+    "crud" : { 
+      "enable"  : true, 
+      "exclude" : [] 
+    },
+    "elastic" : true, !!! IMPORTANT !!! must be provide to enable elastic search
+    "properties" : { 
+      "status" : {
+        "required" : true,
+        "type"     : "String"
+        "es_indexed" : true // here we define that this properties must be indexed.
+        "es_type"    : "String" // another possible value
+        "es_include_in_parent" : true // same thing 
+      },
+      "notify_type" : {
+        "required" : true,
+        "type"     : "String"
+      }
+    }
+  }
+}
+```
+
+### List of available keys
+
+For more complex implementation see [mongoosastic](https://www.npmjs.com/package/mongoosastic) package documentation to see available keys
+
+### Setting up multipe host
+
+You can provide to our package a multiple hosts connection for elasticsearch part.
+A method `elasticHosts` are available to define which hosts to use on `mongoosastic`.
+
+```javascript
+
+var db = require('yocto-mongoose')();
+
+// Connect
+db.connect('MONGO_URL').then(function() {
+  db.elasticHosts([ 'IP_URL_1:PORT_1', 'IP_URL_2:PORT_2');
+});
+
+```

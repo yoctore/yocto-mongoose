@@ -4,6 +4,7 @@ var logger    = require('yocto-logger');
 var _         = require('lodash');
 var Q         = require('q');
 var Schema    = require('mongoose').Schema;
+var utils     = require('yocto-utils');
 
 /**
  *
@@ -248,7 +249,6 @@ Crud.prototype.create = function (value) {
     if (model instanceof this) {
       // extend data before save
       _.extend(model, value);
-
       // try to find
       model.save(function (error, data) {
         // has error ?
@@ -256,10 +256,25 @@ Crud.prototype.create = function (value) {
           // reject
           deferred.reject(error);
         } else {
-          // valid
-          deferred.resolve(data);
+          // elastic is enable on schema ?
+          if (this.schema.elastic) {
+            // add this a listener to log indexes action
+            model.on('es-indexed', function (err) {
+              // log succes message
+              if (err) {
+                // reject with error message
+                deferred.reject([ '[ Crud.create ] - Indexes creation failed :', err ].join(' '));
+              } else {
+                // resolve default statement
+                deferred.resolve(data);
+              }
+            });
+          } else {
+            // valid
+            deferred.resolve(data);
+          }
         }
-      });
+      }.bind(this));
     } else {
       // reject invalid instance model
       deferred.reject('[ Crud.create ] - Cannot save. invalid instance model');
@@ -269,6 +284,43 @@ Crud.prototype.create = function (value) {
     deferred.reject([ '[ Crud.create ] - Cannot save new schema.',
                       errors ].join(' '));
   }
+
+  // return deferred promise
+  return deferred.promise;
+};
+
+/**
+ * An utility method to use for search request to elastic search instances
+ *
+ * @param {Object} query query to use on elastic search request
+ * @param {Boolean} hydrate set to true to use hydrate method
+ * @param {Object} hydrateOptions options to use if hydrate is set to true
+ * @return {Promise} promise object to use for handling
+ */
+Crud.prototype.esearch = function (query, hydrate, hydrateOptions) {
+  // Create our deferred object, which we will use in our promise chain
+  var deferred    = Q.defer();
+
+  // normalize hydrate value
+  hydrate         = _.isBoolean(hydrate) ? hydrate : false;
+  hydrateOptions  = _.isObject(hydrateOptions) ? hydrateOptions : {};
+
+  // try to find
+  this.search(utils.obj.underscoreKeys({
+    queryString  : { query : query || '' }
+  }), {
+    hydrate         : hydrate,
+    hydrateOptions  : hydrateOptions
+  }, function (error, data) {
+    // has error ?
+    if (error) {
+      // reject
+      deferred.reject(error);
+    } else {
+      // valid
+      deferred.resolve(data);
+    }
+  });
 
   // return deferred promise
   return deferred.promise;
@@ -289,8 +341,17 @@ Crud.prototype.add = function (schema, exclude) {
     return false;
   }
 
+  // default difference
+  var difference = [ 'add' ];
+
+  // elastic is disable ?
+  if (!schema.elastic) {
+    // add search method to diff to remove default crud method
+    difference.push('elasticsearch');
+  }
+
   // keep only correct method
-  var existing  = _.difference(Object.keys(Crud.prototype), [ 'add' ]);
+  var existing  = _.difference(Object.keys(Crud.prototype), difference);
   // normalize data
   exclude       = _.isArray(exclude) ? exclude : [];
 
@@ -311,17 +372,14 @@ Crud.prototype.add = function (schema, exclude) {
   // keep only needed methods
   var saved     = _.difference(existing, exclude);
 
-  // current context
-  var context = this;
-
   // parse all
   _.each(saved, function (s) {
     // is a valid func ?
-    if (_.isFunction(context[s])) {
+    if (_.isFunction(this[s])) {
       // assign method via static method
-      schema.static(s, context[s]);
+      schema.static(s, this[s]);
     }
-  });
+  }.bind(this));
 
   // default statement
   return schema;

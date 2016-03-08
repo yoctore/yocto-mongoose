@@ -1,7 +1,7 @@
 var logger    = require('yocto-logger');
 //logger.less();
 //logger.less();
-var db        = require('../../src/index.js')(logger);
+var db        = require('../src/index.js')(logger);
 
 var m1 = function() {
   console.log('m1');
@@ -15,47 +15,38 @@ var m2 = function() {
 // Connect
 db.connect('mongodb://localhost:27017/test').then(function() {
   // load models
-  db.models('./tests/example/models');
-  db.validators('./tests/example/controllers');
-  db.methods('./tests/example/methods');
-  db.enums('./tests/example/enums');
+  db.models('./example/models');
+  db.validators('./example/controllers');
+  db.methods('./example/methods');
+  db.enums('./example/enums');
+  db.elasticHosts([ '127.0.0.1:9200', '127.0.0.1:9500' ]);
   if (db.isReady(true)) {
     db.load().then(function() {
       console.log('load success');
       var account = db.getModel('Account');
       console.log('===== value ===== ');
       console.log(account.enums().get('notify_type_list'));
-      //console.log(account);
-     /* account.test1('a', 'b').then(function(data) {
-        console.log(data);
-      }).catch(function(error) {
-        console.log(error);
-      });*//*
-      return db.disconnect().then(function() {
-        console.log('diconnect ok');
-      }).catch(function(error) {
-        console.log('disconnect error');
-      });
-      */
-       //account.myMethod();
-       //account.validate();
 
       var account = db.getModel('Account', true);
-      //account.test2();
-      //console.log(account);
+
 
         account = db.getModel('Account');
-        account.insert({ name : "aee"}).then(function(a) {
+        account.esearch('', true).then(function(a) {
+          console.log('search a =>', a);
+        }).catch(function (b) {
+          console.log('search elatic b => ', b);
+        });
+        account.insert({ name : "aee", test : 'fsdfds' }).then(function(a) {
         console.log('A =>', a);
         account.modify(a._id.toString(), { name : 'rezrezre' }).then(function(u) {
           console.log('U =>', u);
           account.read(u._id.toString()).then(function(g) {
             console.log('G =>' , g);
-            account.destroy(g._id.toString()).then(function(d) {
+            /*account.destroy(g._id.toString()).then(function(d) {
               console.log('D =>', d);
             }).catch(function(e) {
               console.log('delete failed', e);
-            });
+            });*/
           }).catch(function(e) {
             console.log('get failed', e);
           });
