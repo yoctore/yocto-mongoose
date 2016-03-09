@@ -19,7 +19,7 @@ db.connect('mongodb://localhost:27017/test').then(function() {
   db.validators('./example/controllers');
   db.methods('./example/methods');
   db.enums('./example/enums');
-  db.elasticHosts([ '127.0.0.1:9200', '127.0.0.1:9500' ]);
+  db.elasticHosts([ { host : '127.0.0.1', port : 9200 }, { host : '127.0.0.1', port : 9500 } ]);
   if (db.isReady(true)) {
     db.load().then(function() {
       console.log('load success');

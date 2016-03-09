@@ -21,3 +21,6 @@ deploy:
     repo: yoctore/yocto-mongoose
 before_install: npm install -g grunt-cli
 install: npm install
+services:
+  - mongodb
+  - elasticsearch

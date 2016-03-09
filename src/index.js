@@ -199,12 +199,17 @@ YMongoose.prototype.disconnect = function () {
  */
 YMongoose.prototype.elasticHosts = function (hosts) {
   // normalize hosts
-  hosts = _.isArray(hosts) ? hosts : [ hosts || '127.0.0.1:9200' ];
+  hosts = _.isArray(hosts) ? hosts : [ host || { host : '127.0.0.1', port : 9200 } ];
 
   // validation schema
   var schema = joi.array().required().items(
-    joi.string().required().empty().default('127.0.0.1:9200')
-  ).default([ '127.0.0.1:9200' ]);
+    joi.object().keys({
+      host : joi.string().required().empty().ip({
+        version : [ 'ipv4','ipv6' ]
+      }).default('127.0.0.1'),
+      port : joi.number().required().default(9200)
+    }).default({ host : '127.0.0.1', port : 9200 })
+  ).default([ { host : '127.0.0.1', port : 9200 } ]);
 
   // validate given config
   var validate = joi.validate(hosts, schema);
