@@ -77,10 +77,12 @@ describe('Query process ->', function () {
 
         expect(model).to.be.a('function');
         // insert data
-        model.insert(d.insert).then(function (value) {
+        model.create(d.insert).then(function (value) {
 
+          var index = _.indexOf(datas, d);
           // add key here to process update or delete on next process
-          _.extend(d, { id : value._id.toString() });
+          datas[index].id = value._id.toString();
+
 
           var obj     = value.toObject();
           var dsize   = _.size(d.insert);
@@ -95,21 +97,17 @@ describe('Query process ->', function () {
         }.bind(this));
     }.bind(d));
   });
-/*
+
   _.each(datas, function (d) {
-    it ([ 'Insert should be succeed for model', d.model,
-          'with data', utils.obj.inspect(d.content) ].join(' '), function (done) {
+    it ([ 'Find should be succeed for model', d.model,
+          'with data ', utils.obj.inspect(d.insert) ].join(' '), function (done) {
         var model = db.getModel(d.model);
 
         expect(model).to.be.a('function');
         // insert data
-        model.insert(d.content).then(function (value) {
-
-          // add key here to process update or delete on next process
-          _.extend(d, { id : value._id.toString() });
-
+        model.get(d.id).then(function (value) {
           var obj     = value.toObject();
-          var dsize   = _.size(d.content);
+          var dsize   = _.size(d.update);
           var osize   = _.size(obj);
 
           expect(value).to.be.a('object');
@@ -117,10 +115,49 @@ describe('Query process ->', function () {
           obj.should.have.property('_id');
           value._id.toString().should.have.length(24);
           done();
-        });
-    });
+        }.bind(this));
+    }.bind(d));
   });
-*/
+
+  _.each(datas, function (d) {
+    it ([ 'Update should be succeed for model', d.model,
+          'with data ', utils.obj.inspect(d.update) ].join(' '), function (done) {
+        var model = db.getModel(d.model);
+
+        expect(model).to.be.a('function');
+        // insert data
+        model.update(d.id, d.update).then(function (value) {
+          var obj     = value.toObject();
+          var dsize   = _.size(d.update);
+          var osize   = _.size(obj);
+
+          expect(value).to.be.a('object');
+          expect(osize).equal(dsize + 2); // mongo add _id et _v
+          obj.should.have.property('_id');
+          value._id.toString().should.have.length(24);
+          done();
+        }.bind(this));
+    }.bind(d));
+  });
+
+  _.each(datas, function (d) {
+    it ([ 'Delete should be succeed for model', d.model ].join(' '), function (done) {
+        var model = db.getModel(d.model);
+        expect(model).to.be.a('function');
+        // insert data
+        model.delete(d.id).then(function (value) {
+          var obj     = value.toObject();
+          var dsize   = _.size(d.update);
+          var osize   = _.size(obj);
+
+          expect(value).to.be.a('object');
+          expect(osize).equal(dsize + 2); // mongo add _id et _v
+          obj.should.have.property('_id');
+          value._id.toString().should.have.length(24);
+          done();
+        }.bind(this));
+    }.bind(d));
+  });
 
   it ('Should be disconnect properly from current connected host', function (disco) {
     db.disconnect().then(function () {
