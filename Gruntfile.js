@@ -50,5 +50,5 @@ module.exports = function (grunt) {
   grunt.registerTask('hint', [ 'yoctohint' ]);
   grunt.registerTask('test', 'mochacli');
   grunt.registerTask('build', [ 'yoctohint', 'uglify' ]);
-  grunt.registerTask('default', [ 'test', 'build' ]);
+  grunt.registerTask('default', [ 'build', 'test' ]);
 };

@@ -4,6 +4,7 @@
 [![Code Climate](https://codeclimate.com/github/yoctore/yocto-mongoose/badges/gpa.svg)](https://codeclimate.com/github/yoctore/yocto-mongoose)
 [![Test Coverage](https://codeclimate.com/github/yoctore/yocto-mongoose/badges/coverage.svg)](https://codeclimate.com/github/yoctore/yocto-mongoose/coverage)
 [![Issue Count](https://codeclimate.com/github/yoctore/yocto-mongoose/badges/issue_count.svg)](https://codeclimate.com/github/yoctore/yocto-mongoose)
+[![Build Status](https://travis-ci.org/yoctore/yocto-mongoose.svg?branch=master)](https://travis-ci.org/yoctore/yocto-mongoose)
 
 ## Overview
 
