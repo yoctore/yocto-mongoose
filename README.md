@@ -221,7 +221,10 @@ You can define index directly on model definition. See a simple example below :
       "enable"  : true, 
       "exclude" : [] 
     },
-    "elastic" : true, !!! IMPORTANT !!! must be provide to enable elastic search
+    "elastic" : {
+      "enable" : true, // !!! IMPORTANT !!! must be provide to enable elastic search mapping
+      "options" : {} // see : https://github.com/mongoosastic/mongoosastic#setup (host, hosts, protocol, port is removed if given : See multiple host usage)
+    },
     "properties" : { 
       "status" : {
         "required" : true,
@@ -254,7 +257,7 @@ var db = require('yocto-mongoose')();
 
 // Connect
 db.connect('MONGO_URL').then(function() {
-  db.elasticHosts([ 'IP_URL_1:PORT_1', 'IP_URL_2:PORT_2');
+  db.elasticHosts([ { host : '127.0.0.1', port : 9200 } ]);
 });
 
 ```

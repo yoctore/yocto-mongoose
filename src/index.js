@@ -199,17 +199,23 @@ YMongoose.prototype.disconnect = function () {
  */
 YMongoose.prototype.elasticHosts = function (hosts) {
   // normalize hosts
-  hosts = _.isArray(hosts) ? hosts : [ hosts || { host : '127.0.0.1', port : 9200 } ];
+  hosts = _.isArray(hosts) ? hosts : [ hosts || {
+    host      : '127.0.0.1',
+    port      : 9200,
+    protocol  : 'http'
+  } ];
 
   // validation schema
   var schema = joi.array().required().items(
     joi.object().keys({
-      host : joi.string().required().empty().ip({
+      host      : joi.string().required().empty().ip({
         version : [ 'ipv4','ipv6' ]
       }).default('127.0.0.1'),
-      port : joi.number().required().default(9200)
-    }).default({ host : '127.0.0.1', port : 9200 })
-  ).default([ { host : '127.0.0.1', port : 9200 } ]);
+      port      : joi.number().required().default(9200),
+      protocol  : joi.string().optional().valid([ 'http', 'https']).default('http'),
+      auth      : joi.string().optional().empty()
+    }).default({ host : '127.0.0.1', port : 9200, protocol : 'http' })
+  ).default([ { host : '127.0.0.1', port : 9200, protocol : 'http' } ]);
 
   // validate given config
   var validate = joi.validate(hosts, schema);
@@ -436,19 +442,22 @@ YMongoose.prototype.addModel = function (value) {
     // default statement for next process
     var hasElastic = false;
     // elastic is enabled ?
-    if (_.has(value.model, 'elastic') && value.model.elastic) {
-      // debug message
-      this.logger.debug([ '[ YMongoose.addModel ] - Elastic mode is enabled for this model.',
-                         'Adding default index on all properties to false' ].join(' '));
+    if (_.has(value.model, 'elastic') && _.isObject(value.model.elastic)) {
+      // is enabled ?
+      if (_.isBoolean(value.model.elastic.enable) && value.model.elastic.enable) {
+        // debug message
+        this.logger.debug([ '[ YMongoose.addModel ] - Elastic mode is enabled for this model.',
+                           'Adding default index on all properties to false' ].join(' '));
 
-      // get defautl indexes
-      var indexes = this.modules.elastic.addDefaultIndexes(_.cloneDeep(value.model.properties));
+        // get defautl indexes
+        var indexes = this.modules.elastic.addDefaultIndexes(_.cloneDeep(value.model.properties));
 
-      // merge data to get correct value
-      _.merge(indexes, value.model.properties);
+        // merge data to get correct value
+        _.merge(indexes, value.model.properties);
 
-      // change elastic status
-      hasElastic = true;
+        // change elastic status
+        hasElastic = true;
+      }
     }
 
     // schema value
@@ -460,10 +469,10 @@ YMongoose.prototype.addModel = function (value) {
       this.logger.debug([ '[ YMongoose.addModel ] - Elastic mode is enabled for this model.',
                          'Adding mongoosastic plugin to current schema' ].join(' '));
 
-      // add elastic on current schema
-      schema.plugin(elastic, {
+      // add elastic on current schema and merge options before
+      schema.plugin(elastic, _.merge({
         hosts : this.modules.elastic.getHosts()
-      });
+      }, _.omit(value.model.elastic.options, [ 'hosts', 'host', 'port', 'protocol', 'auth' ])));
     }
 
     // add flag on schema

@@ -15,7 +15,12 @@
         "name" : "sync"
       }
     ],
-    "elastic" : true,
+    "elastic" : {
+      "enable" : true,
+      "options" : {
+        "indexAutomatically" : true
+      }
+    },
     "validator"      : "account",
     "properties"     : {
       "name"    : {

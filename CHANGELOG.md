@@ -1,3 +1,8 @@
+## 1.4.3 (2016-04-20)
+
+- Add options on model => [#issue 1](https://github.com/yoctore/yocto-mongoose/issues/1)
+- Add rules to authorize auth and protocol properties on default elasticsHosts method
+
 ## 1.3.0 (2015-01-16)
 
 - Add middleware post configuration on schema config.
