@@ -36,6 +36,7 @@ db.connect('mongodb://localhost:27017/test').then(function() {
         }).catch(function (b) {
           console.log('search elatic b => ', b);
         });
+        
         account.insert({ name : "aee", test : 'fsdfds' }).then(function(a) {
         console.log('A =>', a);
         account.modify(a._id.toString(), { name : 'rezrezre' }).then(function(u) {

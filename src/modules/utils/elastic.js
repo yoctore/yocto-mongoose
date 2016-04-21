@@ -28,6 +28,13 @@ function ElasticUtils (logger) {
    * @default [ '127.0.0.1:9200' ]
    */
   this.hosts      = [ '127.0.0.1:9200' ];
+  /**
+   * Default state of elastic config
+   *
+   * @type {Boolean}
+   * @default false
+   */
+  this.isReady = false;
 }
 
 /**
@@ -73,6 +80,37 @@ ElasticUtils.prototype.addDefaultIndexes = function (obj) {
 ElasticUtils.prototype.getHosts = function () {
   // default statement
   return this.hosts;
+};
+
+/**
+ * Default method to define if hosts is defined
+ *
+ * @param {Array} hosts an array of hosts given
+ * @return {Boolean} true if all if ok false otherwise
+ */
+ElasticUtils.prototype.enableHosts = function (hosts) {
+  // is valid before set ?
+  if (_.isArray(hosts) && !_.isEmpty(hosts)) {
+    // set hosts config
+    this.hosts    = hosts;
+    // change state of ready
+    this.isReady  = true;
+    // default valid statement
+    return true;
+  }
+
+  // default statement
+  return false;
+};
+
+/**
+ * Get current state of elastic config
+ *
+ * @return {Boolean} true if is ready false otherwise
+ */
+ElasticUtils.prototype.configIsReady = function () {
+  // default statement
+  return this.isReady;
 };
 
 // Default export

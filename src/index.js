@@ -220,6 +220,7 @@ YMongoose.prototype.elasticHosts = function (hosts) {
   // validate given config
   var validate = joi.validate(hosts, schema);
 
+  // has error ?
   if (validate.error) {
     // log error message
     this.logger.warning([ '[ YMongoose.elasticHosts ] - Invalid host config given :',
@@ -229,7 +230,7 @@ YMongoose.prototype.elasticHosts = function (hosts) {
   }
 
   // save data
-  this.modules.elastic.hosts = validate.value;
+  this.modules.elastic.enableHosts(validate.value);
 
   // default statement
   return true;
@@ -444,7 +445,8 @@ YMongoose.prototype.addModel = function (value) {
     // elastic is enabled ?
     if (_.has(value.model, 'elastic') && _.isObject(value.model.elastic)) {
       // is enabled ?
-      if (_.isBoolean(value.model.elastic.enable) && value.model.elastic.enable) {
+      if (this.modules.elastic.configIsReady() &&
+          _.isBoolean(value.model.elastic.enable) && value.model.elastic.enable) {
         // debug message
         this.logger.debug([ '[ YMongoose.addModel ] - Elastic mode is enabled for this model.',
                            'Adding default index on all properties to false' ].join(' '));

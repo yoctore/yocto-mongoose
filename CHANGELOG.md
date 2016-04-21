@@ -1,3 +1,7 @@
+## 1.4.4 (2016-04-21)
+
+- Fix [#issue 2](https://github.com/yoctore/yocto-mongoose/issues/2)
+
 ## 1.4.3 (2016-04-20)
 
 - Add options on model => [#issue 1](https://github.com/yoctore/yocto-mongoose/issues/1)

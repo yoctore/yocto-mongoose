@@ -305,22 +305,28 @@ Crud.prototype.esearch = function (query, hydrate, hydrateOptions) {
   hydrate         = _.isBoolean(hydrate) ? hydrate : false;
   hydrateOptions  = _.isObject(hydrateOptions) ? hydrateOptions : {};
 
-  // try to find
-  this.search(utils.obj.underscoreKeys({
-    queryString  : { query : query || '' }
-  }), {
-    hydrate         : hydrate,
-    hydrateOptions  : hydrateOptions
-  }, function (error, data) {
-    // has error ?
-    if (error) {
-      // reject
-      deferred.reject(error);
-    } else {
-      // valid
-      deferred.resolve(data);
-    }
-  });
+  // elastic is enabled ?
+  if (!_.isUndefined(this.search) && _.isFunction(this.search)) {
+    // try to find
+    this.search(utils.obj.underscoreKeys({
+      queryString  : { query : query || '' }
+    }), {
+      hydrate         : hydrate,
+      hydrateOptions  : hydrateOptions
+    }, function (error, data) {
+      // has error ?
+      if (error) {
+        // reject
+        deferred.reject(error);
+      } else {
+        // valid
+        deferred.resolve(data);
+      }
+    });
+  } else {
+    // reject with error message
+    deferred.reject('Elastic search is not enabled. Cannot process a search request');
+  }
 
   // return deferred promise
   return deferred.promise;
