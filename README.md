@@ -242,13 +242,33 @@ You can define index directly on model definition. See a simple example below :
 }
 ```
 
+### Usage
+
+On each model, where elastic is enabled a method search was added.
+
+To do an `elasticsearch` query just do :
+
+```javascript
+
+  var query = {}; // Here define your query
+  var hydrate = false; // set to true if you wan use hydrate method
+  var hydrateOptions = {}; // set here your hydrate options
+
+  // process request
+  account.esearch(query, hydrate, hydrateOptions).then(function(success) {
+    // your logic code here
+  }).catch(function (error) {
+    // your logic code here
+  });
+``` 
+
 ### List of available keys
 
 For more complex implementation see [mongoosastic](https://www.npmjs.com/package/mongoosastic) package documentation to see available keys
 
 ### Setting up multipe host
 
-You can provide to our package a multiple hosts connection for elasticsearch part.
+You can provide to our package a multiple hosts connection for `elasticsearch` part.
 A method `elasticHosts` are available to define which hosts to use on `mongoosastic`.
 
 ```javascript

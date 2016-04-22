@@ -1,3 +1,8 @@
+## 1.4.5 (2016-04-21)
+
+- Fix [#issue 3](https://github.com/yoctore/yocto-mongoose/issues/3)
+- Update Dependencies for mongoose and grunt
+
 ## 1.4.4 (2016-04-21)
 
 - Fix [#issue 2](https://github.com/yoctore/yocto-mongoose/issues/2)

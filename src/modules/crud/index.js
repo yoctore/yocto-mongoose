@@ -4,7 +4,6 @@ var logger    = require('yocto-logger');
 var _         = require('lodash');
 var Q         = require('q');
 var Schema    = require('mongoose').Schema;
-var utils     = require('yocto-utils');
 
 /**
  *
@@ -308,9 +307,7 @@ Crud.prototype.esearch = function (query, hydrate, hydrateOptions) {
   // elastic is enabled ?
   if (!_.isUndefined(this.search) && _.isFunction(this.search)) {
     // try to find
-    this.search(utils.obj.underscoreKeys({
-      queryString  : { query : query || '' }
-    }), {
+    this.search(query || {}, {
       hydrate         : hydrate,
       hydrateOptions  : hydrateOptions
     }, function (error, data) {
