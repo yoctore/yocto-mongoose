@@ -292,25 +292,17 @@ Crud.prototype.create = function (value) {
  * An utility method to use for search request to elastic search instances
  *
  * @param {Object} query query to use on elastic search request
- * @param {Boolean} hydrate set to true to use hydrate method
- * @param {Object} hydrateOptions options to use if hydrate is set to true
+ * @param {Object} options Optional options, eg. : hydrate, from, size
  * @return {Promise} promise object to use for handling
  */
-Crud.prototype.esearch = function (query, hydrate, hydrateOptions) {
+Crud.prototype.esearch = function (query, options) {
   // Create our deferred object, which we will use in our promise chain
   var deferred    = Q.defer();
-
-  // normalize hydrate value
-  hydrate         = _.isBoolean(hydrate) ? hydrate : false;
-  hydrateOptions  = _.isObject(hydrateOptions) ? hydrateOptions : {};
 
   // elastic is enabled ?
   if (!_.isUndefined(this.search) && _.isFunction(this.search)) {
     // try to find
-    this.search(query || {}, {
-      hydrate         : hydrate,
-      hydrateOptions  : hydrateOptions
-    }, function (error, data) {
+    this.search(query || {}, options || {}, function (error, data) {
       // has error ?
       if (error) {
         // reject

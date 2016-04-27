@@ -1,3 +1,7 @@
+## 1.4.6 (2016-04-27)
+
+- Remove the params 'hydrate' when made an esearch() request, now all options will be pass as an options to mongoosastic
+
 ## 1.4.5 (2016-04-21)
 
 - Fix [#issue 3](https://github.com/yoctore/yocto-mongoose/issues/3)
