@@ -281,3 +281,26 @@ db.connect('MONGO_URL').then(function() {
 });
 
 ```
+
+### Use ssl connection or other options
+
+```javascript
+
+var db = require('yocto-mongoose')();
+
+// define here your elasticsearch options
+var options = {
+  ssl : {
+    ca: fs.readFileSync(__dirname + "/cert.pem"),
+    rejectUnauthorized: true
+  }
+};
+
+// Connect
+db.connect('MONGO_URL').then(function() {
+  db.elasticHosts([ { host : '127.0.0.1', port : 9200, protocol : 'https' } ], options);
+});
+
+```
+
+To discover a complete list of options see : [official elastic configuration](https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/configuration.html)

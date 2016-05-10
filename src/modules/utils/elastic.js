@@ -29,6 +29,10 @@ function ElasticUtils (logger) {
    */
   this.hosts      = [ '127.0.0.1:9200' ];
   /**
+   * Default additional option config
+   */
+  this.options    = {};
+  /**
    * Default state of elastic config
    *
    * @type {Boolean}
@@ -75,7 +79,7 @@ ElasticUtils.prototype.addDefaultIndexes = function (obj) {
 /**
  * Get default hosts for connection
  *
- * @return {Aray} list of hosts to use
+ * @return {Array} list of hosts to use
  */
 ElasticUtils.prototype.getHosts = function () {
   // default statement
@@ -83,16 +87,29 @@ ElasticUtils.prototype.getHosts = function () {
 };
 
 /**
+ * Get default options for connection
+ *
+ * @return {Object} list of options to use
+ */
+ElasticUtils.prototype.getOptions = function () {
+  // default statement
+  return this.options;
+};
+
+/**
  * Default method to define if hosts is defined
  *
  * @param {Array} hosts an array of hosts given
+ * @param {Object} options property to set on options
  * @return {Boolean} true if all if ok false otherwise
  */
-ElasticUtils.prototype.enableHosts = function (hosts) {
+ElasticUtils.prototype.enableHosts = function (hosts, options) {
   // is valid before set ?
   if (_.isArray(hosts) && !_.isEmpty(hosts)) {
     // set hosts config
     this.hosts    = hosts;
+    // save givent options, this value will be merge before the connection
+    this.options  = options || {};
     // change state of ready
     this.isReady  = true;
     // default valid statement

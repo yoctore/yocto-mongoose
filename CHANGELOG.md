@@ -1,3 +1,7 @@
+## 1.5.0 (2016-05-10)
+
+Add SSL/TLS support for elasticsearch connection
+
 ## 1.4.6 (2016-04-27)
 
 - Remove the params 'hydrate' when made an esearch() request, now all options will be pass as an options to mongoosastic

@@ -12,6 +12,7 @@ var Schema        = mongoose.Schema;
 var Q             = require('q');
 var elastic       = require('mongoosastic');
 var utils         = require('yocto-utils');
+var elasticClient = require('elasticsearch');
 
 // Use q. to handle default promise in mongoose
 mongoose.Promise = require('q').Promise;
@@ -114,7 +115,7 @@ YMongoose.prototype.connect = function (url, options) {
 
   // try connect
   this.logger.info([ '[ YMongoose.connect ] -',
-                     'Try to create a database connection on [', url, ']' ].join(' '));
+                     'Try to connect on [', url, ']' ].join(' '));
 
   // catch open connection
   this.mongoose.connection.on('open', function () {
@@ -132,6 +133,15 @@ YMongoose.prototype.connect = function (url, options) {
     // error reponse
     deferred.reject(error);
   }.bind(this));
+
+  // catch defined event for debug
+  _.each([ 'connecting', 'connected', 'disconnecting', 'disconnected' ], function (e) {
+    this.mongoose.connection.on(e, function () {
+      // process log
+      this.logger.debug([ '[ YMongoose.connect ] - Elasticsearch is :',
+        _.capitalize(e) ].join(' '));
+    }.bind(this));
+  }, this);
 
   // valid url ?
   if (_.isString(url) && !_.isEmpty(url)) {
@@ -195,9 +205,10 @@ YMongoose.prototype.disconnect = function () {
  * An utility method to save host config for elastic search instances
  *
  * @param {Array} hosts list of hosts to use on elastic configuration
+ * @param {Object} options property to set on options
  * @return {Boolean} true if all is ok false otherwise
  */
-YMongoose.prototype.elasticHosts = function (hosts) {
+YMongoose.prototype.elasticHosts = function (hosts, options) {
   // normalize hosts
   hosts = _.isArray(hosts) ? hosts : [ hosts || {
     host      : '127.0.0.1',
@@ -230,7 +241,7 @@ YMongoose.prototype.elasticHosts = function (hosts) {
   }
 
   // save data
-  this.modules.elastic.enableHosts(validate.value);
+  this.modules.elastic.enableHosts(validate.value, options);
 
   // default statement
   return true;
@@ -471,10 +482,15 @@ YMongoose.prototype.addModel = function (value) {
       this.logger.debug([ '[ YMongoose.addModel ] - Elastic mode is enabled for this model.',
                          'Adding mongoosastic plugin to current schema' ].join(' '));
 
-      // add elastic on current schema and merge options before
-      schema.plugin(elastic, _.merge({
+      // define here correct client
+      // with correct merge values
+      var client = new elasticClient.Client(_.merge(_.merge({
         hosts : this.modules.elastic.getHosts()
-      }, _.omit(value.model.elastic.options, [ 'hosts', 'host', 'port', 'protocol', 'auth' ])));
+      }, _.omit(value.model.elastic.options, [ 'hosts', 'host', 'port', 'protocol', 'auth' ])),
+        this.modules.elastic.getOptions()));
+
+      // add plugin with client connection
+      schema.plugin(elastic, { esClient : client });
     }
 
     // add flag on schema
