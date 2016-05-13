@@ -1,3 +1,7 @@
+## 1.6.0 (2016-05-10)
+
+Add redis support (add/set & get), on crud method and custom method.
+
 ## 1.5.0 (2016-05-10)
 
 Add SSL/TLS support for elasticsearch connection

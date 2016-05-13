@@ -78,7 +78,8 @@ function YMongoose (l) {
     validator     : require('./modules/validator')(l),
     method        : require('./modules/method')(l),
     enums         : require('./modules/enum')(l),
-    elastic       : require('./modules/utils/elastic')(l)
+    elastic       : require('./modules/utils/elastic')(l),
+    redis         : require('./modules/utils/redis')(l)
   };
 }
 
@@ -176,6 +177,8 @@ YMongoose.prototype.disconnect = function () {
   if (this.isConnected()) {
     // disconnect
     this.mongoose.disconnect(function (error) {
+      // process redis disconnect here
+      this.modules.redis.disconnect();
       // has error ?
       if (error) {
         // message
@@ -208,7 +211,7 @@ YMongoose.prototype.disconnect = function () {
  * @param {Object} options property to set on options
  * @return {Boolean} true if all is ok false otherwise
  */
-YMongoose.prototype.elasticHosts = function (hosts, options) {
+YMongoose.prototype.enableElasticsearch = function (hosts, options) {
   // normalize hosts
   hosts = _.isArray(hosts) ? hosts : [ hosts || {
     host      : '127.0.0.1',
@@ -241,10 +244,49 @@ YMongoose.prototype.elasticHosts = function (hosts, options) {
   }
 
   // save data
-  this.modules.elastic.enableHosts(validate.value, options);
+  return this.modules.elastic.enableHosts(validate.value, options);
+};
 
+/**
+ * enable redis on current module
+ *
+ * @param {Array} hosts lists of use hosts
+ * @param {Object} options options to use on redis instance
+ * @param {Boolean} cluster set to true if a cluster connection is needed
+ * @param {Number} defaultExpireTime to force the default expire time for all of insertion
+ * @return {Object} current redis instance
+ */
+YMongoose.prototype.enableRedis = function (hosts, options, cluster, defaultExpireTime) {
+  // connect redis
+  return this.modules.redis.connect(hosts, options, defaultExpireTime, cluster);
+};
+
+/**
+ * Default accessor to retreive redis instance
+ *
+ * @return {Object} default redis instance
+ */
+YMongoose.prototype.getRedis = function () {
   // default statement
-  return true;
+  return this.modules.redis;
+};
+
+/**
+ * An utility method to save host config for elastic search instances
+ *
+ * @deprecated
+ * @param {Array} hosts list of hosts to use on elastic configuration
+ * @param {Object} options property to set on options
+ * @return {Boolean} true if all is ok false otherwise
+ */
+YMongoose.prototype.elasticHosts = function (hosts, options) {
+  // deprecated message
+  this.logger.warning([ '[ YMongoose.elasticHosts ] -',
+                        ('this method is deprecated.').toUpperCase(),
+                        'Use enableElasticsearch instead.',
+                        'This method will remove on next major version' ].join(' '));
+  // new call
+  return this.enableElasticsearch(hosts, options);
 };
 
 /**
@@ -502,8 +544,21 @@ YMongoose.prototype.addModel = function (value) {
       // message
       this.logger.debug([ '[ YMongoose.addModel ] - Crud mode is enabled.',
                          'Try to add default methods' ].join(' '));
+
+      // normalize redis include
+      var redisIncludes = false;
+
+      // has redis include define ?
+      if (value.model.crud.redis && value.model.crud.redis.include) {
+        // redis include
+        redisIncludes = {
+          value   : value.model.crud.redis.include,
+          expire  : value.model.crud.redis.expire
+        };
+      }
+
       // process
-      var cschema = this.createCrud(schema, value.model.crud.exclude);
+      var cschema = this.createCrud(schema, value.model.crud.exclude, redisIncludes);
 
       // is valid ?
       if (cschema) {
@@ -618,9 +673,10 @@ YMongoose.prototype.addModel = function (value) {
  *
  * @param {Object} value a valid schema instance to use
  * @param {Array} exclude method to exclude on add crud request
+ * @param {Object} redisIncludes default redis include config retreive form model definition
  * @return {Object|Boolean} if all is ok return new schema false otherwise
  */
-YMongoose.prototype.createCrud = function (value, exclude) {
+YMongoose.prototype.createCrud = function (value, exclude, redisIncludes) {
   // is Ready ??
   if (this.isReady(true)) {
     if (!(value instanceof Schema)) {
@@ -632,7 +688,7 @@ YMongoose.prototype.createCrud = function (value, exclude) {
     }
 
     // valid statement
-    return this.modules.crud.add(value, exclude);
+    return this.modules.crud.add(value, exclude, redisIncludes, this.modules.redis);
   }
   // default statement
   return false;
@@ -684,7 +740,7 @@ YMongoose.prototype.createMethod = function (value, items, modelName) {
     }
 
     // valid statement
-    return this.modules.method.add(value, this.paths.method, items, modelName);
+    return this.modules.method.add(value, this.paths.method, items, modelName, this.modules.redis);
   }
   // default statement
   return false;
@@ -721,7 +777,12 @@ YMongoose.prototype.load = function () {
       properties  : joi.object().required(),
       crud        : joi.object().required().keys({
         enable  : joi.boolean().required(),
-        exclude : joi.array().required().empty()
+        exclude : joi.array().required().empty(),
+        redis   : joi.object().optional().keys({
+          enable  : joi.boolean().required().default(false),
+          expire  : joi.number().optional().min(0).default(0),
+          include : joi.array().items(joi.string().empty().valid([ 'get', 'getOne' ]))
+        })
       }).allow('enable', 'exclude'),
       validator   : joi.string().optional(),
     }).unknown()

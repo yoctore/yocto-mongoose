@@ -3,12 +3,21 @@
     "name"      : "Account",
     "crud"      : {
       "enable"  : true,
-      "exclude" : []
+      "exclude" : [],
+      "redis"   : {
+        "enable"  : true,
+        "expire"  : 10,
+        "include" : [ "get" ]
+      }
     },
     "fn" : [
       {
         "type"  : "static",
-        "name"  : "getItems"
+        "name"  : "test1",
+        "redis" : {
+          "enable" : false,
+          "expire" : 10
+        }
       },
       {
         "type" : "static",

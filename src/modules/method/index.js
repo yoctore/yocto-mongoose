@@ -33,9 +33,10 @@ function Method (logger) {
  * @param {String} path path to use for validator loading
  * @param {String} items item list to use for matching
  * @param {String} modelName model name for file matching
+ * @param {Object} redis current redis instance to use on define method
  * @return {Boolean|Object} new schema if all is ok false othewise
  */
-Method.prototype.add = function (schema, path, items, modelName) {
+Method.prototype.add = function (schema, path, items, modelName, redis) {
   // valid params first
   if (_.isString(path) && _.isArray(items) && !_.isEmpty(path) && !_.isEmpty(items) &&
      _.isObject(schema) && (schema instanceof Schema) &&
@@ -75,6 +76,10 @@ Method.prototype.add = function (schema, path, items, modelName) {
                 'update'
               ]),
               otherwise : joi.optional()
+            }),
+            redis : joi.object().optional().keys({
+              enable : joi.boolean().required().default(false),
+              expire : joi.number().optional().min(0).default(0)
             })
           });
 
@@ -85,6 +90,7 @@ Method.prototype.add = function (schema, path, items, modelName) {
           if (_.isNull(validate.error)) {
             // has wanted validator ?
             if (_.has(fo, item.name) && _.isFunction(fo[item.name])) {
+              // debug message
               this.logger.debug([ '[ Method.add ] - Method [', item.name,
                                  '] founded adding new',
                                  (item.type === 'method' ? 'instance' : item.type),
@@ -96,7 +102,6 @@ Method.prototype.add = function (schema, path, items, modelName) {
                 var logger = this.logger;
                 // build post process with needed event
                 schema.post(item.event, function () {
-
                   // default statement process function with given arguments in current context
                   return fo[item.name].apply(this, _.flatten([ arguments, logger ]));
                 });
@@ -107,6 +112,27 @@ Method.prototype.add = function (schema, path, items, modelName) {
                   return fo[item.name].apply(this, arguments);
                 });
               }
+
+              // has redis ?
+              if (item.redis) {
+                // is enable ?
+                if (_.has(item.redis, 'enable') && item.redis.enable) {
+                  // define static
+                  schema.static('redis', function () {
+                    // here default statement. we return current instance of redis and
+                    // default expire time to use on redis usage
+                    return {
+                      instance : redis,
+                      expire   : item.redis.expire || 0
+                    };
+                  });
+                }
+              }
+            } else {
+              // warning message
+              this.logger.warning([ '[ Method.add ] - Cannot found method [',
+                item.name, '] for current model'
+              ].join(' '));
             }
           } else {
             // error schema is invalid

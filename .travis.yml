@@ -1,14 +1,14 @@
 language: node_js
 node_js:
-- 4.3.1
+  - 4.3.1
 env:
-- CXX=g++-4.8
+  - CXX=g++-4.8
 addons:
   apt:
     sources:
-    - ubuntu-toolchain-r-test
+      - ubuntu-toolchain-r-test
     packages:
-    - g++-4.8
+      - g++-4.8
   code_climate:
     repo_token: a92b9866ebb6f342445ccfc5c816f3ad72e6c0aa9de55041ae475d0f8c9222c8
 deploy:
@@ -22,5 +22,6 @@ deploy:
 before_install: npm install -g grunt-cli
 install: npm install
 services:
-- mongodb
-- elasticsearch
+  - mongodb
+  - elasticsearch
+  - redis-server

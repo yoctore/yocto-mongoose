@@ -42,6 +42,7 @@ db.connect(uri, mongoUseTls ? {
   db.validators('./example/controllers');
   db.methods('./example/methods');
   db.enums('./example/enums');
+  // enable elastic hosts
   db.elasticHosts([ { host : '127.0.0.1', port : 9200, protocol : 'http' }, { host : '127.0.0.1', port : 9500, protocol : 'https' } ],
     elasticUseTls ? {
       ssl: {
@@ -49,11 +50,23 @@ db.connect(uri, mongoUseTls ? {
         rejectUnauthorized: true
       }
     } : {});
+  // enable redis here
+  db.enableRedis([ { host : '127.0.0.1', port : 6379 }, { host : '127.0.0.1', port : 6379 }]);
   if (db.isReady(true)) {
     db.load().then(function() {
+      db.getRedis().add('aezeazeaz', { took: 4,
+  timed_out: false,
+  _shards: { total: 5, successful: 5, failed: 0 },
+  hits: { total: 0, max_score: null, hits: [] } });
+      /*db.getRedis().get('A').then(function(success) {
+        console.log('redis s =>', success);
+      }).catch(function (error) {
+        console.log('redis eeee =>', error);
+      })*/
       console.log('load success');
       var account = db.getModel('Account');
       console.log('===== value ===== ');
+      account.test1();
       console.log(account.enums().get('notify_type_list'));
 
       var account = db.getModel('Account', true);

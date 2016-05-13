@@ -206,7 +206,23 @@ See Below list of method & aliases :
 
 ## Elasticsearch implementation 
 
-### Basic usage
+### Setting up one host or multiple hosts
+
+You can provide to our package a multiple hosts connection for `elasticsearch` part.
+A method `elasticHosts` are available to define which hosts to use on `mongoosastic`.
+
+```javascript
+
+var db = require('yocto-mongoose')();
+
+// Connect
+db.connect('MONGO_URL').then(function() {
+  db.enableElasticsearch([ { host : '127.0.0.1', port : 9200 } ]);
+});
+
+```
+
+### Basic configuration
 
 Elastic search implemantion are builed with [mongoosastic](https://www.npmjs.com/package/mongoosastic) package
 
@@ -266,22 +282,6 @@ To do an `elasticsearch` query just do :
 
 For more complex implementation see [mongoosastic](https://www.npmjs.com/package/mongoosastic) package documentation to see available keys
 
-### Setting up multipe host
-
-You can provide to our package a multiple hosts connection for `elasticsearch` part.
-A method `elasticHosts` are available to define which hosts to use on `mongoosastic`.
-
-```javascript
-
-var db = require('yocto-mongoose')();
-
-// Connect
-db.connect('MONGO_URL').then(function() {
-  db.elasticHosts([ { host : '127.0.0.1', port : 9200 } ]);
-});
-
-```
-
 ### Use ssl connection or other options
 
 ```javascript
@@ -304,3 +304,134 @@ db.connect('MONGO_URL').then(function() {
 ```
 
 To discover a complete list of options see : [official elastic configuration](https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/configuration.html)
+
+## Redis implementation
+
+Our redis implementation use ioredis module but only use set/get method with expire time for the moment.
+
+Be careful : Redis > 2.6 is required to use this module. In fact expire time is not implemented on Redis < 2.6.
+For more details please read [official redis documentation](http://redis.io/commands/set)
+
+### Setting up one host or multiple hosts
+
+By default redis instance use single connection :
+
+```javascript
+
+var db = require('yocto-mongoose')();
+
+// Connect
+db.connect('MONGO_URL').then(function() {
+  db.enableRedis([ { host : '127.0.0.1', port : 6379 }, { host : '127.0.0.1', port : 6379 }]);
+});
+
+```
+
+### Setting up one host or multiple host in a cluster mode
+
+Just add true on second parameters of `enableRedis` method.
+
+```javascript
+
+var db = require('yocto-mongoose')();
+
+// Connect
+db.connect('MONGO_URL').then(function() {
+  db.enableRedis([ { host : '127.0.0.1', port : 6379 }, { host : '127.0.0.1', port : 6379 }], true);
+});
+
+```
+
+### Usage
+
+Redis is implemented in two ways in this modules, from custom methods and crud methods.
+
+#### Redis on Crud methods
+
+To use redis on Crud method just extend your config file like this : 
+
+```javascript
+{
+  "model" : {
+    "name" : "Notify", 
+    "crud" : {
+      "enable"  : true,
+      "exclude" : [],
+      "redis"   : { // HERE YOUR REDIS PART
+        "enable"  : true, // MUST BE SET TO TRUE TO ENABLE THIS FUNCTIONALITY
+        "expire"  : 10, // EXPIRE TIME FOR STORAGE IN SECONDS
+        "include" : [ "get", "getOne" ] // CRUD METHODS ALLOWED TO USE REDIS
+      }
+    },
+    "properties" : {
+      "status" : {
+        "required" : true,
+        "type"     : "String"
+      },
+      "notify_type" : {
+        "required" : true,
+        "type"     : "String"
+      }
+    }
+  }
+}
+```
+
+This configuration enable to your current model redis on `include` method (get or getOne).
+On each request on `include` method redis will be check if value exists before each mongo request.
+In case of value was found, we return founded value, otherwise we store the value, with given expire time before process the mongo access.
+
+**The storage key is build automaticly by our redis implementation**
+
+To see your data from a GUI tool download [Medis](https://github.com/luin/medis)
+
+#### Redis on custom methods
+
+To use redis on custom method just extend your config file like this : 
+
+```javascript
+{
+  "model" : {
+    "name" : "Notify",
+     .....
+    "validator" : "testValidator",
+    "fn"        : [
+      {
+        "type"  : "static", // create a static method on schema 
+        "name"  : "test1",
+        "redis"   : { // HERE YOUR REDIS PART
+          "enable"  : true, // MUST BE SET TO TRUE TO ENABLE THIS FUNCTIONALITY
+          "expire"  : 10, // EXPIRE TIME FOR STORAGE IN SECONDS
+        }
+      },
+      {
+        "type"  : "method", // create a instance method on schema 
+        "name"  : "test2" 
+      }
+  }
+}
+```
+
+After that your can access to the redis instance in your custom function and use `add` or `get` method.
+
+An alias to the add method is provide by the `set` method.
+
+```javascript
+// valid account schema
+exports.test1 = function(data) {
+  var redis   = this.redis().instance;
+  var expire  = this.redis().expire; 
+
+  // add a new key/value
+  redis.add('aaa', { foo : 'abar' }, expire);
+  // Or
+  redis.set('aaa', { foo : 'abar' }, expire);
+
+  // get value
+  redis.get('aaa').then(function (success) {
+    // do stuff
+  }).catch(function (error) {
+    // do another stuff here
+  });
+};
+```

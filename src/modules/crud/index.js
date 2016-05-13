@@ -108,28 +108,72 @@ Crud.prototype.getOne = function (conditions, filter) {
  * @return {Promise} promise object to use for handleling
  */
 Crud.prototype.get = function (conditions, filter, method) {
+  // process redis usage
+  var redis = this[ method === 'findOne' ? 'getOneRedis' : 'getRedis' ];
+
   // defined default method name to use
   method  = _.isString(method) && !_.isEmpty(method) ? method : 'find';
 
   // is string ? so if for findById request. change method name
   method = _.isString(conditions) ? 'findById' : method;
+
   // Create our deferred object, which we will use in our promise chain
   var deferred = Q.defer();
 
   // normalize filter object
   filter = _.isString(filter) && !_.isEmpty(filter) ? filter : '';
 
-  // try to find
-  this[method](conditions, filter, function (error, data) {
-    // has error ?
-    if (error) {
-      // reject
-      deferred.reject(error);
-    } else {
-      // valid
-      deferred.resolve(data);
-    }
-  });
+  // save context for possible strict violation
+  var context = this;
+
+  /**
+   * Default method to retreive data
+   *
+   * @param {Object|String} conditions query rules to add in find
+   * @param {Object} filter object property to process filter action
+   */
+  function defaultFind (conditions, filter, store) {
+    // normal process
+    context[method](conditions, filter, function (error, data) {
+      // has error ?
+      if (error) {
+        // reject
+        deferred.reject(error);
+      } else {
+        // in case of no data
+        if (_.isObject(store)) {
+          // store data on db
+          redis.instance.add(store.key, data, store.expire);
+          // do not process promise catch here beacause this process must not stop normal process
+          // in any case
+        }
+        // valid
+        deferred.resolve(data);
+      }
+    });
+  }
+
+  // has redis ?
+  if (redis) {
+    // normalize redisKey
+    var redisKey = _.merge(_.isString(conditions) ?
+      _.set([ this.modelName, conditions ].join('-'), conditions) : conditions || {}, filter || {});
+
+    // get key
+    redis.instance.get(redisKey).then(function (success) {
+      // success resolve
+      deferred.resolve(success);
+    }).catch(function (error) {
+      // normal stuff
+      defaultFind.call(this, conditions, filter, _.isNull(error) ? {
+        key     : redisKey,
+        expire  : redis.expire
+      } : error);
+    }.bind(this));
+  } else {
+    // normal process
+    defaultFind.call(this, conditions, filter);
+  }
 
   // return deferred promise
   return deferred.promise;
@@ -326,9 +370,11 @@ Crud.prototype.esearch = function (query, options) {
  *
  * @param {Object} schema default schema to use
  * @param {Array} exclude array of method to exclude
+ * @param {Object} redisIncludes default redis include config retreive form model definition
+ * @param {Object} redis current redis instance to use on current crud method
  * @return {Object|Boolean} modified schema with new requested method
  */
-Crud.prototype.add = function (schema, exclude) {
+Crud.prototype.add = function (schema, exclude, redisIncludes, redis) {
   // valid data ?
   if ((!_.isObject(schema) && !(schema instanceof Schema)) || !_.isArray(exclude)) {
     this.logger.warning('[ Crud.add ] - Schema or exclude item given is invalid');
@@ -371,6 +417,17 @@ Crud.prototype.add = function (schema, exclude) {
   _.each(saved, function (s) {
     // is a valid func ?
     if (_.isFunction(this[s])) {
+      // has redis config define ?
+      if (redisIncludes) {
+        // current method is include on redis config ?
+        if (_.includes(redisIncludes.value || [], s)) {
+          // assign method via static method and bind of redis on it
+          schema.static([ s, 'Redis' ].join(''), {
+            instance  : redis,
+            expire    : redisIncludes.expire || 0
+          });
+        }
+      }
       // assign method via static method
       schema.static(s, this[s]);
     }
