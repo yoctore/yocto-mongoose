@@ -1,7 +1,7 @@
 {
   "name": "yocto-mongoose",
   "description": "Utility tool to manage mongoose connection and auto loading models.",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "scripts": {
     "test": "grunt test"
   },

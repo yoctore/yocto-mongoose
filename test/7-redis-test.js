@@ -84,6 +84,38 @@ describe('Redis ->', function () {
     });
   });
 
+  it ('Should remove an existing keys with method < delete >', function (done) {
+
+    // add key
+    db.getRedis().add('Key-Test-delete', { type : 'test' }, 60);
+
+    // remove key
+    db.getRedis().delete('Key-Test-delete');
+
+    // try to retrieve the deleted key
+    db.getRedis().get('Key-Test-delete').catch(function (error) {
+
+      expect(error).equal(null);
+      done();
+    });
+  });
+
+  it ('Should remove an existing keys with method < remove >', function (done) {
+
+    // add key
+    db.getRedis().add('Key-Test-Remove', { type : 'test' }, 60);
+
+    // remove key
+    db.getRedis().remove('Key-Test-Remove');
+
+    // try to retrieve the deleted key
+    db.getRedis().get('Key-Test-Remove').catch(function (error) {
+
+      expect(error).equal(null);
+      done();
+    });
+  });
+
   it ('Should be disconnect properly from current connected host', function (disco) {
     db.disconnect().then(function () {
       expect(db.isConnected()).to.be.a('boolean');

@@ -185,7 +185,7 @@ RedisUtils.prototype.normalizeKey = function (key) {
  * @param {Number} expire expires times to set for current key/value
  * @return {Object} default promise to catch
  */
-RedisUtils.prototype.add = function (key, value, expire) {
+RedisUtils.prototype.set = function (key, value, expire) {
   // default statement
   return this.add(key, value, expire);
 };
@@ -226,6 +226,50 @@ RedisUtils.prototype.add = function (key, value, expire) {
 
   // default statement
   return this.get(key);
+};
+
+/**
+ * Remove a value found by his key
+ *
+ * @param {String} key key to remove in storage
+ * @return {boolean} return success status of deleting
+ */
+RedisUtils.prototype.remove = function (key) {
+
+  // normalize key
+  key = this.normalizeKey(key);
+
+  // is ready ?
+  if (this.isReady) {
+
+    // remove the key
+    this.cluster.del(key);
+
+    // log message
+    this.logger.debug([ '[ RedisUtils.remove ] - Remmove the key [',
+      key, ']' ].join(' '));
+
+    // indicate that the key was deleted
+    return true;
+  }
+
+  // log message
+  this.logger.warning([ '[ RedisUtils.remove ] - The key [',
+    key, '] was not removed because connection is down' ].join(' '));
+
+  // indicate that the key was not deleted
+  return false;
+};
+
+/**
+ * An alias method for default remove method
+ *
+ * @param {String} key key to remove in storage
+ * @return {Object} default promise to catch
+ */
+RedisUtils.prototype.delete = function (key) {
+  // default statement
+  return this.remove(key);
 };
 
 /**

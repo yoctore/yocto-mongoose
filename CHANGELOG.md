@@ -1,3 +1,7 @@
+## 1.7.0 (2016-05-20)
+
+Add method remove(key) into redis implementation
+
 ## 1.6.0 (2016-05-10)
 
 Add redis support (add/set & get), on crud method and custom method.
