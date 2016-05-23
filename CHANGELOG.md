@@ -1,14 +1,18 @@
+## 1.7.1 (2016-05-23)
+
+- Bufferize config files when enable ssl authentication for mongodb
+
 ## 1.7.0 (2016-05-20)
 
-Add method remove(key) into redis implementation
+- Add method remove(key) into redis implementation
 
 ## 1.6.0 (2016-05-10)
 
-Add redis support (add/set & get), on crud method and custom method.
+- Add redis support (add/set & get), on crud method and custom method.
 
 ## 1.5.0 (2016-05-10)
 
-Add SSL/TLS support for elasticsearch connection
+- Add SSL/TLS support for elasticsearch connection
 
 ## 1.4.6 (2016-04-27)
 

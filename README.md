@@ -20,11 +20,11 @@ Create an easy and ready to use connector & model builder based on mongoose.
 
 ## Folder structure
 
-A specific folder structure was setup for database configuration : 
+A specific folder structure was setup for database configuration :
 
 - enums : Contains all enums defined for database
 - models : Contains all model definition for an automatic build
-- validators : Contains all validator function defined on model configuration files 
+- validators : Contains all validator function defined on model configuration files
 - methods : Contains all methods defined on model configuration
 
 All of these folders must be set up before any usage.
@@ -133,12 +133,12 @@ exports.testValidator = function(data) {
     "validator" : "testValidator",
     "fn"        : [
       {
-        "type"  : "static", // create a static method on schema 
-        "name"  : "test1" 
+        "type"  : "static", // create a static method on schema
+        "name"  : "test1"
       },
       {
-        "type"  : "method", // create a instance method on schema 
-        "name"  : "test2" 
+        "type"  : "method", // create a instance method on schema
+        "name"  : "test2"
       }
   }
 }
@@ -165,7 +165,7 @@ exports.test2 = function() {
 
 > Create a "file.json" into enums directory
 
-> Add item like this : 
+> Add item like this :
 
 ```javascript
 [
@@ -176,7 +176,7 @@ exports.test2 = function() {
   {
     "name"  : "notify_status_list",
     "value" : [ "pending", "processed", "error" ]
-  }	
+  }
 ]
 ```
 
@@ -194,7 +194,7 @@ exports.testValidator = function (enums) {
 
 All defined model have CRUD Method attached by mongoose static function.
 
-See Below list of method & aliases : 
+See Below list of method & aliases :
 
 | Operation        | Available Method | Alias(es)       |
 |------------------|------------------|-----------------|
@@ -204,7 +204,7 @@ See Below list of method & aliases :
 | Delete (Destroy) | delete           | destroy         |
 
 
-## Elasticsearch implementation 
+## Elasticsearch implementation
 
 ### Setting up one host or multiple hosts
 
@@ -227,27 +227,27 @@ db.connect('MONGO_URL').then(function() {
 Elastic search implemantion are builed with [mongoosastic](https://www.npmjs.com/package/mongoosastic) package
 
 Elastic search rules are setted up during model build.
-You can define index directly on model definition. See a simple example below : 
+You can define index directly on model definition. See a simple example below :
 
 ```javascript
 {
   "model" : {
     "name" :
-    "crud" : { 
-      "enable"  : true, 
-      "exclude" : [] 
+    "crud" : {
+      "enable"  : true,
+      "exclude" : []
     },
     "elastic" : {
       "enable" : true, // !!! IMPORTANT !!! must be provide to enable elastic search mapping
       "options" : {} // see : https://github.com/mongoosastic/mongoosastic#setup (host, hosts, protocol, port is removed if given : See multiple host usage)
     },
-    "properties" : { 
+    "properties" : {
       "status" : {
         "required" : true,
         "type"     : "String"
         "es_indexed" : true // here we define that this properties must be indexed.
         "es_type"    : "String" // another possible value
-        "es_include_in_parent" : true // same thing 
+        "es_include_in_parent" : true // same thing
       },
       "notify_type" : {
         "required" : true,
@@ -276,7 +276,7 @@ To do an `elasticsearch` query just do :
   }).catch(function (error) {
     // your logic code here
   });
-``` 
+```
 
 ### List of available keys
 
@@ -348,12 +348,12 @@ Redis is implemented in two ways in this modules, from custom methods and crud m
 
 #### Redis on Crud methods
 
-To use redis on Crud method just extend your config file like this : 
+To use redis on Crud method just extend your config file like this :
 
 ```javascript
 {
   "model" : {
-    "name" : "Notify", 
+    "name" : "Notify",
     "crud" : {
       "enable"  : true,
       "exclude" : [],
@@ -387,7 +387,7 @@ To see your data from a GUI tool download [Medis](https://github.com/luin/medis)
 
 #### Redis on custom methods
 
-To use redis on custom method just extend your config file like this : 
+To use redis on custom method just extend your config file like this :
 
 ```javascript
 {
@@ -397,7 +397,7 @@ To use redis on custom method just extend your config file like this :
     "validator" : "testValidator",
     "fn"        : [
       {
-        "type"  : "static", // create a static method on schema 
+        "type"  : "static", // create a static method on schema
         "name"  : "test1",
         "redis"   : { // HERE YOUR REDIS PART
           "enable"  : true, // MUST BE SET TO TRUE TO ENABLE THIS FUNCTIONALITY
@@ -405,22 +405,24 @@ To use redis on custom method just extend your config file like this :
         }
       },
       {
-        "type"  : "method", // create a instance method on schema 
-        "name"  : "test2" 
+        "type"  : "method", // create a instance method on schema
+        "name"  : "test2"
       }
   }
 }
 ```
 
-After that your can access to the redis instance in your custom function and use `add` or `get` method.
+After that your can access to the redis instance in your custom function and use `add`, `get` or `delete` method.
 
 An alias to the add method is provide by the `set` method.
+An alias to the delete method is provide by the `remove` method.
+
 
 ```javascript
 // valid account schema
 exports.test1 = function(data) {
   var redis   = this.redis().instance;
-  var expire  = this.redis().expire; 
+  var expire  = this.redis().expire;
 
   // add a new key/value
   redis.add('aaa', { foo : 'abar' }, expire);
@@ -433,5 +435,10 @@ exports.test1 = function(data) {
   }).catch(function (error) {
     // do another stuff here
   });
+
+  // delete an value
+  redis.delete('aaa');
+  // Or
+  redis.remove('aaa');
 };
 ```

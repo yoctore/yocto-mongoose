@@ -1,7 +1,7 @@
 {
   "name": "yocto-mongoose",
   "description": "Utility tool to manage mongoose connection and auto loading models.",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "scripts": {
     "test": "grunt test"
   },
@@ -14,12 +14,20 @@
     {
       "name": "Mathieu ROBERT",
       "email": "mathieu@yocto.re"
+    },
+    {
+      "name": "Cédric BALARD",
+      "email": "cedric@yocto.re"
     }
   ],
   "maintainers": [
     {
       "name": "ROBERT Mathieu",
       "email": "mathieu@yocto.re"
+    },
+    {
+      "name": "Cédric BALARD",
+      "email": "cedric@yocto.re"
     }
   ],
   "main": "dist/index.js",

@@ -148,6 +148,31 @@ YMongoose.prototype.connect = function (url, options) {
   if (_.isString(url) && !_.isEmpty(url)) {
     // normalized options
     options = _.isObject(options) && !_.isEmpty(options) ? options : {};
+
+    // check if property sslCA exist
+    if (_.has(options, 'server.sslCA') && _.isString(options.server.sslCA)) {
+      // create buffer of this file
+      options.server.sslCA = [
+        fs.readFileSync(path.normalize(process.cwd() + '/' + options.server.sslCA))
+      ];
+    }
+
+    // check if property sslKey exist
+    if (_.has(options, 'server.sslKey') && _.isString(options.server.sslKey)) {
+      // create buffer of this file
+      options.server.sslKey = [
+        fs.readFileSync(path.normalize(process.cwd()  + '/' + options.server.sslKey))
+      ];
+    }
+
+    // check if property sslCert exist
+    if (_.has(options, 'server.sslCert') && _.isString(options.server.sslCert)) {
+      // create buffer of this file
+      options.server.sslCert = [
+        fs.readFileSync(path.normalize(process.cwd()  + '/' + options.server.sslCert))
+      ];
+    }
+
     // start connection
     this.mongoose.connect(url, options);
   } else {
