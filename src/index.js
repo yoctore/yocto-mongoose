@@ -247,9 +247,7 @@ YMongoose.prototype.enableElasticsearch = function (hosts, options) {
   // validation schema
   var schema = joi.array().required().items(
     joi.object().keys({
-      host      : joi.string().required().empty().ip({
-        version : [ 'ipv4','ipv6' ]
-      }).default('127.0.0.1'),
+      host      : joi.string().required().empty().default('127.0.0.1'),
       port      : joi.number().required().default(9200),
       protocol  : joi.string().optional().valid([ 'http', 'https']).default('http'),
       auth      : joi.string().optional().empty()

@@ -93,9 +93,7 @@ RedisUtils.prototype.connect = function (hosts, options, defaultExpireTime, clus
   // validation schema
   var schema = joi.array().required().items(
     joi.object().keys({
-      host      : joi.string().required().empty().ip({
-        version : [ 'ipv4','ipv6' ]
-      }).default('127.0.0.1'),
+      host      : joi.string().required().empty().default('127.0.0.1'),
       family    : joi.number().optional().valid([ 4, 6 ]),
       password  : joi.string().optional().empty().min(32),
       db        : joi.number().optional(),
