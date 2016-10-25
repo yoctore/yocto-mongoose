@@ -48,6 +48,7 @@ Validator.prototype.add = function (schema, path, name, modelName) {
 
     // so isEmpty ?
     if (files.length > 0) {
+      // parse all items
       _.each(files, function (f) {
         // evaluate file
         var fo = require(f);
@@ -74,7 +75,7 @@ Validator.prototype.add = function (schema, path, name, modelName) {
             return fo[name](this.enums);
           });
         }
-      }, this);
+      }.bind(this));
 
       // valid statement
       return schema;

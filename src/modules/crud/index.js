@@ -404,7 +404,7 @@ Crud.prototype.add = function (schema, exclude, redisIncludes, redis) {
     _.each(excludeAlias, function (ex) {
       // push it
       exclude.push(this.alias[ex]);
-    }, this);
+    }.bind(this));
 
     // flatten array to have unique level
     exclude = _.flatten(exclude);

@@ -26,7 +26,7 @@ describe('Elastic search ->', function () {
   });
 
   it ('Adding valid elastic hosts on configuration must return true', function () {
-    var state = db.elasticHosts([
+    var state = db.enableElasticsearch([
       { host : '127.0.0.1', port : 9200 },
       { host : '127.0.0.1', port : 9500 }
     ]);
@@ -36,7 +36,7 @@ describe('Elastic search ->', function () {
 
   it ('Adding invalid elastic hosts on configuration must return false', function () {
     _.each(utils.unit.generateTypeForUnitTests(null, 1), function (u) {
-      var state = db.elasticHosts(u);
+      var state = db.enableElasticsearch(u);
       expect(state).to.be.a('boolean');
       expect(state).equal(false);
     });

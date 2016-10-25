@@ -27,19 +27,17 @@ describe('Setting paths / states / load ->', function () {
   // change timeout connection
   it ('Should can connect on test database host on 127.0.0.0:27017', function (done) {
     db.connect('mongodb://localhost:27017/test').then(function() {
-      expect(db.isConnected()).to.be.a('boolean');
-      expect(db.isConnected()).equal(true);
-      expect(db.isDisconnected()).to.be.a('boolean');
-      expect(db.isDisconnected()).equal(false);
+      expect(db.isConnected()).to.be.a('boolean').equal(true);
+      expect(db.isDisconnected()).to.be.a('boolean').equal(false);
       done();
     });
   });
+  
   // build paths
   _.each(paths, function (p) {
     it ([ 'Setting', p.key, 'paths sould be return true' ].join(' '), function () {
       var model = db[p.key](p.path);
-      expect(model).to.be.a('boolean');
-      expect(model).equal(true);
+      expect(model).to.be.a('boolean').equal(true);
       expect(db.paths[p.key.replace(p.key !== 'enums' ? 's' : '', '')]).to.be.not.empty;
       expect(db.paths[p.key.replace(p.key !== 'enums' ? 's' : '', '')]).to.be.a('string');
     });

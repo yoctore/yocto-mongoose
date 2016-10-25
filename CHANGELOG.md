@@ -1,3 +1,9 @@
+## 2.0.0 (2016-10-25)
+
+- Major Update for lodash, joi, ioredis async
+- *Remove elasticHosts method. Use enableElasticsearch method instead of elasticHosts.*
+- Improve connection manager
+
 ## 1.7.1 (2016-05-23)
 
 - Bufferize config files when enable ssl authentication for mongodb

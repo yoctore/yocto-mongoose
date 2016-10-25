@@ -14,6 +14,14 @@ var elastic       = require('mongoosastic');
 var utils         = require('yocto-utils');
 var elasticClient = require('elasticsearch');
 
+// default require for code quality
+var modCrud          = require('./modules/crud');
+var modValidator     = require('./modules/validator');
+var modMethod        = require('./modules/method');
+var modEnums         = require('./modules/enum');
+var modElastic       = require('./modules/utils/elastic');
+var modRedis         = require('./modules/utils/redis');
+
 // Use q. to handle default promise in mongoose
 mongoose.Promise = require('q').Promise;
 
@@ -41,7 +49,6 @@ function YMongoose (l) {
    * @property mongoose
    */
   this.mongoose = mongoose;
-
   /**
    * Model Path definition to use on autoLoading
    *
@@ -74,12 +81,12 @@ function YMongoose (l) {
    * Internal modules
    */
   this.modules = {
-    crud          : require('./modules/crud')(l),
-    validator     : require('./modules/validator')(l),
-    method        : require('./modules/method')(l),
-    enums         : require('./modules/enum')(l),
-    elastic       : require('./modules/utils/elastic')(l),
-    redis         : require('./modules/utils/redis')(l)
+    crud          : modCrud(l),
+    validator     : modValidator(l),
+    method        : modMethod(l),
+    enums         : modEnums(l),
+    elastic       : modElastic(l),
+    redis         : modRedis(l)
   };
 }
 
@@ -121,7 +128,7 @@ YMongoose.prototype.connect = function (url, options) {
   // catch open connection
   this.mongoose.connection.on('open', function () {
     // message
-    this.logger.info([ '[ YMongoose.connect ] - Connection successful on', url ].join(' '));
+    this.logger.info([ '[ YMongoose.connect ] - Connection succeed on', url ].join(' '));
     // success reponse
     deferred.resolve();
   }.bind(this));
@@ -137,12 +144,13 @@ YMongoose.prototype.connect = function (url, options) {
 
   // catch defined event for debug
   _.each([ 'connecting', 'connected', 'disconnecting', 'disconnected' ], function (e) {
+    // catch each event
     this.mongoose.connection.on(e, function () {
       // process log
-      this.logger.debug([ '[ YMongoose.connect ] - Elasticsearch is :',
+      this.logger.debug([ '[ YMongoose.connect ] - Mongoose is :',
         _.capitalize(e) ].join(' '));
     }.bind(this));
-  }, this);
+  }.bind(this));
 
   // valid url ?
   if (_.isString(url) && !_.isEmpty(url)) {
@@ -173,8 +181,11 @@ YMongoose.prototype.connect = function (url, options) {
       ];
     }
 
-    // start connection
-    this.mongoose.connect(url, options);
+    // connect only if mongoosed is not connected
+    if (this.isDisconnected()) {
+      // start connection
+      this.mongoose.connect(url, options);
+    }
   } else {
     // invalid url cannot connect
     this.logger.error('[ YMongoose.connect ] - Invalid url, cannot connect.');
@@ -202,9 +213,8 @@ YMongoose.prototype.disconnect = function () {
   if (this.isConnected()) {
     // disconnect
     this.mongoose.disconnect(function (error) {
-      // process redis disconnect here
-      this.modules.redis.disconnect();
-      // has error ?
+
+      // has any error ?
       if (error) {
         // message
         this.logger.error([ '[ YMongoose.disconnect ] - Disconnect failed.',
@@ -212,10 +222,24 @@ YMongoose.prototype.disconnect = function () {
         // reject disconnect failed
         deferred.reject(error);
       } else {
-        // successful message
-        this.logger.info('[ YMongoose.disconnect ] - Disconnect successful.');
-        // success reponse
-        deferred.resolve();
+        // process redis disconnect here
+        this.modules.redis.disconnect();
+        // clean the other thing
+        this.mongoose.connection.close(function (cerror) {
+          // has error ?
+          if (cerror) {
+            // message
+            this.logger.error([ '[ YMongoose.disconnect ] - Connection close failed.',
+                                   'Error is :', cerror.message ].join(' '));
+            // reject disconnect failed
+            deferred.reject(cerror);
+          } else {
+            // successful message
+            this.logger.info('[ YMongoose.disconnect ] - Closing connection succeed.');
+            // success reponse
+            deferred.resolve();
+          }
+        }.bind(this));
       }
     }.bind(this));
   } else {
@@ -297,24 +321,6 @@ YMongoose.prototype.getRedis = function () {
 };
 
 /**
- * An utility method to save host config for elastic search instances
- *
- * @deprecated
- * @param {Array} hosts list of hosts to use on elastic configuration
- * @param {Object} options property to set on options
- * @return {Boolean} true if all is ok false otherwise
- */
-YMongoose.prototype.elasticHosts = function (hosts, options) {
-  // deprecated message
-  this.logger.warning([ '[ YMongoose.elasticHosts ] -',
-                        ('this method is deprecated.').toUpperCase(),
-                        'Use enableElasticsearch instead.',
-                        'This method will remove on next major version' ].join(' '));
-  // new call
-  return this.enableElasticsearch(hosts, options);
-};
-
-/**
  * Define current models path to use for mapping
  *
  * @param {String} directory directory path to use
@@ -324,7 +330,7 @@ YMongoose.prototype.models = function (directory) {
   // message
   this.logger.debug('[ YMongoose.models ] - Try to set model defintion path.');
   // default statement
-  return this.setPath(directory);
+  return this.setPath(directory, 'model');
 };
 
 /**
@@ -383,7 +389,7 @@ YMongoose.prototype.setPath = function (directory, stype) {
   };
 
   // set default if we need to set controller directory
-  var type = _.find(types, 'name', stype);
+  var type = _.find(types, [ 'name', stype ]);
 
   // is valid format ?
   if (!_.isUndefined(type) && _.isObject(type) && _.isString(directory) && !_.isEmpty(directory)) {
@@ -409,7 +415,7 @@ YMongoose.prototype.setPath = function (directory, stype) {
         cwd : directory
       });
       // so isEmpty ?
-      if (hasFile.length === 0) {
+      if (_.size(hasFile) === 0) {
         this.logger.warning([ '[ YMongoose.setPath ] - Given directory path for',
                               [ type.name, (type.name !== 'enums' ? 's' : '') ].join(''),
                               'seems to be empty.',
@@ -809,7 +815,7 @@ YMongoose.prototype.load = function () {
           include : joi.array().items(joi.string().empty().valid([ 'get', 'getOne' ]))
         })
       }).allow('enable', 'exclude'),
-      validator   : joi.string().optional(),
+      validator   : joi.string().optional()
     }).unknown()
   }).unknown();
 

@@ -50,6 +50,7 @@ Method.prototype.add = function (schema, path, items, modelName, redis) {
 
     // so isEmpty ?
     if (files.length > 0) {
+      // parse all files
       _.each(files, function (f) {
         // evaluate file
         var fo = require(f);
@@ -139,8 +140,8 @@ Method.prototype.add = function (schema, path, items, modelName, redis) {
             this.logger.error([ '[ Method.add ] - Cannot add method for item',
                                 utils.obj.inspect(item), validate.error ].join(' '));
           }
-        }, this);
-      }, this);
+        }.bind(this));
+      }.bind(this));
 
       // valid statement
       return schema;

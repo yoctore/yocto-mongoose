@@ -6,6 +6,7 @@ var utils     = require('yocto-utils');
 var Redis     = require('ioredis');
 var joi       = require('joi');
 var Q         = require('q');
+var fs        = require('fs');
 
 /**
  *
@@ -101,7 +102,9 @@ RedisUtils.prototype.connect = function (hosts, options, defaultExpireTime, clus
       db        : joi.number().optional(),
       port      : joi.number().required().default(6380),
       tls       : joi.object().optional().keys({
-        ca      : joi.string().required().empty()
+        ca      : joi.string().optional().empty(),
+        key     : joi.string().optional().empty(),
+        cert    : joi.string().optional().empty(),
       })
     }).default({ host : '127.0.0.1', port : 6380 })
   ).default([ { host : '127.0.0.1', port : 6380 } ]);
@@ -136,6 +139,24 @@ RedisUtils.prototype.connect = function (hosts, options, defaultExpireTime, clus
       // default statement
       return this.options.retry;
     }.bind(this) });
+  }
+
+  // has tls ca defined ?
+  if (_.has(this.hosts, 'tls.ca')) {
+    // define ca
+    this.hosts.tls.ca = [ fs.readFileSync(this.hosts.tls.ca) ];
+  }
+
+  // has tls ca defined ?
+  if (_.has(this.hosts, 'tls.key')) {
+    // define ca
+    this.hosts.tls.key = fs.readFileSync(this.hosts.tls.key);
+  }
+
+  // has tls ca defined ?
+  if (_.has(this.hosts, 'tls.cert')) {
+    // define ca
+    this.hosts.tls.cert = fs.readFileSync(this.hosts.tls.cert);
   }
 
   // is cluster mode ?

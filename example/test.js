@@ -13,20 +13,20 @@ var m2 = function() {
   console.log('m2');
 };
 
-var uri = 'mongodb://127.0.0.1:27017/r2do';
+var uri = 'mongodb://10.166.12.140:27017/r2do';
 
 // Read the certificate authority
 var ca = [fs.readFileSync(__dirname + "/cert.crt")];
 var cert = fs.readFileSync(__dirname + "/cert.pem");
 var key = fs.readFileSync(__dirname + "/cert.key");
 
-var mongoUseTls   = false;
+var mongoUseTls   = true;
 var elasticUseTls = false;
 
 // Connect
 db.connect(uri, mongoUseTls ? {
-  user : "userlogin",
-  pass : "userpassword",
+  user : "r2do",
+  pass : "bs8R0P<LN6Zj2j5j]soC<HL]v$b]XYAx",
   authMechanism : "SCRAM-SHA-1",
   server: {
     ssl:true, // enable ssl
@@ -36,14 +36,18 @@ db.connect(uri, mongoUseTls ? {
     sslCert:cert, // certificate pem 
     checkServerIdentity:false // if is self signed we must no enable server identifiy
   }
-} : {}).then(function() {
+} : { 
+  user : "r2do",
+  pass : "bs8R0P<LN6Zj2j5j]soC<HL]v$b]XYAx",
+  authMechanism : "SCRAM-SHA-1"
+}).then(function() {
   // load models
   db.models('./example/models');
   db.validators('./example/controllers');
   db.methods('./example/methods');
   db.enums('./example/enums');
   // enable elastic hosts
-  db.elasticHosts([ { host : '127.0.0.1', port : 9200, protocol : 'http' }, { host : '127.0.0.1', port : 9500, protocol : 'https' } ],
+  db.elasticHosts([ { host : '37.187.183.24', port : 10300, protocol : 'http' }, { host : '37.187.183.24', port : 10200, protocol : 'http' } ],
     elasticUseTls ? {
       ssl: {
         ca: fs.readFileSync(__dirname + "/cert.pem"),
@@ -51,7 +55,7 @@ db.connect(uri, mongoUseTls ? {
       }
     } : {});
   // enable redis here
-  db.enableRedis([ { host : '127.0.0.1', port : 6379 }, { host : '127.0.0.1', port : 6379 }]);
+  db.enableRedis([ { host : '10.166.13.10', port : 10600 } ]);
   if (db.isReady(true)) {
     db.load().then(function() {
       db.getRedis().add('aezeazeaz', { took: 4,

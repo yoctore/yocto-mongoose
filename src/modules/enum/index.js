@@ -76,7 +76,7 @@ Enums.prototype.load = function (path) {
         this.logger.warning([ '[ Enums.load.parse ] -  Cannot load item for [', m, ']',
                               state.error ].join(' '));
       }
-    }, this);
+    }.bind(this));
 
     // flatten
     this.enums  = _.uniq(_.flatten(this.enums), 'name');
