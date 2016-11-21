@@ -14,6 +14,11 @@
 - *Remove elasticHosts method. Use enableElasticsearch method instead of elasticHosts.*
 - Improve connection manager
 
+## 1.7.2 (2016-06-02)
+
+- Update joi validation to enable host string for Redis and elasticsearch
+
+
 ## 1.7.1 (2016-05-23)
 
 - Bufferize config files when enable ssl authentication for mongodb
