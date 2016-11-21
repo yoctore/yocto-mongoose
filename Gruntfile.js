@@ -38,17 +38,28 @@ module.exports = function (grunt) {
         'bail'           : false
       },
       all     : [ 'tests/unit/*.js' ]
+    },
+    mochaTest :  {
+      unit  : {
+        options : {
+          reporter          : 'spec',
+          quiet             : false, // Optionally suppress output to standard out (defaults to false)
+          clearRequireCache : false, // Optionally clear the require cache before running tests (defaults to false)
+          noFail            : false // Optionally set to not fail on failed tests (will still fail on other errors)
+        },
+        src     : [ 'test/*.js' ]
+      }
     }
   });
 
   // load tasks
   grunt.loadNpmTasks('grunt-contrib-uglify');
-  grunt.loadNpmTasks('grunt-mocha-cli');
+  grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('yocto-hint');
 
   // register tasks
   grunt.registerTask('hint', [ 'yoctohint' ]);
-  grunt.registerTask('test', 'mochacli');
+  grunt.registerTask('test', 'mochaTest');
   grunt.registerTask('build', [ 'yoctohint', 'uglify' ]);
   grunt.registerTask('default', [ 'build', 'test' ]);
 };

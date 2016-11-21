@@ -252,45 +252,104 @@ RedisUtils.prototype.add = function (key, value, expire) {
 /**
  * Remove a value found by his key
  *
- * @param {String} key key to remove in storage
  * @return {boolean} return success status of deleting
  */
-RedisUtils.prototype.remove = function (key) {
+RedisUtils.prototype.remove = function () {
+  // create async process
+  var deferred = Q.defer();
 
-  // normalize key
-  key = this.normalizeKey(key);
+  // build properly all given keys and normalize it
+  var keys = _.flatten(_.map(arguments));
 
   // is ready ?
   if (this.isReady) {
-
-    // remove the key
-    this.cluster.del(key);
-
+    // create a pipeline to process multiple delete
+    var pipeline = this.cluster.pipeline();
+    // parse all keys
+    keys.forEach(function (key) {
+      // prepare deletion
+      pipeline.del(this.normalizeKey(key));
+    }.bind(this));
+    // exec pipeline
+    pipeline.exec().then(function () {
+      // log message
+      this.logger.debug([ '[ RedisUtils.remove ] - Remove keys [',
+        keys, ']', 'was processed' ].join(' '));
+      // resolve promise
+      deferred.resolve();
+    }.bind(this));
+  } else {
     // log message
-    this.logger.debug([ '[ RedisUtils.remove ] - Remmove the key [',
-      key, ']' ].join(' '));
-
-    // indicate that the key was deleted
-    return true;
+    this.logger.warning([ '[ RedisUtils.remove ] - keys [',
+      keys, '] was not removed because connection is down' ].join(' '));
   }
 
-  // log message
-  this.logger.warning([ '[ RedisUtils.remove ] - The key [',
-    key, '] was not removed because connection is down' ].join(' '));
+  // default statement
+  return deferred.promise;
+};
 
-  // indicate that the key was not deleted
-  return false;
+/**
+ * Flush current database. If a given string pattern is a correct we use it
+ *
+ * @param {String} pattern if is defined we use this pattern otherwise than default pattern (*)
+ * @return {Object} promise to catch
+ */
+RedisUtils.prototype.flush = function (pattern) {
+  // create async process
+  var deferred = Q.defer();
+
+  // normalize properly pattern to use
+  pattern  = _.isString(pattern) && !_.isEmpty(pattern) ? pattern : '*';
+
+  // current size length, we use it to show a correct message on end stream/pipeline process.
+  var sizes = 0;
+
+  // create stream
+  var stream = this.cluster.scanStream({
+    match : pattern
+  });
+
+  // log message
+  this.logger.debug('[ RedisUtils.flush ] - flush was starting.');
+
+  // catch data on created stream
+  stream.on('data', function (keys) {
+    // change sizes valud for end process
+    sizes += _.size(keys);
+    // has items ?
+    if (_.size(keys) > 0) {
+      // process call with default method
+      this.remove.call(this, keys);
+    }
+  }.bind(this));
+
+  // when is finish what we do ?
+  stream.on('end', function () {
+    // no size ???
+    if (sizes === 0) {
+      // log message
+      this.logger.debug([ '[ RedisUtils.flush ] - No keys found for given pattern [',
+        pattern, (pattern === '*' ? '(Default) ]' : ']')].join(' '));
+    }
+    // log message
+    this.logger.debug([ '[ RedisUtils.flush ] - flush was ending.',
+      sizes, 'keys was removed' ].join(' '));
+    // all is ok
+    deferred.resolve();
+  }.bind(this));
+
+  // default statement
+  return deferred.promise;
 };
 
 /**
  * An alias method for default remove method
  *
- * @param {String} key key to remove in storage
  * @return {Object} default promise to catch
  */
-RedisUtils.prototype.delete = function (key) {
+RedisUtils.prototype.delete = function () {
   // default statement
-  return this.remove(key);
+  return this.remove(_.flatten(_.map(arguments)));
 };
 
 /**
@@ -318,7 +377,7 @@ RedisUtils.prototype.get = function (key) {
           deferred.resolve(JSON.parse(result));
         } else {
           // reject with null value
-          deferred.reject(result);
+          deferred.resolve(result);
         }
       } else {
         // log error

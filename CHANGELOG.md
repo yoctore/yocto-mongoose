@@ -1,3 +1,13 @@
+## 2.1.0 (2016-11-21)
+
+- Change node engine version to use 4.6.x to use current LTS version until April migration to new lts version
+- Add new flush method to provide flush data on current database. This method use pipeline & scan method.
+- Update remove method to use pipeline. Now it's possible to send to delete method multiple value for deletion
+- Add Mongoose.Schema.Types available on enums modules.
+- Add custom pre hook on schema
+- Update dependencies modules
+- Update node requirement to use 4.6.x LTS Version
+
 ## 2.0.0 (2016-10-25)
 
 - Major Update for lodash, joi, ioredis async

@@ -1,11 +1,12 @@
 'use strict';
 
-var glob      = require('glob');
-var logger    = require('yocto-logger');
-var _         = require('lodash');
-var Schema    = require('mongoose').Schema;
-var joi       = require('joi');
-var utils     = require('yocto-utils');
+var glob        = require('glob');
+var logger      = require('yocto-logger');
+var _           = require('lodash');
+var Schema      = require('mongoose').Schema;
+var joi         = require('joi');
+var utils       = require('yocto-utils');
+var stackTrace  = require('stack-trace');
 
 /**
  *
@@ -60,9 +61,9 @@ Method.prototype.add = function (schema, path, items, modelName, redis) {
 
           // define schema
           var vschema = joi.object().keys({
-            type  : joi.string().required().empty().allow([ 'static', 'method', 'post' ]),
+            type  : joi.string().required().empty().valid([ 'static', 'method', 'post', 'pre' ]),
             name  : joi.string().required().empty(),
-            event : joi.alternatives().when('type', {
+            event : joi.optional().when('type', {
               is        : 'post',
               then      : joi.string().required().empty().valid([
                 'init',
@@ -75,8 +76,7 @@ Method.prototype.add = function (schema, path, items, modelName, redis) {
                 'findOneAndRemove',
                 'findOneAndUpdate',
                 'update'
-              ]),
-              otherwise : joi.optional()
+              ])
             }),
             redis : joi.object().optional().keys({
               enable : joi.boolean().required().default(false),
@@ -94,11 +94,15 @@ Method.prototype.add = function (schema, path, items, modelName, redis) {
               // debug message
               this.logger.debug([ '[ Method.add ] - Method [', item.name,
                                  '] founded adding new',
-                                 (item.type === 'method' ? 'instance' : item.type),
-                                 'method for given schema' ].join(' '));
+                                 (item.type === 'method' ? 'instance' :
+                                  item.type), 'method for given schema' ].join(' '));
 
               // is post item
-              if (item.type === 'post') {
+              if ((item.type === 'post' || item.type === 'pre') &&
+                _.isString(item.event) && !_.isEmpty(item.event)) {
+                // debug message
+                this.logger.debug([ '[ Method.add ] - Adding [', item.type,
+                  ' ] hook on current schema for event [', item.event, ']' ].join(' '));
                 // save logger to send to external method
                 var logger = this.logger;
                 // build post process with needed event
@@ -116,15 +120,36 @@ Method.prototype.add = function (schema, path, items, modelName, redis) {
 
               // has redis ?
               if (item.redis) {
+                // has custom redis expire time define on schema for specific key/method ?
+                if (!_.isArray(schema.redisExpireTimeByKey)) {
+                  // create default item
+                  schema.redisExpireTimeByKey = [];
+                }
                 // is enable ?
                 if (_.has(item.redis, 'enable') && item.redis.enable) {
+                  // push item on schema mapping for specific expire time
+                  schema.redisExpireTimeByKey.push(_.set({}, item.name, item.redis.expire));
                   // define static
                   schema.static('redis', function () {
+                    // current stack trace to find correct key for redi
+                    var stack   = stackTrace.get();
+                    // get caller properly
+                    var caller  = stack[1];
+                    // if correct object
+                    if (_.isObject(caller)) {
+                      // set caller
+                      caller = caller.getFunctionName();
+                      // replace exports call
+                      caller = caller.replace('exports.', '');
+                    }
+                    // get expire
+                    var expire = _.result(_.find(this.schema.redisExpireTimeByKey, caller),
+                                    caller);
                     // here default statement. we return current instance of redis and
-                    // default expire time to use on redis usage
+                    // default expire time to use custom redis usage
                     return {
                       instance : redis,
-                      expire   : item.redis.expire || 0
+                      expire   : expire || 0
                     };
                   });
                 }

@@ -84,7 +84,7 @@ function YMongoose (l) {
     crud          : modCrud(l),
     validator     : modValidator(l),
     method        : modMethod(l),
-    enums         : modEnums(l),
+    enums         : modEnums(l, mongoose.Types),
     elastic       : modElastic(l),
     redis         : modRedis(l)
   };

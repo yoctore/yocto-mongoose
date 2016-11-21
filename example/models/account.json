@@ -15,13 +15,38 @@
         "type"  : "static",
         "name"  : "test1",
         "redis" : {
-          "enable" : false,
-          "expire" : 10
+          "enable" : true,
+          "expire" : 25
+        }
+      },
+      {
+        "type"  : "static",
+        "name"  : "test2",
+        "redis" : {
+          "enable" : true,
+          "expire" : 30
         }
       },
       {
         "type" : "static",
         "name" : "sync"
+      },
+      {
+        "type" : "post"
+      },
+      {
+        "type" : "rezrze",
+        "name" : "pre"
+      },
+      {
+        "type"  : "post",
+        "name"  : "post",
+        "event" : "init"
+      },
+      {
+        "type"  : "pre",
+        "name"  : "pre",
+        "event" : "init"
       }
     ],
     "elastic" : {

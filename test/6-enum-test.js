@@ -3,7 +3,7 @@
  */
 var chai    = require('chai').assert;
 var expect  = require('chai').expect;
-var should = require('chai').should();
+var should  = require('chai').should();
 var _       = require('lodash');
 var utils   = require('yocto-utils');
 var logger  = require('yocto-logger');
@@ -70,6 +70,25 @@ describe('Enums process ->', function () {
     var enums = model.enums().get('notify_type_list');
     expect(enums).to.be.a('array');
     expect(enums).to.be.not.empty;
+  });
+
+  it ('Must acces to mongooseType on model', function () {
+    var model = db.getModel('Account');
+    expect(model).to.be.a('function');
+
+    // get available enums
+    var enums = model.enums().get('notify_type_list');
+    expect(enums).to.be.a('array');
+    expect(enums).to.be.not.empty;
+    expect(model.enums().types).to.be.a('object');
+    expect(model.enums().types.Array).to.be.a('function');
+    expect(model.enums().types.Buffer).to.be.a('function');
+    expect(model.enums().types.Buffer.Binary).to.be.a('function');
+    expect(model.enums().types.Embedded).to.be.a('function');
+    expect(model.enums().types.Document).to.be.a('function');
+    expect(model.enums().types.DocumentArray).to.be.a('function');
+    expect(model.enums().types.ObjectId).to.be.a('function');
+    expect(model.enums().types.Subdocument).to.be.a('function');
   });
 
   it ('Should be disconnect properly from current connected host', function (disco) {

@@ -381,7 +381,7 @@ This configuration enable to your current model redis on `include` method (get o
 On each request on `include` method redis will be check if value exists before each mongo request.
 In case of value was found, we return founded value, otherwise we store the value, with given expire time before process the mongo access.
 
-**The storage key is build automaticly by our redis implementation**
+**The storage key is build automatically by our redis implementation**
 
 To see your data from a GUI tool download [Medis](https://github.com/luin/medis)
 
@@ -412,7 +412,7 @@ To use redis on custom method just extend your config file like this :
 }
 ```
 
-After that your can access to the redis instance in your custom function and use `add`, `get` or `delete` method.
+After that your can access to the redis instance in your custom function and use `add`, `get`, `delete` or `flush` method.
 
 An alias to the add method is provide by the `set` method.
 An alias to the delete method is provide by the `remove` method.
@@ -440,5 +440,14 @@ exports.test1 = function(data) {
   redis.delete('aaa');
   // Or
   redis.remove('aaa');
+
+  // flush values
+  redis.flush().then(function (success) {
+    // do stuff
+  })
+  // flush values with a custom pattern
+  redis.flush('MY_PATTERN').then(function (success) {
+    // do stuff
+  })
 };
 ```

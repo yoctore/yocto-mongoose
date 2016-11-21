@@ -3,10 +3,10 @@ ecmaFeatures:
   jsx: true
 
 env:
-  amd: true
-  browser: true
-  es6: true
-  jquery: true
+  amd: false
+  browser: false
+  es6: false
+  jquery: false
   node: true
 
 # http://eslint.org/docs/rules/

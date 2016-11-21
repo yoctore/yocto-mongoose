@@ -16,7 +16,7 @@ var logger  = require('yocto-logger');
  *
  * @class Enums
  */
-function Enums (logger) {
+function Enums (logger, mongooseTypes) {
   /**
    * Logger instance
    *
@@ -30,6 +30,10 @@ function Enums (logger) {
    * @property enums
    */
   this.enums      = [];
+  /**
+   * Mongoose type can be useful on enumes block
+   */
+  this.types      = mongooseTypes;
 }
 
 /**
@@ -118,7 +122,7 @@ Enums.prototype.get = function (name) {
 };
 
 // Default export
-module.exports = function (l) {
+module.exports = function (l, types) {
   // is a valid logger ?
   if (_.isUndefined(l) || _.isNull(l)) {
     logger.warning('[ Enums.constructor ] - Invalid logger given. Use internal logger');
@@ -126,5 +130,5 @@ module.exports = function (l) {
     l = logger;
   }
   // default statement
-  return new (Enums)(l);
+  return new (Enums)(l, types);
 };
