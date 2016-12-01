@@ -33,7 +33,7 @@ function Enums (logger, mongooseTypes) {
   /**
    * Mongoose type can be useful on enumes block
    */
-  this.types      = mongooseTypes;
+  this.Types      = mongooseTypes;
 }
 
 /**

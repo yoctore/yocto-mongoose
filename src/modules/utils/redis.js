@@ -271,8 +271,8 @@ RedisUtils.prototype.remove = function () {
     // exec pipeline
     pipeline.exec().then(function () {
       // log message
-      this.logger.debug([ '[ RedisUtils.remove ] - Remove keys [',
-        keys, ']', 'was processed' ].join(' '));
+      this.logger.debug([ '[ RedisUtils.remove ] - Remove keys',
+        utils.obj.inspect(keys), 'was processed' ].join(' '));
       // resolve promise
       deferred.resolve();
     }.bind(this));
@@ -375,7 +375,7 @@ RedisUtils.prototype.get = function (key) {
           deferred.resolve(JSON.parse(result));
         } else {
           // reject with null value
-          deferred.resolve(result);
+          deferred.reject(key);
         }
       } else {
         // log error

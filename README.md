@@ -16,7 +16,7 @@ This module provide a simple config validator tools for your node app.
 
 ## Motivation
 
-Create an easy and ready to use connector & model builder based on mongoose.
+Create an easy and ready to use connector & model builder based on mongoose / redis / elasticsearch.
 
 ## Folder structure
 
@@ -187,6 +187,15 @@ exports.testValidator = function (enums) {
   var status  = enums().get('notify_status_list');
   var type    = enums().get('notify_type_list');
  // your code here
+}
+```
+
+### Access to mongooseTypes from enums
+
+```javascript
+exports.testTypes = function (enums) {
+ // your code here
+ console.log(enums().Types);
 }
 ```
 

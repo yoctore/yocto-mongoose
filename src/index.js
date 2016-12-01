@@ -784,7 +784,6 @@ YMongoose.prototype.load = function () {
   // Create our deferred object, which we will use in our promise chain
   var deferred = Q.defer();
 
-  var context = this; // saving context
   var errors  = [];   // list of errors
 
   // nbItem error on load
@@ -852,23 +851,15 @@ YMongoose.prototype.load = function () {
   // Callback at the end of queue processing
   queue.drain = function () {
     // message drain ending
-    this.logger.debug([ '---------------------------- [',
-                          'Process Queue Complete.',
-                          '] ----------------------------' ].join(' '));
-    // build statistics
-    this.logger.debug([ '[ YMongoose.load.queue.drain ] - Statistics -',
-                          '[ Added on queue :', nbItems.total,
-                          (nbItems.total > 1) ? 'items' : 'item', '] -',
-                          '[ Processed :', nbItems.processed,
-                          (nbItems.processed > 1) ? 'items' : 'item', '] -',
-                          '[ Errors :', errors.length,
-                          (errors.length > 1) ? 'items' : 'item',']' ].join(' '));
+    this.logger.debug([ _.repeat('-', 28),
+      '[ Process Queue Complete ]', _.repeat('-', 28) ].join(' '));
+    this.logger.info('[ YMongoose.load ] - All Model was processed & loaded.');
+
     // changed loaded status
     this.loaded = (nbItems.processed === nbItems.total);
     // all is processed ?
-    if (context.loaded) {
+    if (this.loaded) {
       // success message
-      this.logger.info('[ YMongoose.load ] - All Model was processed & loaded.');
       // all is ok so resolve
       deferred.resolve();
     } else {
@@ -884,46 +875,46 @@ YMongoose.prototype.load = function () {
     }
   }.bind(this);
 
+  // all tasks storage
+  var tasks = [];
   // run each model
-  _.each(model, function (m) {
+  async.each(model, function (m, next) {
     // build file name
     var name = m.replace(path.dirname(m), '');
     // try & catch error
     try {
       // parsed file
       var parsed = JSON.parse(fs.readFileSync(m, 'utf-8'));
+      // parsed not failed push to queue
+      tasks.push({ file : name, data : parsed });
       // increment counter
       nbItems.total++;
-      // parsed not failed push to queue
-      queue.push({ file : name, data : parsed }, function (error) {
-        // has error ?
-        if (error) {
-          // log error message
-          context.logger.error([ '[ YMongoose.load ] - Cannot add item to queue for [',
-                                    name , ']' ].join(' '));
-          // push error on list for drain reject
-          errors.push(error);
-        }
-      });
+      // got to next item
+      next();
     } catch (e) {
+      // set correct message
+      var message = [ 'Cannot add item to queue. Error is : [', e, '] for [', name, ']' ].join(' ');
       // error occured
-      this.logger.warning([ '[ YMongoose.load ] - cannot add item to queue.',
-                            'Error is : [', e, '] for [', name, ']' ].join(' '));
+      this.logger.error([ '[ YMongoose.load ] -', message ].join(' '));
 
-      // check here if item was pushed on queue
-      if (_.last(model) === m && nbItems.total === 0) {
-        // build message
-        var message = 'All loaded data failed during JSON.parse(). Cannot continue.';
-        // log message
-        this.logger.error([ '[ YMongoose.load ] -', message ].join(' '));
-
-        // reject
-        deferred.reject(message);
-        // disconnect
-        this.disconnect();
-      }
+      // reject with correct message
+      deferred.reject(message);
+      // disconnect
+      this.disconnect();
     }
-  }, this);
+  }.bind(this), function () {
+    // push in queue
+    queue.push(tasks, function (error) {
+      // has error ?
+      if (error) {
+        // log error message
+        this.logger.error([ '[ YMongoose.load ] - Cannot add an item to queue [',
+                                  error , ']' ].join(' '));
+        // push error on list for drain reject
+        errors.push(error);
+      }
+    }.bind(this));
+  }.bind(this));
 
   // return deferred promise
   return deferred.promise;
@@ -933,10 +924,10 @@ YMongoose.prototype.load = function () {
  * Retreive a valid model for usage
  *
  * @param {String} name model name wanted
- * @param {Boolean} instance true is we want an instance false otherwise
+ * @param {Boolean} isInstance true is we want an instance false otherwise
  * @return {Boolean|Instance} false if an error occured, a model object if all is ok
  */
-YMongoose.prototype.getModel = function (name, instance) {
+YMongoose.prototype.getModel = function (name, isInstance) {
   // is ready ??
   if (this.isReady(true) && this.isLoaded() &&
       _.isString(name) && !_.isEmpty(name)) {
@@ -945,7 +936,7 @@ YMongoose.prototype.getModel = function (name, instance) {
       // try to get model
       var Model = this.mongoose.model(name);
       // valid statement
-      return (_.isBoolean(instance) && instance) ? new Model() : Model;
+      return (_.isBoolean(isInstance) && isInstance) ? new Model() : Model;
     } catch (e) {
       // show error
       this.logger.error('[ YMongoose.getModel ] - Model not found. Invalid schema name given.');

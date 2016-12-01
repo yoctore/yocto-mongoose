@@ -92,10 +92,11 @@ describe('Redis ->', function () {
     db.getRedis().delete('Key-Test-delete').then(function () {
       // try to retrieve the deleted key
       db.getRedis().get('Key-Test-delete').then(function (result) {
-        expect(result).equal(null);
-        done();
       }).catch(function (error) {
-      }) ;
+        expect(error).to.not.empty;
+        expect(error).equal('Key-Test-delete');
+        done();
+      });
     });
   });
 
@@ -104,10 +105,11 @@ describe('Redis ->', function () {
     this.timeout(5000);
     // default items
     var items = [];
-
+    var citems = [];
     // build item to remove
     for (var i = 0; i < 10; i++) {
-      items.push('Key-Test-delete-remove_'+i);
+      items.push('Key-Test-delete-delete_'+i);
+      citems.push('Key-Test-delete-delete_'+i);
     }
 
     async.eachSeries(items, function (i, next) {
@@ -118,15 +120,14 @@ describe('Redis ->', function () {
     }, function () {
       db.getRedis().delete.call(db.getRedis(), items).then(function () {
         // try to retrieve the deleted key
-        // process each series
-        var citems = items;
         async.eachSeries(citems, function (i, inext) {
           // try to retrieve the deleted key
           db.getRedis().get(i).then(function (item) {
-            expect(item).equal(null);
-            items = _.contact(citems.shift());
             inext();
           }).catch(function (error) {
+            expect(error).to.not.empty;
+            expect(error).equal(i);
+            items = _.pull(items, error);
             inext();
           });
         }, function () {
@@ -137,31 +138,31 @@ describe('Redis ->', function () {
     });
   });
 
-
-  it ('Should remove an existing keys with method < delete >', function (done) {
+  it ('Should remove an existing keys with method < remove >', function (done) {
     // add key
-    db.getRedis().add('Key-Test-delete', { type : 'test' }, 60);
+    db.getRedis().add('Key-Test-remove', { type : 'test' }, 60);
 
     // remove key
-    db.getRedis().remove('Key-Test-delete').then(function () {
+    db.getRedis().remove('Key-Test-remove').then(function () {
       // try to retrieve the deleted key
-      db.getRedis().get('Key-Test-delete').then(function (result) {
-        expect(result).equal(null);
-        done();
+      db.getRedis().get('Key-Test-remove').then(function (result) {
       }).catch(function (error) {
-      }) ;
+        expect(error).to.not.empty;
+        expect(error).equal('Key-Test-remove');
+        done();
+      });
     });
   });
-
 
   it ('Should remove an existing keys with method < remove > with multiple arguments', function (done) {
     this.timeout(5000);
     // default items
     var items = [];
-
+    var citems = [];
     // build item to remove
     for (var i = 0; i < 10; i++) {
       items.push('Key-Test-delete-remove_'+i);
+      citems.push('Key-Test-delete-remove_'+i);
     }
 
     async.eachSeries(items, function (i, next) {
@@ -170,17 +171,16 @@ describe('Redis ->', function () {
       // next item
       next();
     }, function () {
-      db.getRedis().remove.call(db.getRedis(), items).then(function () {
+      db.getRedis().delete.call(db.getRedis(), items).then(function () {
         // try to retrieve the deleted key
-        // process each series
-        var citems = items;
         async.eachSeries(citems, function (i, inext) {
           // try to retrieve the deleted key
           db.getRedis().get(i).then(function (item) {
-            expect(item).equal(null);
-            items = _.contact(citems.shift());
             inext();
           }).catch(function (error) {
+            expect(error).to.not.empty;
+            expect(error).equal(i);
+            items = _.pull(items, error);
             inext();
           });
         }, function () {
@@ -190,8 +190,6 @@ describe('Redis ->', function () {
       });
     });
   });
-
-
 
   it ('Should be disconnect properly from current connected host', function (disco) {
     db.disconnect().then(function () {

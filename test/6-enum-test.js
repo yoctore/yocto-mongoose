@@ -72,7 +72,7 @@ describe('Enums process ->', function () {
     expect(enums).to.be.not.empty;
   });
 
-  it ('Must acces to mongooseType on model', function () {
+  it ('Must acces to mongooseTypes on model', function () {
     var model = db.getModel('Account');
     expect(model).to.be.a('function');
 
@@ -80,15 +80,15 @@ describe('Enums process ->', function () {
     var enums = model.enums().get('notify_type_list');
     expect(enums).to.be.a('array');
     expect(enums).to.be.not.empty;
-    expect(model.enums().types).to.be.a('object');
-    expect(model.enums().types.Array).to.be.a('function');
-    expect(model.enums().types.Buffer).to.be.a('function');
-    expect(model.enums().types.Buffer.Binary).to.be.a('function');
-    expect(model.enums().types.Embedded).to.be.a('function');
-    expect(model.enums().types.Document).to.be.a('function');
-    expect(model.enums().types.DocumentArray).to.be.a('function');
-    expect(model.enums().types.ObjectId).to.be.a('function');
-    expect(model.enums().types.Subdocument).to.be.a('function');
+    expect(model.enums().Types).to.be.a('object');
+    expect(model.enums().Types.Array).to.be.a('function');
+    expect(model.enums().Types.Buffer).to.be.a('function');
+    expect(model.enums().Types.Buffer.Binary).to.be.a('function');
+    expect(model.enums().Types.Embedded).to.be.a('function');
+    expect(model.enums().Types.Document).to.be.a('function');
+    expect(model.enums().Types.DocumentArray).to.be.a('function');
+    expect(model.enums().Types.ObjectId).to.be.a('function');
+    expect(model.enums().Types.Subdocument).to.be.a('function');
   });
 
   it ('Should be disconnect properly from current connected host', function (disco) {

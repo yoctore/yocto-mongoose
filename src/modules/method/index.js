@@ -106,10 +106,21 @@ Method.prototype.add = function (schema, path, items, modelName, redis) {
                 // save logger to send to external method
                 var logger = this.logger;
                 // build post process with needed event
-                schema.post(item.event, function () {
-                  // default statement process function with given arguments in current context
-                  return fo[item.name].apply(this, _.flatten([ arguments, logger ]));
-                });
+                if (item.type === 'post') {
+                  // build post process
+                  schema.post(item.event, function () {
+                    // default statement process function with given arguments in current context
+                    return fo[item.name].apply(this, _.flatten([ arguments, logger ]));
+                  });
+                } else {
+                  // build pre process
+                  schema.pre(item.event, function (next) {
+                    // default call process function with given arguments in current context
+                    fo[item.name].apply(this, _.flatten([ arguments, logger ]));
+                    // default statement
+                    return next();
+                  });
+                }
               } else {
                 // define method
                 schema[item.type](item.name, function () {

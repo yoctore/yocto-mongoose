@@ -2,6 +2,9 @@
 
 - Fix find usage on lodash for enums process
 - Update package
+- redis.get('YOUR_KEY') method reject the current promise if no key was found
+- Update unit tests for delete/remove action on redis usage 
+- Change load method to use async.each instead of lodash _.each
 
 ## 2.1.0 (2016-11-21)
 
