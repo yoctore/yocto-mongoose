@@ -68,6 +68,20 @@ describe('Setting paths / states / load ->', function () {
     expect(fn).to.be.a('function');
   });
 
+  it ('Mongoose Types must be available on current model', function () {
+    var fn = db.getModel('Account');
+    expect(fn).to.be.a('function');
+    expect(fn.Types).to.be.a('object');
+    expect(fn.Types.Array).to.be.a('function');
+    expect(fn.Types.Buffer).to.be.a('function');
+    expect(fn.Types.Buffer.Binary).to.be.a('function');
+    expect(fn.Types.Embedded).to.be.a('function');
+    expect(fn.Types.Document).to.be.a('function');
+    expect(fn.Types.DocumentArray).to.be.a('function');
+    expect(fn.Types.ObjectId).to.be.a('function');
+    expect(fn.Types.Subdocument).to.be.a('function');
+  });
+
   it ('Should be disconnect properly from current connected host', function (disco) {
     db.disconnect().then(function () {
       expect(db.isConnected()).to.be.a('boolean');

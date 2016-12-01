@@ -1,3 +1,7 @@
+## 2.2.0 (2016-12-01)
+
+- Add Mongoose Types available on current model
+
 ## 2.1.1 (2016-12-01)
 
 - Fix find usage on lodash for enums process

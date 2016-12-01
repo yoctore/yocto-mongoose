@@ -935,6 +935,8 @@ YMongoose.prototype.getModel = function (name, isInstance) {
     try {
       // try to get model
       var Model = this.mongoose.model(name);
+      // add mongoose Types on model
+      Model.Types = mongoose.Types;
       // valid statement
       return (_.isBoolean(isInstance) && isInstance) ? new Model() : Model;
     } catch (e) {
