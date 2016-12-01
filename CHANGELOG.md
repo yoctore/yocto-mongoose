@@ -1,3 +1,8 @@
+## 2.1.1 (2016-12-01)
+
+- Fix find usage on lodash for enums process
+- Update package
+
 ## 2.1.0 (2016-11-21)
 
 - Change node engine version to use 4.6.x to use current LTS version until April migration to new lts version

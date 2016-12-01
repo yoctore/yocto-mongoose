@@ -107,7 +107,7 @@ Enums.prototype.get = function (name) {
     // data is ok so try to get enums from given name
     if (_.isArray(this.enums) && !_.isEmpty(this.enums)) {
       // a valid statement or empty array if is not founded
-      return _.result(_.find(this.enums, 'name', name), 'value') || [];
+      return _.result(_.find(this.enums, [ 'name', name ]), 'value') || [];
     } else {
       // warning message
       this.logger.warning('[ Enums.get ] - enums list is empty. try to load enums before get');
