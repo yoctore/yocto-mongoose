@@ -1,3 +1,7 @@
+## 2.2.1 (2016-12-01)
+
+- Update README content and add documentation from jsDoc
+
 ## 2.2.0 (2016-12-01)
 
 - Add Mongoose Types available on current model

@@ -12,11 +12,12 @@ This module is a part of yocto node modules for NodeJS.
 
 Please see [our NPM repository](https://www.npmjs.com/~yocto) for complete list of available tools (completed day after day).
 
-This module provide a simple config validator tools for your node app.
+This module provide a simple database connector for an app based on MongoDb.
+Extra module can be use directly from MongoDb to Redis and/or Elasticsearch if needed.
 
 ## Motivation
 
-Create an easy and ready to use connector & model builder based on mongoose / redis / elasticsearch.
+Create an easy and ready to use connector & model builder based on mongoose / redis / Elasticsearch.
 
 ## Folder structure
 
@@ -156,12 +157,20 @@ exports.test2 = function() {
   console.log('test2');
 };
 ```
-
 > Save file, Build & Use (See How To use part)
 
-**!!! IMPORTANT !!!** Each function will be executed in schema context, so crud or mongoose method was available.
+### How to access to mongooseTypes from custom functions
 
-### Add enum value(s)
+```javascript
+exports.testTypes = function (enums) {
+  var fn = db.getModel('Model');
+  console.log(fn.Types);
+}
+```
+
+**!!! IMPORTANT !!!** Each function is executed in schema context, so crud or mongoose method was also available.
+
+### How to add enum value(s)
 
 > Create a "file.json" into enums directory
 
@@ -190,7 +199,7 @@ exports.testValidator = function (enums) {
 }
 ```
 
-### Access to mongooseTypes from enums
+### How to access to mongooseTypes from enums
 
 ```javascript
 exports.testTypes = function (enums) {
@@ -205,13 +214,12 @@ All defined model have CRUD Method attached by mongoose static function.
 
 See Below list of method & aliases :
 
-| Operation        | Available Method | Alias(es)       |
-|------------------|------------------|-----------------|
-| Create           | create           | insert          |
-| Read (Retrieve)  | get              | read            |
-| Update (Modify   | update           | modify          |
-| Delete (Destroy) | delete           | destroy         |
-
+| Operation        | Available Method | Alias(es)       | Mongoose methods                             |
+|------------------|------------------|-----------------|----------------------------------------------|
+| Create           | create           | insert          | save                                         |
+| Read (Retrieve)  | get / getOne     | read / readOne  | find / findById / findOne                    |
+| Update (Modify   | update           | modify          | findByIdAndUpdate / findOneAndUpdate / where |
+| Delete (Destroy) | delete           | destroy         | findByIdAndRemove                            |
 
 ## Elasticsearch implementation
 

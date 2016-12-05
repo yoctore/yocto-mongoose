@@ -1,4 +1,50 @@
-'use strict';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>index.js - yocto-mongoose</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="styles/custom.css"/>
+    <link type="text/css" rel="stylesheet" href="styles/tomorrow-night.min.css"/>
+    <script type="text/javascript" src="scripts/lodash.min.js"></script>
+    <script type="text/javascript" src="scripts/jquery.min.js"></script>
+    <script type="text/javascript" src="scripts/search.js"></script>
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+  <a href="http://www.yocto.re" target="_blank"><img class="logo" src="./extras/logo-yocto.png" alt="logo-yocto"/></a>
+    <h2><a href="index.html">Home</a><span class="version">v2.2.0</span></h2><input class="search" placeholder="Type your search here ...." /><h3>Classes</h3><ul><li><a href="YMongoose.html">YMongoose</a><ul class='methods'><li data-type='method'><a href="YMongoose.html#addModel">addModel</a></li><li data-type='method'><a href="YMongoose.html#connect">connect</a></li><li data-type='method'><a href="YMongoose.html#createCrud">createCrud</a></li><li data-type='method'><a href="YMongoose.html#createMethod">createMethod</a></li><li data-type='method'><a href="YMongoose.html#createValidator">createValidator</a></li><li data-type='method'><a href="YMongoose.html#disconnect">disconnect</a></li><li data-type='method'><a href="YMongoose.html#enableElasticsearch">enableElasticsearch</a></li><li data-type='method'><a href="YMongoose.html#enableRedis">enableRedis</a></li><li data-type='method'><a href="YMongoose.html#enums">enums</a></li><li data-type='method'><a href="YMongoose.html#getModel">getModel</a></li><li data-type='method'><a href="YMongoose.html#getRedis">getRedis</a></li><li data-type='method'><a href="YMongoose.html#isConnected">isConnected</a></li><li data-type='method'><a href="YMongoose.html#isDisconnected">isDisconnected</a></li><li data-type='method'><a href="YMongoose.html#isLoaded">isLoaded</a></li><li data-type='method'><a href="YMongoose.html#isReady">isReady</a></li><li data-type='method'><a href="YMongoose.html#load">load</a></li><li data-type='method'><a href="YMongoose.html#methods">methods</a></li><li data-type='method'><a href="YMongoose.html#models">models</a></li><li data-type='method'><a href="YMongoose.html#setPath">setPath</a></li><li data-type='method'><a href="YMongoose.html#validators">validators</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">index.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict';
 
 var logger        = require('yocto-logger');
 var mongoose      = require('mongoose');
@@ -30,7 +76,7 @@ mongoose.Promise = require('q').Promise;
  * Utility tool to manage mongoose connection and auto loading models.
  *
  * @date : 24/09/2015
- * @author : Mathieu ROBERT <mathieu@yocto.re>
+ * @author : Mathieu ROBERT &lt;mathieu@yocto.re>
  * @copyright : Yocto SAS, All right reserved
  *
  * @class YMongoose
@@ -167,12 +213,12 @@ YMongoose.prototype.connect = function (url, options) {
   }.bind(this));
 
   // valid url ?
-  if (_.isString(url) && !_.isEmpty(url)) {
+  if (_.isString(url) &amp;&amp; !_.isEmpty(url)) {
     // normalized options
-    options = _.isObject(options) && !_.isEmpty(options) ? options : {};
+    options = _.isObject(options) &amp;&amp; !_.isEmpty(options) ? options : {};
 
     // check if property sslCA exist
-    if (_.has(options, 'server.sslCA') && _.isString(options.server.sslCA)) {
+    if (_.has(options, 'server.sslCA') &amp;&amp; _.isString(options.server.sslCA)) {
       // create buffer of this file
       options.server.sslCA = [
         fs.readFileSync(path.normalize(process.cwd() + '/' + options.server.sslCA))
@@ -180,7 +226,7 @@ YMongoose.prototype.connect = function (url, options) {
     }
 
     // check if property sslKey exist
-    if (_.has(options, 'server.sslKey') && _.isString(options.server.sslKey)) {
+    if (_.has(options, 'server.sslKey') &amp;&amp; _.isString(options.server.sslKey)) {
       // create buffer of this file
       options.server.sslKey = [
         fs.readFileSync(path.normalize(process.cwd()  + '/' + options.server.sslKey))
@@ -188,7 +234,7 @@ YMongoose.prototype.connect = function (url, options) {
     }
 
     // check if property sslCert exist
-    if (_.has(options, 'server.sslCert') && _.isString(options.server.sslCert)) {
+    if (_.has(options, 'server.sslCert') &amp;&amp; _.isString(options.server.sslCert)) {
       // create buffer of this file
       options.server.sslCert = [
         fs.readFileSync(path.normalize(process.cwd()  + '/' + options.server.sslCert))
@@ -404,7 +450,7 @@ YMongoose.prototype.setPath = function (directory, stype) {
   var type = _.find(types, [ 'name', stype ]);
 
   // is valid format ?
-  if (!_.isUndefined(type) && _.isObject(type) && _.isString(directory) && !_.isEmpty(directory)) {
+  if (!_.isUndefined(type) &amp;&amp; _.isObject(type) &amp;&amp; _.isString(directory) &amp;&amp; !_.isEmpty(directory)) {
     // normalize directory path
     directory = path.isAbsolute(directory) ?
                 directory : path.normalize([ process.cwd(), directory ].join('/'));
@@ -507,8 +553,8 @@ YMongoose.prototype.isReady = function (showErrors) {
   }
 
   // default statement
-  return this.isConnected() && !_.isEmpty(this.paths.model) &&
-         !_.isEmpty(this.paths.validator) && !_.isEmpty(this.paths.method);
+  return this.isConnected() &amp;&amp; !_.isEmpty(this.paths.model) &amp;&amp;
+         !_.isEmpty(this.paths.validator) &amp;&amp; !_.isEmpty(this.paths.method);
 };
 
 /**
@@ -539,10 +585,10 @@ YMongoose.prototype.addModel = function (value) {
     // default statement for next process
     var hasElastic = false;
     // elastic is enabled ?
-    if (_.has(value.model, 'elastic') && _.isObject(value.model.elastic)) {
+    if (_.has(value.model, 'elastic') &amp;&amp; _.isObject(value.model.elastic)) {
       // is enabled ?
-      if (this.modules.elastic.configIsReady() &&
-          _.isBoolean(value.model.elastic.enable) && value.model.elastic.enable) {
+      if (this.modules.elastic.configIsReady() &amp;&amp;
+          _.isBoolean(value.model.elastic.enable) &amp;&amp; value.model.elastic.enable) {
         // debug message
         this.logger.debug([ '[ YMongoose.addModel ] - Elastic mode is enabled for this model.',
                            'Adding default index on all properties to false' ].join(' '));
@@ -582,8 +628,8 @@ YMongoose.prototype.addModel = function (value) {
     schema.elastic = hasElastic;
 
     // add crud ?
-    if (_.has(value.model, 'crud') && _.has(value.model.crud, 'enable') &&
-        _.isObject(value.model.crud) && value.model.crud.enable) {
+    if (_.has(value.model, 'crud') &amp;&amp; _.has(value.model.crud, 'enable') &amp;&amp;
+        _.isObject(value.model.crud) &amp;&amp; value.model.crud.enable) {
       // message
       this.logger.debug([ '[ YMongoose.addModel ] - Crud mode is enabled.',
                          'Try to add default methods' ].join(' '));
@@ -592,7 +638,7 @@ YMongoose.prototype.addModel = function (value) {
       var redisIncludes = false;
 
       // has redis include define ?
-      if (value.model.crud.redis && value.model.crud.redis.include) {
+      if (value.model.crud.redis &amp;&amp; value.model.crud.redis.include) {
         // redis include
         redisIncludes = {
           value   : value.model.crud.redis.include,
@@ -613,8 +659,8 @@ YMongoose.prototype.addModel = function (value) {
     }
 
     // add validator ?
-    if (!_.isUndefined(value.model.validator) && !_.isNull(value.model.validator) &&
-       _.isString(value.model.validator) && !_.isEmpty(value.model.validator)) {
+    if (!_.isUndefined(value.model.validator) &amp;&amp; !_.isNull(value.model.validator) &amp;&amp;
+       _.isString(value.model.validator) &amp;&amp; !_.isEmpty(value.model.validator)) {
       // messsage
       this.logger.debug([ '[ YMongoose.addModel ] - A validator is defined.',
                          'Try to add a validate method.' ].join(' '));
@@ -632,8 +678,8 @@ YMongoose.prototype.addModel = function (value) {
     }
 
     // add methods ??
-    if (!_.isUndefined(value.model.fn) && !_.isNull(value.model.fn) &&
-       _.isArray(value.model.fn) && !_.isEmpty(value.model.fn)) {
+    if (!_.isUndefined(value.model.fn) &amp;&amp; !_.isNull(value.model.fn) &amp;&amp;
+       _.isArray(value.model.fn) &amp;&amp; !_.isEmpty(value.model.fn)) {
       // messsage
       this.logger.debug([ '[ YMongoose.addModel ] - External methods are defined.',
                          'Try to add them.' ].join(' '));
@@ -668,7 +714,7 @@ YMongoose.prototype.addModel = function (value) {
       return this.modules.enums;
     }.bind(this));
 
-    // valid statement & set value to default schema
+    // valid statement &amp; set value to default schema
     var model = this.mongoose.model(value.model.name, schema);
 
     // has elatic ?
@@ -738,7 +784,7 @@ YMongoose.prototype.createCrud = function (value, exclude, redisIncludes) {
 };
 
 /**
- * Create & add a validate function on current schema for create usage
+ * Create &amp; add a validate function on current schema for create usage
  *
  * @param {Object} value default schema to use
  * @param {String} validatorName validator name to retreive on validators files
@@ -806,7 +852,7 @@ YMongoose.prototype.load = function () {
     processed : 0
   };
 
-  // check model definition & controller first
+  // check model definition &amp; controller first
   var model = glob.sync('**/*.json', {
     cwd       : this.paths.model,
     realpath  : true
@@ -867,7 +913,7 @@ YMongoose.prototype.load = function () {
     // message drain ending
     this.logger.debug([ _.repeat('-', 28),
       '[ Process Queue Complete ]', _.repeat('-', 28) ].join(' '));
-    this.logger.info('[ YMongoose.load ] - All Model was processed & loaded.');
+    this.logger.info('[ YMongoose.load ] - All Model was processed &amp; loaded.');
 
     // changed loaded status
     this.loaded = (nbItems.processed === nbItems.total);
@@ -895,7 +941,7 @@ YMongoose.prototype.load = function () {
   async.each(model, function (m, next) {
     // build file name
     var name = m.replace(path.dirname(m), '');
-    // try & catch error
+    // try &amp; catch error
     try {
       // parsed file
       var parsed = JSON.parse(fs.readFileSync(m, 'utf-8'));
@@ -943,8 +989,8 @@ YMongoose.prototype.load = function () {
  */
 YMongoose.prototype.getModel = function (name, isInstance) {
   // is ready ??
-  if (this.isReady(true) && this.isLoaded() &&
-      _.isString(name) && !_.isEmpty(name)) {
+  if (this.isReady(true) &amp;&amp; this.isLoaded() &amp;&amp;
+      _.isString(name) &amp;&amp; !_.isEmpty(name)) {
     // do it in try catch
     try {
       // try to get model
@@ -952,7 +998,7 @@ YMongoose.prototype.getModel = function (name, isInstance) {
       // add mongoose Types on model
       Model.Types = mongoose.Types;
       // valid statement
-      return (_.isBoolean(isInstance) && isInstance) ? new Model() : Model;
+      return (_.isBoolean(isInstance) &amp;&amp; isInstance) ? new Model() : Model;
     } catch (e) {
       // show error
       this.logger.error('[ YMongoose.getModel ] - Model not found. Invalid schema name given.');
@@ -980,3 +1026,20 @@ module.exports = function (l) {
   // default statement
   return new (YMongoose)(l);
 };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>Documentation for application <b>yocto-mongoose<b> was generated at Mon Dec 05 2016 16:27:07 GMT+0400 (RET) with <a href='https://www.npmjs.com/package/yoctodoc'>yocto-doc</a> module - Copyright Yocto © 2016</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

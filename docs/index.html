@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Home - yocto-mongoose</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="styles/custom.css"/>
+    <link type="text/css" rel="stylesheet" href="styles/tomorrow-night.min.css"/>
+    <script type="text/javascript" src="scripts/lodash.min.js"></script>
+    <script type="text/javascript" src="scripts/jquery.min.js"></script>
+    <script type="text/javascript" src="scripts/search.js"></script>
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+  <a href="http://www.yocto.re" target="_blank"><img class="logo" src="./extras/logo-yocto.png" alt="logo-yocto"/></a>
+    <h2><a href="index.html">Home</a><span class="version">v2.2.0</span></h2><input class="search" placeholder="Type your search here ...." /><h3>Classes</h3><ul><li><a href="YMongoose.html">YMongoose</a><ul class='methods'><li data-type='method'><a href="YMongoose.html#addModel">addModel</a></li><li data-type='method'><a href="YMongoose.html#connect">connect</a></li><li data-type='method'><a href="YMongoose.html#createCrud">createCrud</a></li><li data-type='method'><a href="YMongoose.html#createMethod">createMethod</a></li><li data-type='method'><a href="YMongoose.html#createValidator">createValidator</a></li><li data-type='method'><a href="YMongoose.html#disconnect">disconnect</a></li><li data-type='method'><a href="YMongoose.html#enableElasticsearch">enableElasticsearch</a></li><li data-type='method'><a href="YMongoose.html#enableRedis">enableRedis</a></li><li data-type='method'><a href="YMongoose.html#enums">enums</a></li><li data-type='method'><a href="YMongoose.html#getModel">getModel</a></li><li data-type='method'><a href="YMongoose.html#getRedis">getRedis</a></li><li data-type='method'><a href="YMongoose.html#isConnected">isConnected</a></li><li data-type='method'><a href="YMongoose.html#isDisconnected">isDisconnected</a></li><li data-type='method'><a href="YMongoose.html#isLoaded">isLoaded</a></li><li data-type='method'><a href="YMongoose.html#isReady">isReady</a></li><li data-type='method'><a href="YMongoose.html#load">load</a></li><li data-type='method'><a href="YMongoose.html#methods">methods</a></li><li data-type='method'><a href="YMongoose.html#models">models</a></li><li data-type='method'><a href="YMongoose.html#setPath">setPath</a></li><li data-type='method'><a href="YMongoose.html#validators">validators</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+
+    
+
+
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+    <section class="readme">
+        <article><p><a href="https://nodei.co/npm/yocto-mongoose/"><img src="https://nodei.co/npm/yocto-mongoose.png?downloads=true&amp;downloadRank=true&amp;stars=true" alt="NPM"></a></p>
+<p><img src="https://david-dm.org/yoctore/yocto-mongoose.svg" alt="alt text" title="Dependencies Status">
+<a href="https://codeclimate.com/github/yoctore/yocto-mongoose"><img src="https://codeclimate.com/github/yoctore/yocto-mongoose/badges/gpa.svg" alt="Code Climate"></a>
+<a href="https://codeclimate.com/github/yoctore/yocto-mongoose/coverage"><img src="https://codeclimate.com/github/yoctore/yocto-mongoose/badges/coverage.svg" alt="Test Coverage"></a>
+<a href="https://codeclimate.com/github/yoctore/yocto-mongoose"><img src="https://codeclimate.com/github/yoctore/yocto-mongoose/badges/issue_count.svg" alt="Issue Count"></a>
+<a href="https://travis-ci.org/yoctore/yocto-mongoose"><img src="https://travis-ci.org/yoctore/yocto-mongoose.svg?branch=master" alt="Build Status"></a></p>
+<h2>Overview</h2><p>This module is a part of yocto node modules for NodeJS.</p>
+<p>Please see <a href="https://www.npmjs.com/~yocto">our NPM repository</a> for complete list of available tools (completed day after day).</p>
+<p>This module provide a simple database connector for an app based on MongoDb.
+Extra module can be use directly from MongoDb to Redis and/or Elasticsearch if needed.</p>
+<h2>Motivation</h2><p>Create an easy and ready to use connector &amp; model builder based on mongoose / redis / Elasticsearch.</p>
+<h2>Folder structure</h2><p>A specific folder structure was setup for database configuration :</p>
+<ul>
+<li>enums : Contains all enums defined for database</li>
+<li>models : Contains all model definition for an automatic build</li>
+<li>validators : Contains all validator function defined on model configuration files</li>
+<li>methods : Contains all methods defined on model configuration</li>
+</ul>
+<p>All of these folders must be set up before any usage.
+For sure it's possible to set your own directory for each items. (See How to setup path directory part)</p>
+<h2>Dependencies &amp; Validator</h2><ul>
+<li>Validate rules <strong>MUST</strong> be build with <a href="https://www.npmjs.com/package/joi">joi</a> package</li>
+<li>Promise was build with <a href="https://www.npmjs.com/package/q">Q</a> package</li>
+</ul>
+<h2>Model type &amp; list defintiion</h2><ul>
+<li>String</li>
+<li>ObjectId</li>
+<li>Boolean</li>
+<li>Object</li>
+<li>Array or []</li>
+</ul>
+<h2>How to set directories path</h2><p>A method was defined for each path</p>
+<ul>
+<li>models(path) : set directory for models files</li>
+<li>validators(path) : set directory for validators files</li>
+<li>methods(path) : set directory for methods files</li>
+<li>enums(path) : set directory for enums files</li>
+</ul>
+<h2>How to define a new model</h2><p>For this example we want to define &quot;Notify&quot; model.</p>
+<blockquote>
+<p>First you need to go in your models directory
+Create your own folder (not mandatory)
+Create a json file in created folder named like your model name (notify.json)
+Add you model definition on it (see below for example)</p>
+</blockquote>
+<pre class="prettyprint source lang-javascript"><code>{
+  &quot;model&quot; : {
+    &quot;name&quot; : &quot;Notify&quot;, // !!! IMPORANT !!! => This is your model name.
+    &quot;crud&quot; : { // !!! MANDATORY !!! you need define it all the time
+      &quot;enable&quot;  : true, // Set to false if you d'ont need enable automatic add of crud method
+      &quot;exclude&quot; : [] // define here witch method we want to exlude (see CRUD parts for available method)
+    },
+    &quot;properties&quot; : { // Define here your property
+      &quot;status&quot; : {
+        &quot;required&quot; : true,
+        &quot;type&quot;     : &quot;String&quot;
+      },
+      &quot;notify_type&quot; : {
+        &quot;required&quot; : true,
+        &quot;type&quot;     : &quot;String&quot;
+      }
+    }
+  }
+}</code></pre><blockquote>
+<p>Save file, Build &amp; Use (See How To use part)</p>
+</blockquote>
+<h2>How to define a validator / function / enums  attached to the previous define model</h2><h3>How to add a new validator</h3><blockquote>
+<p>First edit you notify.json file created before and set the validator properties by the name of needed function, for example my Function name is &quot;testValidator&quot;</p>
+</blockquote>
+<pre class="prettyprint source lang-javascript"><code>{
+  &quot;model&quot; : {
+    &quot;name&quot; : &quot;Notify&quot;,
+     .....
+    &quot;validator&quot; : &quot;testValidator&quot;,
+  }
+}</code></pre><blockquote>
+<p>Create your structure of directory in validators directory (not mandatory).
+Create your notify.js files that will be contain your validation rules.
+Add into this files your new validation rules</p>
+</blockquote>
+<pre class="prettyprint source lang-javascript"><code>'use strict';
+
+var joi = require('joi');
+
+// valid account schema
+exports.testValidator = function(data) {
+  return joi.object().keys({
+    a : joi.string()
+  });
+};</code></pre><blockquote>
+<p>Save file, Build &amp; Use (See How To use part)</p>
+</blockquote>
+<h3>How to add new function(s)</h3><blockquote>
+<p>First edit your notify.json file and add an &quot;fn&quot; properties, and add list of your methods :</p>
+</blockquote>
+<pre class="prettyprint source lang-javascript"><code>{
+  &quot;model&quot; : {
+    &quot;name&quot; : &quot;Notify&quot;,
+     .....
+    &quot;validator&quot; : &quot;testValidator&quot;,
+    &quot;fn&quot;        : [
+      {
+        &quot;type&quot;  : &quot;static&quot;, // create a static method on schema
+        &quot;name&quot;  : &quot;test1&quot;
+      },
+      {
+        &quot;type&quot;  : &quot;method&quot;, // create a instance method on schema
+        &quot;name&quot;  : &quot;test2&quot;
+      }
+  }
+}</code></pre><blockquote>
+<p>Create your structure of directory in methods directory (not mandatory).</p>
+</blockquote>
+<pre class="prettyprint source lang-javascript"><code>// test 1
+exports.test1 = function() {
+    console.log('test1')
+};
+// test2
+exports.test2 = function() {
+  console.log('test2');
+};</code></pre><blockquote>
+<p>Save file, Build &amp; Use (See How To use part)</p>
+</blockquote>
+<h3>How to access to mongooseTypes from custom functions</h3><pre class="prettyprint source lang-javascript"><code>exports.testTypes = function (enums) {
+  var fn = db.getModel('Model');
+  console.log(fn.Types);
+}</code></pre><p><strong>!!! IMPORTANT !!!</strong> Each function is executed in schema context, so crud or mongoose method was also available.</p>
+<h3>How to add enum value(s)</h3><blockquote>
+<p>Create a &quot;file.json&quot; into enums directory</p>
+<p>Add item like this :</p>
+</blockquote>
+<pre class="prettyprint source lang-javascript"><code>[
+  {
+    &quot;name&quot;  : &quot;notify_type_list&quot;,
+    &quot;value&quot; : [ &quot;email&quot;, &quot;sms&quot;, &quot;notification&quot; ]
+  },
+  {
+    &quot;name&quot;  : &quot;notify_status_list&quot;,
+    &quot;value&quot; : [ &quot;pending&quot;, &quot;processed&quot;, &quot;error&quot; ]
+  }
+]</code></pre><blockquote>
+<p>Use it on your validator by injection dependencices to retreive a value :</p>
+</blockquote>
+<pre class="prettyprint source lang-javascript"><code>exports.testValidator = function (enums) {
+  var status  = enums().get('notify_status_list');
+  var type    = enums().get('notify_type_list');
+ // your code here
+}</code></pre><h3>How to access to mongooseTypes from enums</h3><pre class="prettyprint source lang-javascript"><code>exports.testTypes = function (enums) {
+ // your code here
+ console.log(enums().Types);
+}</code></pre><h2>CRUD methods</h2><p>All defined model have CRUD Method attached by mongoose static function.</p>
+<p>See Below list of method &amp; aliases :</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Available Method</th>
+<th>Alias(es)</th>
+<th>Mongoose methods</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Create</td>
+<td>create</td>
+<td>insert</td>
+<td>save</td>
+</tr>
+<tr>
+<td>Read (Retrieve)</td>
+<td>get / getOne</td>
+<td>read / readOne</td>
+<td>find / findById / findOne</td>
+</tr>
+<tr>
+<td>Update (Modify</td>
+<td>update</td>
+<td>modify</td>
+<td>findByIdAndUpdate / findOneAndUpdate / where</td>
+</tr>
+<tr>
+<td>Delete (Destroy)</td>
+<td>delete</td>
+<td>destroy</td>
+<td>findByIdAndRemove</td>
+</tr>
+</tbody>
+</table>
+<h2>Elasticsearch implementation</h2><h3>Setting up one host or multiple hosts</h3><p>You can provide to our package a multiple hosts connection for <code>elasticsearch</code> part.
+A method <code>elasticHosts</code> are available to define which hosts to use on <code>mongoosastic</code>.</p>
+<pre class="prettyprint source lang-javascript"><code>
+var db = require('yocto-mongoose')();
+
+// Connect
+db.connect('MONGO_URL').then(function() {
+  db.enableElasticsearch([ { host : '127.0.0.1', port : 9200 } ]);
+});</code></pre><h3>Basic configuration</h3><p>Elastic search implemantion are builed with <a href="https://www.npmjs.com/package/mongoosastic">mongoosastic</a> package</p>
+<p>Elastic search rules are setted up during model build.
+You can define index directly on model definition. See a simple example below :</p>
+<pre class="prettyprint source lang-javascript"><code>{
+  &quot;model&quot; : {
+    &quot;name&quot; :
+    &quot;crud&quot; : {
+      &quot;enable&quot;  : true,
+      &quot;exclude&quot; : []
+    },
+    &quot;elastic&quot; : {
+      &quot;enable&quot; : true, // !!! IMPORTANT !!! must be provide to enable elastic search mapping
+      &quot;options&quot; : {} // see : https://github.com/mongoosastic/mongoosastic#setup (host, hosts, protocol, port is removed if given : See multiple host usage)
+    },
+    &quot;properties&quot; : {
+      &quot;status&quot; : {
+        &quot;required&quot; : true,
+        &quot;type&quot;     : &quot;String&quot;
+        &quot;es_indexed&quot; : true // here we define that this properties must be indexed.
+        &quot;es_type&quot;    : &quot;String&quot; // another possible value
+        &quot;es_include_in_parent&quot; : true // same thing
+      },
+      &quot;notify_type&quot; : {
+        &quot;required&quot; : true,
+        &quot;type&quot;     : &quot;String&quot;
+      }
+    }
+  }
+}</code></pre><h3>Usage</h3><p>On each model, where elastic is enabled a method search was added.</p>
+<p>To do an <code>elasticsearch</code> query just do :</p>
+<pre class="prettyprint source lang-javascript"><code>
+  var query = {}; // Here define your query
+  var hydrate = false; // set to true if you wan use hydrate method
+  var hydrateOptions = {}; // set here your hydrate options
+
+  // process request
+  account.esearch(query, hydrate, hydrateOptions).then(function(success) {
+    // your logic code here
+  }).catch(function (error) {
+    // your logic code here
+  });</code></pre><h3>List of available keys</h3><p>For more complex implementation see <a href="https://www.npmjs.com/package/mongoosastic">mongoosastic</a> package documentation to see available keys</p>
+<h3>Use ssl connection or other options</h3><pre class="prettyprint source lang-javascript"><code>
+var db = require('yocto-mongoose')();
+
+// define here your elasticsearch options
+var options = {
+  ssl : {
+    ca: fs.readFileSync(__dirname + &quot;/cert.pem&quot;),
+    rejectUnauthorized: true
+  }
+};
+
+// Connect
+db.connect('MONGO_URL').then(function() {
+  db.elasticHosts([ { host : '127.0.0.1', port : 9200, protocol : 'https' } ], options);
+});</code></pre><p>To discover a complete list of options see : <a href="https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/configuration.html">official elastic configuration</a></p>
+<h2>Redis implementation</h2><p>Our redis implementation use ioredis module but only use set/get method with expire time for the moment.</p>
+<p>Be careful : Redis &gt; 2.6 is required to use this module. In fact expire time is not implemented on Redis &lt; 2.6.
+For more details please read <a href="http://redis.io/commands/set">official redis documentation</a></p>
+<h3>Setting up one host or multiple hosts</h3><p>By default redis instance use single connection :</p>
+<pre class="prettyprint source lang-javascript"><code>
+var db = require('yocto-mongoose')();
+
+// Connect
+db.connect('MONGO_URL').then(function() {
+  db.enableRedis([ { host : '127.0.0.1', port : 6379 }, { host : '127.0.0.1', port : 6379 }]);
+});</code></pre><h3>Setting up one host or multiple host in a cluster mode</h3><p>Just add true on second parameters of <code>enableRedis</code> method.</p>
+<pre class="prettyprint source lang-javascript"><code>
+var db = require('yocto-mongoose')();
+
+// Connect
+db.connect('MONGO_URL').then(function() {
+  db.enableRedis([ { host : '127.0.0.1', port : 6379 }, { host : '127.0.0.1', port : 6379 }], true);
+});</code></pre><h3>Usage</h3><p>Redis is implemented in two ways in this modules, from custom methods and crud methods.</p>
+<h4>Redis on Crud methods</h4><p>To use redis on Crud method just extend your config file like this :</p>
+<pre class="prettyprint source lang-javascript"><code>{
+  &quot;model&quot; : {
+    &quot;name&quot; : &quot;Notify&quot;,
+    &quot;crud&quot; : {
+      &quot;enable&quot;  : true,
+      &quot;exclude&quot; : [],
+      &quot;redis&quot;   : { // HERE YOUR REDIS PART
+        &quot;enable&quot;  : true, // MUST BE SET TO TRUE TO ENABLE THIS FUNCTIONALITY
+        &quot;expire&quot;  : 10, // EXPIRE TIME FOR STORAGE IN SECONDS
+        &quot;include&quot; : [ &quot;get&quot;, &quot;getOne&quot; ] // CRUD METHODS ALLOWED TO USE REDIS
+      }
+    },
+    &quot;properties&quot; : {
+      &quot;status&quot; : {
+        &quot;required&quot; : true,
+        &quot;type&quot;     : &quot;String&quot;
+      },
+      &quot;notify_type&quot; : {
+        &quot;required&quot; : true,
+        &quot;type&quot;     : &quot;String&quot;
+      }
+    }
+  }
+}</code></pre><p>This configuration enable to your current model redis on <code>include</code> method (get or getOne).
+On each request on <code>include</code> method redis will be check if value exists before each mongo request.
+In case of value was found, we return founded value, otherwise we store the value, with given expire time before process the mongo access.</p>
+<p><strong>The storage key is build automatically by our redis implementation</strong></p>
+<p>To see your data from a GUI tool download <a href="https://github.com/luin/medis">Medis</a></p>
+<h4>Redis on custom methods</h4><p>To use redis on custom method just extend your config file like this :</p>
+<pre class="prettyprint source lang-javascript"><code>{
+  &quot;model&quot; : {
+    &quot;name&quot; : &quot;Notify&quot;,
+     .....
+    &quot;validator&quot; : &quot;testValidator&quot;,
+    &quot;fn&quot;        : [
+      {
+        &quot;type&quot;  : &quot;static&quot;, // create a static method on schema
+        &quot;name&quot;  : &quot;test1&quot;,
+        &quot;redis&quot;   : { // HERE YOUR REDIS PART
+          &quot;enable&quot;  : true, // MUST BE SET TO TRUE TO ENABLE THIS FUNCTIONALITY
+          &quot;expire&quot;  : 10, // EXPIRE TIME FOR STORAGE IN SECONDS
+        }
+      },
+      {
+        &quot;type&quot;  : &quot;method&quot;, // create a instance method on schema
+        &quot;name&quot;  : &quot;test2&quot;
+      }
+  }
+}</code></pre><p>After that your can access to the redis instance in your custom function and use <code>add</code>, <code>get</code>, <code>delete</code> or <code>flush</code> method.</p>
+<p>An alias to the add method is provide by the <code>set</code> method.
+An alias to the delete method is provide by the <code>remove</code> method.</p>
+<pre class="prettyprint source lang-javascript"><code>// valid account schema
+exports.test1 = function(data) {
+  var redis   = this.redis().instance;
+  var expire  = this.redis().expire;
+
+  // add a new key/value
+  redis.add('aaa', { foo : 'abar' }, expire);
+  // Or
+  redis.set('aaa', { foo : 'abar' }, expire);
+
+  // get value
+  redis.get('aaa').then(function (success) {
+    // do stuff
+  }).catch(function (error) {
+    // do another stuff here
+  });
+
+  // delete an value
+  redis.delete('aaa');
+  // Or
+  redis.remove('aaa');
+
+  // flush values
+  redis.flush().then(function (success) {
+    // do stuff
+  })
+  // flush values with a custom pattern
+  redis.flush('MY_PATTERN').then(function (success) {
+    // do stuff
+  })
+};</code></pre></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>Documentation for application <b>yocto-mongoose<b> was generated at Mon Dec 05 2016 16:27:07 GMT+0400 (RET) with <a href='https://www.npmjs.com/package/yoctodoc'>yocto-doc</a> module - Copyright Yocto © 2016</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
