@@ -17,7 +17,8 @@
         "type"   : {
           "number"        : {
             "type"      : "String",
-            "required"  : true
+            "required"  : true,
+            "ym_crypt"     : true
           },
           "supplement"    : {
             "type"      : "String",

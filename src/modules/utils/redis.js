@@ -16,6 +16,7 @@ var fs        = require('fs');
  * @author : Mathieu ROBERT <mathieu@yocto.re>
  * @copyright : Yocto SAS, All right reserved
  *
+ * @param {Object} logger default logger intance
  * @class RedisUtils
  */
 function RedisUtils (logger) {
@@ -24,18 +25,27 @@ function RedisUtils (logger) {
    *
    * @property logger
    */
-  this.logger     = logger;
+  this.logger = logger;
+
   /**
    * Default host to use
    *
    * @type {Array}
    * @default [ { host : '127.0.0.1', port : 6379 } ]
    */
-  this.hosts      = [ { host : '127.0.0.1', port : 6379 } ];
+  this.hosts = [ {
+    host : '127.0.0.1',
+    port : 6379
+  } ];
+
   /**
    * Default additional option config
    */
-  this.options    = { retry : 2000, enableReadyCheck : true };
+  this.options = {
+    retry            : 2000,
+    enableReadyCheck : true
+  };
+
   /**
    * Default state of elastic config
    *
@@ -43,10 +53,12 @@ function RedisUtils (logger) {
    * @default false
    */
   this.isReady = false;
+
   /**
    * Default cluster
    */
   this.cluster = null;
+
   /**
    * Default expire time
    */
@@ -59,7 +71,7 @@ function RedisUtils (logger) {
  * @return {Array} list of hosts to use
  */
 RedisUtils.prototype.getHosts = function () {
-  // default statement
+  // Default statement
   return this.hosts;
 };
 
@@ -69,15 +81,17 @@ RedisUtils.prototype.getHosts = function () {
  * @return {Object} list of options to use
  */
 RedisUtils.prototype.getOptions = function () {
-  // default statement
+  // Default statement
   return this.options;
 };
 
 /**
  * Process redis disconnect action
+ *
+ * @return {Boolean} true in case of success of disconnect, false otherwise
  */
 RedisUtils.prototype.disconnect = function () {
-  // process disconnect
+  // Process disconnect
   return !_.isNull(this.cluster) ? this.cluster.disconnect() : false;
 };
 
@@ -91,97 +105,110 @@ RedisUtils.prototype.disconnect = function () {
  * @return {Boolean} true if all if ok false otherwise
  */
 RedisUtils.prototype.connect = function (hosts, options, defaultExpireTime, cluster) {
-  // validation schema
+  // Validation schema
   var schema = joi.array().required().items(
     joi.object().keys({
-      host      : joi.string().required().empty().default('127.0.0.1'),
-      family    : joi.number().optional().valid([ 4, 6 ]),
-      password  : joi.string().optional().empty().min(32),
-      db        : joi.number().optional(),
-      port      : joi.number().required().default(6380),
-      tls       : joi.object().optional().keys({
-        ca      : joi.string().optional().empty(),
-        key     : joi.string().optional().empty(),
-        cert    : joi.string().optional().empty(),
+      host     : joi.string().required().empty().default('127.0.0.1'),
+      family   : joi.number().optional().valid([ 4, 6 ]),
+      password : joi.string().optional().empty().min(32),
+      db       : joi.number().optional(),
+      port     : joi.number().required().default(6380),
+      tls      : joi.object().optional().keys({
+        ca   : joi.string().optional().empty(),
+        key  : joi.string().optional().empty(),
+        cert : joi.string().optional().empty()
       })
-    }).default({ host : '127.0.0.1', port : 6380 })
-  ).default([ { host : '127.0.0.1', port : 6380 } ]);
+    }).default({
+      host : '127.0.0.1',
+      port : 6380
+    })
+  ).default([ {
+    host : '127.0.0.1',
+    port : 6380
+  } ]);
 
-  // validate given config
+  // Validate given config
   var validate = joi.validate(hosts, schema);
 
-  // has error ?
+  // Has error ?
   if (validate.error) {
-    // log error message
+    // Log error message
     this.logger.warning([ '[ RedisUtils.connect ] - Invalid host config given :',
-                          validate.error ] .join(' '));
-    // default invalid statement
+      validate.error ].join(' '));
+
+    // Default invalid statement
     return false;
   }
 
-  // set default expire time
+  // Set default expire time
   if (_.isNumber(defaultExpireTime) && defaultExpireTime > 0) {
-    // add new value of expire time if is not define on request
+    // Add new value of expire time if is not define on request
     this.defaultExpireTime = defaultExpireTime;
   }
 
-  // set hosts config
-  this.hosts    = validate.value;
-  // save givent options, this value will be merge before the connection
-  this.options  = _.merge(this.options, (options || {}));
+  // Set hosts config
+  this.hosts = validate.value;
 
-  // has an default expire times ?
+  // Save givent options, this value will be merge before the connection
+  this.options = _.merge(this.options, options || {});
+
+  // Has an default expire times ?
   if (_.has(this.options, 'retry') && _.isNumber(this.options.retry)) {
-    // add retry strategy code
-    _.extend(this.options, { clusterRetryStrategy : function () {
-      // default statement
-      return this.options.retry;
-    }.bind(this) });
+    // Add retry strategy code
+    _.extend(this.options, {
+      clusterRetryStrategy : function () {
+      // Default statement
+        return this.options.retry;
+      }.bind(this)
+    });
   }
 
-  // has tls ca defined ?
+  // Has tls ca defined ?
   if (_.has(this.hosts, 'tls.ca')) {
-    // define ca
+    // Define ca
     this.hosts.tls.ca = [ fs.readFileSync(this.hosts.tls.ca) ];
   }
 
-  // has tls ca defined ?
+  // Has tls ca defined ?
   if (_.has(this.hosts, 'tls.key')) {
-    // define ca
+    // Define ca
     this.hosts.tls.key = fs.readFileSync(this.hosts.tls.key);
   }
 
-  // has tls ca defined ?
+  // Has tls ca defined ?
   if (_.has(this.hosts, 'tls.cert')) {
-    // define ca
+    // Define ca
     this.hosts.tls.cert = fs.readFileSync(this.hosts.tls.cert);
   }
 
-  // is cluster mode ?
+  // Is cluster mode ?
   if (_.isBoolean(cluster) && cluster) {
-    // info message
+    // Info message
     this.logger.info('[ RedisUtils.connect ] - Try to connect in a cluster mode');
-    // default redis options
+
+    // Default redis options
     this.cluster = new Redis.Cluster(this.hosts, this.options);
   } else {
-    // get default config value
+    // Get default config value
     var params = _.first(validate.value);
-    // info message
+
+    // Info message
+
     this.logger.info('[ RedisUtils.connect ] - Try to connect in classic mode');
 
-    // has more than one items ?
+    // Has more than one items ?
     if (_.size(validate.value) > 1) {
-      // warning message
+      // Warning message
       this.logger.warning([ '[ RedisUtils.connect ] - Redis is not starting on cluster mode',
-                            'connections parameters used will be the first item of current config.'
-                          ].join(' '));
+        'connections parameters used will be the first item of current config.'
+      ].join(' '));
     }
 
-    // default redis options
+    // Default redis options
     this.cluster = new Redis(params);
   }
 
-  // define event
+  // Define event
   return this.listenEvents();
 };
 
@@ -192,7 +219,7 @@ RedisUtils.prototype.connect = function (hosts, options, defaultExpireTime, clus
  * @return {String} given key normalized
  */
 RedisUtils.prototype.normalizeKey = function (key) {
-  // default statement
+  // Default statement
   return _.snakeCase(_.deburr(JSON.stringify(key))).toLowerCase();
 };
 
@@ -205,7 +232,7 @@ RedisUtils.prototype.normalizeKey = function (key) {
  * @return {Object} default promise to catch
  */
 RedisUtils.prototype.set = function (key, value, expire) {
-  // default statement
+  // Default statement
   return this.add(key, value, expire);
 };
 
@@ -218,32 +245,34 @@ RedisUtils.prototype.set = function (key, value, expire) {
  * @return {Object} default promise to catch
  */
 RedisUtils.prototype.add = function (key, value, expire) {
-  // normalize expire time
+  // Normalize expire time
   expire = _.isNumber(expire) && expire > 0 ? expire : this.defaultExpireTime;
 
-  // normalize key
+  // Normalize key
   key = this.normalizeKey(key);
 
-  // is ready ?
+  // Is ready ?
   if (this.isReady) {
-    // expire is a valid time
+    // Expire is a valid time
     if (expire > 0) {
-      // log message
+      // Log message
       this.logger.debug([ '[ RedisUtils.add ] - Adding key [',
         key, '] with [', expire, '] seconds of expires times,',
         'with value :', utils.obj.inspect(value) ].join(' '));
-      // add with expire time
+
+      // Add with expire time
       this.cluster.set(key, JSON.stringify(value), 'EX', expire);
     } else {
-      // log message
+      // Log message
       this.logger.debug([ '[ RedisUtils.add ] - Adding key [',
         key, '] with value :', utils.obj.inspect(value) ].join(' '));
-      // add without expire time
+
+      // Add without expire time
       this.cluster.set(key, JSON.stringify(value));
     }
   }
 
-  // default statement
+  // Default statement
   return this.get(key);
 };
 
@@ -253,36 +282,40 @@ RedisUtils.prototype.add = function (key, value, expire) {
  * @return {boolean} return success status of deleting
  */
 RedisUtils.prototype.remove = function () {
-  // create async process
+  // Create async process
   var deferred = Q.defer();
 
-  // build properly all given keys and normalize it
+  // Build properly all given keys and normalize it
   var keys = _.flatten(_.map(arguments));
 
-  // is ready ?
+  // Is ready ?
   if (this.isReady) {
-    // create a pipeline to process multiple delete
+    // Create a pipeline to process multiple delete
     var pipeline = this.cluster.pipeline();
-    // parse all keys
+
+    // Parse all keys
+
     keys.forEach(function (key) {
-      // prepare deletion
+      // Prepare deletion
       pipeline.del(this.normalizeKey(key));
     }.bind(this));
-    // exec pipeline
+
+    // Exec pipeline
     pipeline.exec().then(function () {
-      // log message
+      // Log message
       this.logger.debug([ '[ RedisUtils.remove ] - Remove keys',
         utils.obj.inspect(keys), 'was processed' ].join(' '));
-      // resolve promise
+
+      // Resolve promise
       deferred.resolve();
     }.bind(this));
   } else {
-    // log message
+    // Log message
     this.logger.warning([ '[ RedisUtils.remove ] - keys [',
       keys, '] was not removed because connection is down' ].join(' '));
   }
 
-  // default statement
+  // Default statement
   return deferred.promise;
 };
 
@@ -293,50 +326,53 @@ RedisUtils.prototype.remove = function () {
  * @return {Object} promise to catch
  */
 RedisUtils.prototype.flush = function (pattern) {
-  // create async process
+  // Create async process
   var deferred = Q.defer();
 
-  // normalize properly pattern to use
-  pattern  = _.isString(pattern) && !_.isEmpty(pattern) ? pattern : '*';
+  // Normalize properly pattern to use
+  pattern = _.isString(pattern) && !_.isEmpty(pattern) ? pattern : '*';
 
-  // current size length, we use it to show a correct message on end stream/pipeline process.
+  // Current size length, we use it to show a correct message on end stream/pipeline process.
   var sizes = 0;
 
-  // create stream
+  // Create stream
   var stream = this.cluster.scanStream({
     match : pattern
   });
 
-  // log message
+  // Log message
   this.logger.debug('[ RedisUtils.flush ] - flush was starting.');
 
-  // catch data on created stream
+  // Catch data on created stream
   stream.on('data', function (keys) {
-    // change sizes valud for end process
+    // Change sizes valud for end process
     sizes += _.size(keys);
-    // has items ?
+
+    // Has items ?
     if (_.size(keys) > 0) {
-      // process call with default method
-      this.remove.call(this, keys);
+      // Process call with default method
+      this.remove(keys);
     }
   }.bind(this));
 
-  // when is finish what we do ?
+  // When is finish what we do ?
   stream.on('end', function () {
-    // no size ???
+    // No size ???
     if (sizes === 0) {
-      // log message
+      // Log message
       this.logger.debug([ '[ RedisUtils.flush ] - No keys found for given pattern [',
-        pattern, (pattern === '*' ? '(Default) ]' : ']')].join(' '));
+        pattern, pattern === '*' ? '(Default) ]' : ']' ].join(' '));
     }
-    // log message
+
+    // Log message
     this.logger.debug([ '[ RedisUtils.flush ] - flush was ending.',
       sizes, 'keys was removed' ].join(' '));
-    // all is ok
+
+    // All is ok
     deferred.resolve();
   }.bind(this));
 
-  // default statement
+  // Default statement
   return deferred.promise;
 };
 
@@ -346,7 +382,7 @@ RedisUtils.prototype.flush = function (pattern) {
  * @return {Object} default promise to catch
  */
 RedisUtils.prototype.delete = function () {
-  // default statement
+  // Default statement
   return this.remove(_.flatten(_.map(arguments)));
 };
 
@@ -357,36 +393,38 @@ RedisUtils.prototype.delete = function () {
  * @return {Object} default promise to catch
  */
 RedisUtils.prototype.get = function (key) {
-  // create async process
+  // Create async process
   var deferred = Q.defer();
 
-  // is ready ?
+  // Is ready ?
   if (!this.isReady) {
-    // reject
+    // Reject
     deferred.reject('Redis is not ready cannot process get action');
   } else {
-    // get value
+    // Get value
     this.cluster.get(this.normalizeKey(key), function (error, result) {
-      // has error ?
+      // Has error ?
       if (!error) {
-        // result is null ?
+        // Result is null ?
         if (!_.isNull(result)) {
-          // resolve with result
+          // Resolve with result
           deferred.resolve(JSON.parse(result));
         } else {
-          // reject with null value
+          // Reject with null value
           deferred.reject(key);
         }
       } else {
-        // log error
+        // Log error
         this.logger.error([ '[ RedisUtils.get ] - Cannot get value for key [',
           this.normalizeKey(key), '] on redis :', error ].join(' '));
-        // reject with error
+
+        // Reject with error
         deferred.reject(error);
       }
     }.bind(this));
   }
-  // default statement
+
+  // Default statement
   return deferred.promise;
 };
 
@@ -396,53 +434,84 @@ RedisUtils.prototype.get = function (key) {
  * @return {Boolean} return true when event was binded
  */
 RedisUtils.prototype.listenEvents = function () {
-  // default events
+  // Default events
   var events = [
-    { key : 'connect', message      : 'is connecting' },
-    { key : 'ready', message        : 'is ready' },
-    { key : 'error', message        : 'errored' },
-    { key : 'close', message        : 'is closing' },
-    { key : 'reconnecting', message : 'is reconnecting' },
-    { key : 'end', message          : 'is ending' },
-    { key : '+node', message        : 'connecting to a new node' },
-    { key : '-node', message        : 'disconnecting from a node' },
-    { key : 'node error', message   : 'is on error on a node' }
+    {
+      key     : 'connect',
+      message : 'is connecting'
+    },
+    {
+      key     : 'ready',
+      message : 'is ready'
+    },
+    {
+      key     : 'error',
+      message : 'errored'
+    },
+    {
+      key     : 'close',
+      message : 'is closing'
+    },
+    {
+      key     : 'reconnecting',
+      message : 'is reconnecting'
+    },
+    {
+      key     : 'end',
+      message : 'is ending'
+    },
+    {
+      key     : '+node',
+      message : 'connecting to a new node'
+    },
+    {
+      key     : '-node',
+      message : 'disconnecting from a node'
+    },
+    {
+      key     : 'node error',
+      message : 'is on error on a node'
+    }
   ];
 
-  // parse all events
+  // Parse all events
   _.each(events, function (e) {
-    // catch all event
+    // Catch all event
     this.cluster.on(e.key, function (message) {
-      // is ready ?
+      // Is ready ?
       if (e.key === 'ready') {
-        // change ready state value
+        // Change ready state value
         this.isReady = true;
       }
-      // error event ? to change ready state
+
+      // Error event ? to change ready state
       if (_.includes([ 'error', 'close', 'reconnecting', 'end', 'node error' ], e.key)) {
-        // change ready state value
+        // Change ready state value
         this.isReady = false;
       }
-      // log message
-      this.logger[ e.key !== 'ready' ? 'debug' : 'info' ]([
+
+      // Log message
+      this.logger[e.key !== 'ready' ? 'debug' : 'info']([
         '[ RedisUtils.listenEvents ] – Redis', e.message,
-        (message ? [ '=>', message ].join(' ') : '')
+        message ? [ '=>', message ].join(' ') : ''
       ].join(' '));
     }.bind(this));
   }.bind(this));
 
-  // default statement
+  // Default statement
   return true;
 };
 
 // Default export
 module.exports = function (l) {
-  // is a valid logger ?
+  // Is a valid logger ?
   if (_.isUndefined(l) || _.isNull(l)) {
     logger.warning('[ RedisUtils.constructor ] - Invalid logger given. Use internal logger');
-    // assign
+
+    // Assign
     l = logger;
   }
-  // default statement
-  return new (RedisUtils)(l);
+
+  // Default statement
+  return new RedisUtils(l);
 };

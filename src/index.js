@@ -21,6 +21,7 @@ var modMethod        = require('./modules/method');
 var modEnums         = require('./modules/enum');
 var modElastic       = require('./modules/utils/elastic');
 var modRedis         = require('./modules/utils/redis');
+var modCrypt         = require('./modules/crypto');
 
 // Use q. to handle default promise in mongoose
 mongoose.Promise = require('q').Promise;
@@ -100,7 +101,8 @@ function YMongoose (l) {
     method        : modMethod(l),
     enums         : modEnums(l, mongoose.Types),
     elastic       : modElastic(l),
-    redis         : modRedis(l)
+    redis         : modRedis(l),
+    crypt         : modCrypt(l)
   };
 }
 
@@ -558,9 +560,24 @@ YMongoose.prototype.addModel = function (value) {
       }
     }
 
-    // schema value
-    var schema = new Schema(value.model.properties);
+    // save and setup the current algorythm and key to use on crypto process
+    this.modules.crypt.setAlgorithmAndKey(value.model.crypto);
+    // prepare item to crypt process
+    value.model.properties = this.modules.crypt.prepare(value.model.properties);
 
+    // schema value
+    var schema = new Schema(value.model.properties, { runSettersOnQuery: true });
+    // Set toObject method to use getters to force usage of getters
+    // This apply all defined getter methods on current schema
+    schema.set('toObject', { getters: true, virtuals : true, transform : function (doc, ret, options) {
+      // remove the _id of every document before returning the result
+      if (_.has(ret, 'id')) {
+        delete ret.id;
+      }
+      // return current document
+      return ret;
+    }});
+    // append properties for crypto process
     // has elastic enable ?
     if (hasElastic) {
       // debug message
@@ -826,7 +843,14 @@ YMongoose.prototype.load = function () {
           include : joi.array().items(joi.string().empty().valid([ 'get', 'getOne' ]))
         })
       }).allow('enable', 'exclude'),
-      validator   : joi.string().optional()
+      validator   : joi.string().optional(),
+      crypto      : joi.object().optional().keys({
+        hashType  : joi.string().required().empty().valid('aes256'),
+        hashKey   : joi.string().required().empty().min(32)
+      }).default({
+        hashType  : 'aes256',
+        hashKey   : ''
+      })
     }).unknown()
   }).unknown();
 
@@ -850,7 +874,7 @@ YMongoose.prototype.load = function () {
       return callback(message);
     } else {
       // add new model
-      this.addModel(task.data).then(function () {
+      this.addModel(status.value).then(function () {
         // change nb added items value
         nbItems.processed++;
         // normal process all is ok

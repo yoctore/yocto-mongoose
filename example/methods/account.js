@@ -6,13 +6,14 @@ var Q = require('q');
 exports.test1 = function(data) {
   var deferred = Q.defer();
   //console.log(this.redis());
-  //console.log('test1');
+  console.log('test1');
   //this.get(data, { foo : 'bar' } );
   //console.log('redis Instance', this.redis());
 //  console.log('redis Expire time', this.redis());
   //console.log(arguments);
   deferred.resolve('Yeahhhh');
-  console.log('TYPES =>', this.Types);
+  //console.log(this.)
+  //console.log('TYPES =>', this.Types);
   // test redis
   /*this.redis().instance.add('aaa', { foo : 'abar' }, this.redis().expire);
   this.redis().instance.get('aaa').then(function (success) {

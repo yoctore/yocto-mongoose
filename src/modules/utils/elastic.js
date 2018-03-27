@@ -12,6 +12,7 @@ var utils     = require('yocto-utils');
  * @author : Mathieu ROBERT <mathieu@yocto.re>
  * @copyright : Yocto SAS, All right reserved
  *
+ * @param {Object} logger default logger intance
  * @class ElasticUtils
  */
 function ElasticUtils (logger) {
@@ -20,18 +21,21 @@ function ElasticUtils (logger) {
    *
    * @property logger
    */
-  this.logger     = logger;
+  this.logger = logger;
+
   /**
    * Default host to use
    *
    * @type {Array}
    * @default [ '127.0.0.1:9200' ]
    */
-  this.hosts      = [ '127.0.0.1:9200' ];
+  this.hosts = [ '127.0.0.1:9200' ];
+
   /**
    * Default additional option config
    */
-  this.options    = {};
+  this.options = {};
+
   /**
    * Default state of elastic config
    *
@@ -49,29 +53,32 @@ function ElasticUtils (logger) {
  * @return {Object} default object processed
  */
 ElasticUtils.prototype.addDefaultIndexes = function (obj) {
-  // first test
+  // First test
   if (!obj || !_.isObject(obj)) {
-    // default statement
+    // Default statement
     return obj;
   }
 
-  // third test
+  // Third test
   if (_.isArray(obj)) {
-    // map
+    // Map
     return _.map(obj, this.addDefaultIndexes.bind(this));
   }
 
-  // default statement
+  // Default statement
   return _.reduce(Object.keys(obj), function (acc, key) {
-    // is Object ? so add elastic index
+    // Is Object ? so add elastic index
     if (_.isObject(obj[key])) {
-      // add default elastic indexes
-      _.merge(obj[key], utils.obj.underscoreKeys({ esIndexed : false }));
+      // Add default elastic indexes
+      _.merge(obj[key], utils.obj.underscoreKeys({
+        esIndexed : false
+      }));
     }
-    // set to current key
+
+    // Set to current key
     acc[key] = this.addDefaultIndexes(obj[key]);
 
-    // default statement
+    // Default statement
     return acc;
   }.bind(this), {});
 };
@@ -82,7 +89,7 @@ ElasticUtils.prototype.addDefaultIndexes = function (obj) {
  * @return {Array} list of hosts to use
  */
 ElasticUtils.prototype.getHosts = function () {
-  // default statement
+  // Default statement
   return this.hosts;
 };
 
@@ -92,7 +99,7 @@ ElasticUtils.prototype.getHosts = function () {
  * @return {Object} list of options to use
  */
 ElasticUtils.prototype.getOptions = function () {
-  // default statement
+  // Default statement
   return this.options;
 };
 
@@ -104,19 +111,22 @@ ElasticUtils.prototype.getOptions = function () {
  * @return {Boolean} true if all if ok false otherwise
  */
 ElasticUtils.prototype.enableHosts = function (hosts, options) {
-  // is valid before set ?
+  // Is valid before set ?
   if (_.isArray(hosts) && !_.isEmpty(hosts)) {
-    // set hosts config
-    this.hosts    = hosts;
-    // save givent options, this value will be merge before the connection
-    this.options  = options || {};
-    // change state of ready
-    this.isReady  = true;
-    // default valid statement
+    // Set hosts config
+    this.hosts = hosts;
+
+    // Save givent options, this value will be merge before the connection
+    this.options = options || {};
+
+    // Change state of ready
+    this.isReady = true;
+
+    // Default valid statement
     return true;
   }
 
-  // default statement
+  // Default statement
   return false;
 };
 
@@ -126,18 +136,20 @@ ElasticUtils.prototype.enableHosts = function (hosts, options) {
  * @return {Boolean} true if is ready false otherwise
  */
 ElasticUtils.prototype.configIsReady = function () {
-  // default statement
+  // Default statement
   return this.isReady;
 };
 
 // Default export
 module.exports = function (l) {
-  // is a valid logger ?
+  // Is a valid logger ?
   if (_.isUndefined(l) || _.isNull(l)) {
     logger.warning('[ ElasticUtils.constructor ] - Invalid logger given. Use internal logger');
-    // assign
+
+    // Assign
     l = logger;
   }
-  // default statement
-  return new (ElasticUtils)(l);
+
+  // Default statement
+  return new ElasticUtils(l);
 };

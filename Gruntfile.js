@@ -1,70 +1,77 @@
 'use strict';
 
 module.exports = function (grunt) {
-  // init config
+  // Init config
   grunt.initConfig({
-    // default package
-    pkg       : grunt.file.readJSON('package.json'),
+    // Default package
+    pkg : grunt.file.readJSON('package.json'),
 
-    // hint our app
+    // Hint our app
     yoctohint : {
-      options  : {},
-      all      : [ 'src/***', 'Gruntfile.js' ]
+      json : [
+        'package.json'
+      ],
+      node : [
+        'Gruntfile.js', 'src/*/*'
+      ],
+      options : {
+        compatibility : true
+      }
     },
 
     // Uglify our app
-    uglify    : {
+    uglify : {
       options : {
-        banner  : '/* <%= pkg.name %> - <%= pkg.description %> - V<%= pkg.version %> */\n'
+        banner : '/* <%= pkg.name %> - <%= pkg.description %> - V<%= pkg.version %> */\n'
       },
-      api     : {
+      api : {
         files : [ {
-          expand  : true,
-          cwd     : 'src',
-          src     : '**/*.js',
-          dest    : 'dist'
+          expand : true,
+          cwd    : 'src',
+          src    : '**/*.js',
+          dest   : 'dist'
         } ]
       }
     },
 
-    // test our app
-    mochacli  : {
+    // Test our app
+    mochacli : {
       options : {
-        'reporter'       : 'spec',
-        'inline-diffs'   : false,
-        'no-exit'        : true,
-        'force'          : false,
-        'check-leaks'    : true,
-        'bail'           : false
+        reporter       : 'spec',
+        'inline-diffs' : false,
+        'no-exit'      : true,
+        force          : false,
+        'check-leaks'  : true,
+        bail           : false
       },
-      all     : [ 'tests/unit/*.js' ]
+      all : [ 'tests/unit/*.js' ]
     },
-    mochaTest :  {
-      unit  : {
+    mochaTest : {
+      unit : {
         options : {
           reporter          : 'spec',
-          quiet             : false, // Optionally suppress output to standard out (defaults to false)
-          clearRequireCache : false, // Optionally clear the require cache before running tests (defaults to false)
-          noFail            : false // Optionally set to not fail on failed tests (will still fail on other errors)
+          quiet             : false,
+          clearRequireCache : false,
+          noFail            : false
         },
-        src     : [ 'test/*.js' ]
+        src : [ 'test/*.js' ]
       }
     },
-    yoctodoc  : {
+    yoctodoc : {
       options : {
         destination : './docs'
       },
-      all     : [ 'src/***.js' ]
+      all : [ 'src/***.js' ]
     }
   });
 
-  // load tasks
+  // Load tasks
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('yocto-hint');
   grunt.loadNpmTasks('yocto-doc');
 
-  // register tasks
+  // Register tasks
   grunt.registerTask('hint', [ 'yoctohint' ]);
   grunt.registerTask('test', 'mochaTest');
   grunt.registerTask('build', [ 'yoctohint', 'uglify' ]);

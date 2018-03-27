@@ -33,6 +33,23 @@
         "index"        : true,
         "ym_crypt"     : true
       },
+      "objtest" : {
+        "required" : true,
+        "type" : {
+          "objfoo" : { 
+            "required" : true,
+            "type" : [
+              {
+                "objbar" : {
+                  "type" : "String",
+                  "required" : true,
+                  "ym_crypt" : true
+                }
+              }
+            ]
+          }
+        }
+      },
       "lastname"                     : {
         "required"                   : false,
         "type"                       : "String",
@@ -83,72 +100,6 @@
           "membership"              : {
             "required"             : false,
             "type"                 : "String"
-          }
-        }
-      },
-      "objtest" : {
-        "required" : true,
-        "type" : {
-          "objfooa" : { 
-            "required" : true,
-            "type" : [
-              {
-                "objbara" : {
-                  "type" : "String",
-                  "required" : true,
-                  "ym_crypt" : true
-                }
-              }
-            ]
-          }
-        }
-      },
-      "objtesttwo" : {
-        "required" : true,
-        "type" : {
-          "objfoob" : {
-            "required" : true,
-            "type" : {
-              "objsubb" : {
-                "required" : true,
-                "type" : [
-                  {
-                    "objbarb" : {
-                      "type" : "String",
-                      "required" : true,
-                      "ym_crypt" : true
-                    }
-                  }
-                ]
-              },
-              "objstr" : {
-                "required" : true,
-                "type" : "String",
-                "ym_crypt" : true
-              },
-              "objsubbb" : {
-                "required" : true,
-                "type" : [
-                  {
-                    "subccc" : {
-                      "required" : true,
-                      "type" : {
-                        "subdddd" : {
-                          "required" : true,
-                          "type" : "String",
-                          "ym_crypt" : true
-                        }
-                      }
-                    },
-                    "subeee" : {
-                      "required" : true,
-                      "type" : "String",
-                      "ym_crypt" : true
-                    }
-                  }
-                ]
-              }
-            }
           }
         }
       },

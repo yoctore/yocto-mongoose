@@ -28,8 +28,7 @@ var paths = [
   { key : 'validators', path : './example/controllers' }
 ];
 
-
-describe('Crud process ->', function () {
+describe('Query process ->', function () {
   // change timeout connection
   this.timeout(5000);
   it ('Should can connect on test database host on 127.0.0.0:27017', function (done) {
@@ -71,13 +70,13 @@ describe('Crud process ->', function () {
   });
 
   _.each(datas, function (d) {
-    it ([ 'Insert should be succeed for model', d.model, 'with method insert',
+    it ([ 'Insert should be succeed for model', d.model,
           'with data', utils.obj.inspect(d.insert) ].join(' '), function (done) {
         var model = db.getModel(d.model);
 
         expect(model).to.be.a('function');
         // insert data
-        model.insert(d.insert).then(function (value) {
+        model.create(d.insert).then(function (value) {
 
           var index = _.indexOf(datas, d);
           // add key here to process update or delete on next process
@@ -99,13 +98,13 @@ describe('Crud process ->', function () {
   });
 
   _.each(datas, function (d) {
-    it ([ 'Find should be succeed for model', d.model, 'with method read',
+    it ([ 'Find should be succeed for model', d.model,
           'with data ', utils.obj.inspect(d.insert) ].join(' '), function (done) {
         var model = db.getModel(d.model);
 
         expect(model).to.be.a('function');
         // insert data
-        model.read(d.id).then(function (value) {
+        model.get(d.id).then(function (value) {
           var obj     = value.toObject();
           var dsize   = _.size(d.update);
           var osize   = _.size(obj);
@@ -120,13 +119,14 @@ describe('Crud process ->', function () {
   });
 
   _.each(datas, function (d) {
-    it ([ 'Update should be succeed for model', d.model, 'with method modify',
+    it ([ 'Update should be succeed for model', d.model,
           'with data ', utils.obj.inspect(d.update) ].join(' '), function (done) {
         var model = db.getModel(d.model);
 
         expect(model).to.be.a('function');
         // insert data
-        model.modify(d.id, d.update).then(function (value) {
+        model.update(d.id, d.update).then(function (value) {
+          
           var obj     = value.toObject();
           var dsize   = _.size(d.update);
           var osize   = _.size(obj);
@@ -141,11 +141,11 @@ describe('Crud process ->', function () {
   });
 
   _.each(datas, function (d) {
-    it ([ 'Delete should be succeed for model', d.model, 'with method destroy' ].join(' '), function (done) {
+    it ([ 'Delete should be succeed for model', d.model ].join(' '), function (done) {
         var model = db.getModel(d.model);
         expect(model).to.be.a('function');
         // insert data
-        model.destroy(d.id).then(function (value) {
+        model.delete(d.id).then(function (value) {
           var obj     = value.toObject();
           var dsize   = _.size(d.update);
           var osize   = _.size(obj);

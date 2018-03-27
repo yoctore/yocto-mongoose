@@ -14,6 +14,8 @@ var logger  = require('yocto-logger');
  * @author : Mathieu ROBERT <mathieu@yocto.re>
  * @copyright : Yocto SAS, All right reserved
  *
+ * @param {Object} logger default logger intance
+ * @param {Object} mongooseTypes default list of mongoose Types
  * @class Enums
  */
 function Enums (logger, mongooseTypes) {
@@ -22,18 +24,19 @@ function Enums (logger, mongooseTypes) {
    *
    * @property logger
    */
-  this.logger     = logger;
+  this.logger = logger;
 
   /**
    * Enums list item
    *
    * @property enums
    */
-  this.enums      = [];
+  this.enums = [];
+
   /**
    * Mongoose type can be useful on enumes block
    */
-  this.Types      = mongooseTypes;
+  this.Types = mongooseTypes;
 }
 
 /**
@@ -44,12 +47,12 @@ function Enums (logger, mongooseTypes) {
  */
 Enums.prototype.load = function (path) {
   try {
-    // test is a valid path
+    // Test is a valid path
     if (!_.isString(path) || _.isEmpty(path)) {
       throw 'Invalid path given.';
     }
 
-    // validation schema
+    // Validation schema
     var schema = joi.array().items(
       joi.object().required().keys({
         name  : joi.string().required().empty(''),
@@ -57,41 +60,42 @@ Enums.prototype.load = function (path) {
       })
     );
 
-    // check model definition & controller first
+    // Check model definition & controller first
     var enums = glob.sync('**/*.json', {
-      cwd       : path,
-      realpath  : true
+      cwd      : path,
+      realpath : true
     });
 
-    // read each file
+    // Read each file
     _.each(enums, function (m) {
-      // load
+      // Load
       var data = JSON.parse(fs.readFileSync(m, 'utf-8'));
 
-      // validate format
+      // Validate format
       var state = joi.validate(data, schema);
 
-      // is valid format
+      // Is valid format
       if (_.isNull(state.error)) {
-        // push
+        // Push
         this.enums.push(state.value);
       } else {
-        // invalid warning message
+        // Invalid warning message
         this.logger.warning([ '[ Enums.load.parse ] -  Cannot load item for [', m, ']',
-                              state.error ].join(' '));
+          state.error ].join(' '));
       }
     }.bind(this));
 
-    // flatten
-    this.enums  = _.uniq(_.flatten(this.enums), 'name');
+    // Flatten
+    this.enums = _.uniq(_.flatten(this.enums), 'name');
   } catch (e) {
-    // warning message
+    // Warning message
     this.logger.error([ '[ Enums.load ] - Cannot load path from given enum path.', e ].join(' '));
-    // invalid statement
+
+    // Invalid statement
     return false;
   }
 
-  // default statement
+  // Default statement
   return true;
 };
 
@@ -102,33 +106,35 @@ Enums.prototype.load = function (path) {
  * @return {Array} enum array list
  */
 Enums.prototype.get = function (name) {
-  // is a valid string ?
+  // Is a valid string ?
   if (_.isString(name) && !_.isEmpty(name)) {
-    // data is ok so try to get enums from given name
+    // Data is ok so try to get enums from given name
     if (_.isArray(this.enums) && !_.isEmpty(this.enums)) {
-      // a valid statement or empty array if is not founded
+      // A valid statement or empty array if is not founded
       return _.result(_.find(this.enums, [ 'name', name ]), 'value') || [];
-    } else {
-      // warning message
-      this.logger.warning('[ Enums.get ] - enums list is empty. try to load enums before get');
     }
+
+    // Warning message
+    this.logger.warning('[ Enums.get ] - enums list is empty. try to load enums before get');
   } else {
-    // warning message
+    // Warning message
     this.logger.warning('[ Enums.get ] - given name is empty or not a string.');
   }
 
-  // default statement
+  // Default statement
   return [];
 };
 
 // Default export
 module.exports = function (l, types) {
-  // is a valid logger ?
+  // Is a valid logger ?
   if (_.isUndefined(l) || _.isNull(l)) {
     logger.warning('[ Enums.constructor ] - Invalid logger given. Use internal logger');
-    // assign
+
+    // Assign
     l = logger;
   }
-  // default statement
-  return new (Enums)(l, types);
+
+  // Default statement
+  return new Enums(l, types);
 };

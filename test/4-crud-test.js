@@ -9,17 +9,13 @@ var utils   = require('yocto-utils');
 var logger  = require('yocto-logger');
 var db      = require('../src/')(logger);
 var path    = require('path');
+var fs      = require('fs');
 
 // disable console
 logger.disableConsole();
 
-var datas = [
-  { 
-    model   : 'Account',
-    insert  : { name : "A named test value", test : 'An optionnal test value' },
-    update  : { name : "modified value", test : 'modified test value' }
-  }
-];
+// needed data
+var datas = JSON.parse(fs.readFileSync(path.resolve([ __dirname, 'model-definition.json' ].join('/'))));
 
 var paths = [
   { key : 'models', path : './example/models' },
@@ -28,8 +24,7 @@ var paths = [
   { key : 'validators', path : './example/controllers' }
 ];
 
-
-describe('Query process ->', function () {
+describe('Crud process ->', function () {
   // change timeout connection
   this.timeout(5000);
   it ('Should can connect on test database host on 127.0.0.0:27017', function (done) {
@@ -71,13 +66,13 @@ describe('Query process ->', function () {
   });
 
   _.each(datas, function (d) {
-    it ([ 'Insert should be succeed for model', d.model,
+    it ([ 'Insert should be succeed for model', d.model, 'with method insert',
           'with data', utils.obj.inspect(d.insert) ].join(' '), function (done) {
         var model = db.getModel(d.model);
 
         expect(model).to.be.a('function');
         // insert data
-        model.create(d.insert).then(function (value) {
+        model.insert(d.insert).then(function (value) {
 
           var index = _.indexOf(datas, d);
           // add key here to process update or delete on next process
@@ -99,13 +94,13 @@ describe('Query process ->', function () {
   });
 
   _.each(datas, function (d) {
-    it ([ 'Find should be succeed for model', d.model,
+    it ([ 'Find should be succeed for model', d.model, 'with method read',
           'with data ', utils.obj.inspect(d.insert) ].join(' '), function (done) {
         var model = db.getModel(d.model);
 
         expect(model).to.be.a('function');
         // insert data
-        model.get(d.id).then(function (value) {
+        model.read(d.id).then(function (value) {
           var obj     = value.toObject();
           var dsize   = _.size(d.update);
           var osize   = _.size(obj);
@@ -120,13 +115,13 @@ describe('Query process ->', function () {
   });
 
   _.each(datas, function (d) {
-    it ([ 'Update should be succeed for model', d.model,
+    it ([ 'Update should be succeed for model', d.model, 'with method modify',
           'with data ', utils.obj.inspect(d.update) ].join(' '), function (done) {
         var model = db.getModel(d.model);
 
         expect(model).to.be.a('function');
         // insert data
-        model.update(d.id, d.update).then(function (value) {
+        model.modify(d.id, d.update).then(function (value) {
           var obj     = value.toObject();
           var dsize   = _.size(d.update);
           var osize   = _.size(obj);
@@ -141,11 +136,11 @@ describe('Query process ->', function () {
   });
 
   _.each(datas, function (d) {
-    it ([ 'Delete should be succeed for model', d.model ].join(' '), function (done) {
+    it ([ 'Delete should be succeed for model', d.model, 'with method destroy' ].join(' '), function (done) {
         var model = db.getModel(d.model);
         expect(model).to.be.a('function');
         // insert data
-        model.delete(d.id).then(function (value) {
+        model.destroy(d.id).then(function (value) {
           var obj     = value.toObject();
           var dsize   = _.size(d.update);
           var osize   = _.size(obj);

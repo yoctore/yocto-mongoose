@@ -3,6 +3,7 @@ var logger    = require('yocto-logger');
 //logger.less();
 var db        = require('../src/index.js')(logger);
 var fs = require('fs');
+var utils = require('yocto-utils');
 
 var m1 = function() {
   console.log('m1');
@@ -22,6 +23,95 @@ var key = fs.readFileSync(__dirname + "/cert.key");
 
 var mongoUseTls   = false;
 var elasticUseTls = false;
+
+var insertModelA = {
+  firstname : "firstname-to-crypt",
+  lastname : "lastname-to-crypt",
+  maiden_name : "maidenname-to-crypt",
+  civility    : "civilty-to-crypt",
+  childrens : [
+    { 
+      firstname : "children-firstname-to-crypt",
+      lastname : "children-lastname-to-crypt",
+      testarray : [
+        {
+          foo : "aaaaaa"
+        }
+      ]
+    }
+  ],
+  emails : [
+    {
+      primary : true,
+      address : "email-address-to-c-rypt",
+      validation_type : "validation_type",
+      validated_date : new Date()
+    }
+  ],
+  phones : [
+    { 
+      primary : true,
+      prefix     : "+262",
+      phone_type : "gsm",
+      number : "phones-number-to-crypt",
+      validation_type : "validation_type",
+      validated_date : new Date()
+    }
+  ],
+  updated_date: new Date(),
+  created_date: new Date(),
+  iso_code : 'RE',
+  sync : false,
+  status : 'pending',
+  objtest : {
+    objfooa : [
+      {
+        objbara : "aaaaa"
+      }
+    ]
+  },
+  objtesttwo : {
+    objfoob : {
+      objsubb : [
+        { objbarb : "aaaaa" }
+      ],
+      objstr : "ly-obj-str",
+      objsubbb : [
+        { 
+          subccc : {
+            subdddd : "ddddd"
+          },
+          subeee : "eeee"
+        }
+      ]
+    }
+  }
+};
+
+
+var insertModelB = {
+  objtesttwo : {
+    objfoob : {
+      objsubb : [
+        { objbarb : "aaaaa" },
+        { objbarb : "bbbbb" },
+        { objbarb : "ccccc" },
+        { objbarb : "ddddd" }
+      ],
+      objstr : "ly-obj-str",
+      objsubbb : [
+        { 
+          subccc : {
+            subdddd : "ddddd"
+          },
+          subeee : "eeee"
+        }
+      ]
+    }
+  }
+}
+
+var insertModel = insertModelA;
 
 // Connect
 db.connect(uri, mongoUseTls ? {
@@ -55,47 +145,55 @@ db.connect(uri, mongoUseTls ? {
       }
     } : {});
   // enable redis here
-  db.enableRedis([ { host : '127.0.0.1', port : 6379 } ]);
+  //db.enableRedis([ { host : '127.0.0.1', port : 6379 } ]);
   if (db.isReady(true)) {
     db.load().then(function() {
-      for(var i = 0; i < 20; i ++) {
+      /*for(var i = 0; i < 20; i ++) {
       db.getRedis().add('aezeazeaz_'+i+Math.random(), { took: 4,
   timed_out: false,
   _shards: { total: 5, successful: 5, failed: 0 },
   hits: { total: 0, max_score: null, hits: [] } });
-      }
+      }*/
 
       /*db.getRedis().get('A').then(function(success) {
         console.log('redis s =>', success);
       }).catch(function (error) {
         console.log('redis eeee =>', error);
       })*/
-      db.getRedis().remove('aezeazeaz', 'rererer');
-      db.getRedis().flush('*33*');
+      //db.getRedis().remove('aezeazeaz', 'rererer');
+      //db.getRedis().flush('*33*');
       console.log('load success');
       var account = db.getModel('Account');
-      console.log('===== value ===== ');
-      account.test1();
-      console.log(account.enums().get('notify_type_list'));
+      console.log('=> STARTING TEST ');
+      //account.test1();
+      //console.log(account.enums().get('notify_type_list'));
 
-      var account = db.getModel('Account', true);
+        //account = db.getModel('Account', true);
 
-
-        account = db.getModel('Account');
+        /*account = db.getModel('Account');
         account.esearch('', true).then(function(a) {
           console.log('search a =>', a);
         }).catch(function (b) {
           console.log('search elatic b => ', b);
-        });
+        });*/
+
+        console.log('=> STARTING INSERT');
+        account.insert(insertModel).then(function(a) {
+        console.log('===> INSERT RETURN VALUE :', utils.obj.inspect(a.toObject()));
+        console.log('=> ENDING INSERT');
+       // a = a.toObject()
         
-        account.insert({ name : "aee", test : 'fsdfds' }).then(function(a) {
-        //console.log('A =>', a);
-        account.modify(a._id.toString(), { name : 'rezrezre' }).then(function(u) {
+        //delete a._id;
+        //a.updated_date = new Date();
+        //console.log('=> STARTING UPDATE');
+        //account.modify('5ab3cc6151366dee635c5afe', a).then(function(u) {
+          //console.log('===> UPDATE RETURN VALUE :', utils.obj.inspect(a));
+          //console.log('=> ENDING UPDATE');
           //console.log('U =>', u);
-          account.test1(u._id.toString()).then(function(g) {
+          /*account.test1(u._id.toString()).then(function(g) {
             console.log('G =>' , g);
             account.test2(u._id.toString()).then(function(d) {
-              //console.log('T2 =>', d);
+              console.log('T2 =>', d);
             }).catch(function(e) {
               console.log('T2 failed', e);
             });
@@ -103,14 +201,13 @@ db.connect(uri, mongoUseTls ? {
               console.log('D =>', d);
             }).catch(function(e) {
               console.log('delete failed', e);
-            });*/
+            });
           }).catch(function(e) {
             console.log('get failed', e);
-          });
-
-        }).catch(function(e) {
-          console.log('update failed', e);
-        })
+          });*/
+        //}).catch(function(e) {
+          //console.log('update failed', e);
+        //})
       }).catch(function(e) {
         console.log('crate failed', e);
       });

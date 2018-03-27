@@ -1,0 +1,13 @@
+[
+    {
+        "model"   : "Account",
+        "insert"  : {
+          "name" : "A named test value",
+          "test" : "An optionnal test value"
+        },
+        "update"  : {
+            "name" : "modified value",
+            "test" : "modified test value"
+        }
+    }
+]
