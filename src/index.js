@@ -566,10 +566,12 @@ YMongoose.prototype.addModel = function (value) {
     value.model.properties = this.modules.crypt.prepare(value.model.properties);
 
     // schema value
-    var schema = new Schema(value.model.properties, { runSettersOnQuery: true });
+    var schema = new Schema(value.model.properties);
     // Set toObject method to use getters to force usage of getters
     // This apply all defined getter methods on current schema
-    schema.set('toObject', { getters: true, virtuals : true, transform : function (doc, ret, options) {
+    schema.set('toObject', { getters: true, virtuals : true });
+    
+    /*transform : function (doc, ret, options) {
       // remove the _id of every document before returning the result
       if (_.has(ret, 'id')) {
         delete ret.id;
@@ -577,6 +579,7 @@ YMongoose.prototype.addModel = function (value) {
       // return current document
       return ret;
     }});
+    */
     // append properties for crypto process
     // has elastic enable ?
     if (hasElastic) {

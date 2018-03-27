@@ -162,6 +162,34 @@ db.connect(uri, mongoUseTls ? {
       })*/
       //db.getRedis().remove('aezeazeaz', 'rererer');
       //db.getRedis().flush('*33*');
+      var authModel = db.getModel('Auth');
+
+      try {
+        var tot = authModel.getOne({
+          _id : {
+            $in : [ '58de61a355d23580077c4483' ]
+          }
+        }, '-reseted_passwords._id').then(function (auths) {
+          console.log(auths);
+        }).catch(function(e) {
+          console.log('crate failed', e);
+        });
+        console.log(tot);
+      } catch (e) {
+        console.log(e);
+      }
+      // Retrieve auths of user
+/*      authModel.get({
+        _id : {
+          $in : [ 'sffdsfsd' ]
+        }
+      }, '-reseted_passwords._id').then(function (auths) {
+        console.log(auths);
+      }).catch(function(e) {
+        console.log('crate failed', e);
+      });
+*/
+      /*
       console.log('load success');
       var account = db.getModel('Account');
       console.log('=> STARTING TEST ');
@@ -175,7 +203,7 @@ db.connect(uri, mongoUseTls ? {
           console.log('search a =>', a);
         }).catch(function (b) {
           console.log('search elatic b => ', b);
-        });*/
+        });
 
         console.log('=> STARTING INSERT');
         account.insert(insertModel).then(function(a) {
@@ -204,14 +232,14 @@ db.connect(uri, mongoUseTls ? {
             });
           }).catch(function(e) {
             console.log('get failed', e);
-          });*/
+          });
         //}).catch(function(e) {
           //console.log('update failed', e);
         //})
       }).catch(function(e) {
         console.log('crate failed', e);
       });
-
+*/
     }, function() {
       console.log('load error');
     });
