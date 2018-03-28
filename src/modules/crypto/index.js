@@ -260,10 +260,10 @@ Crypt.prototype.processAndCheckTypeForSetterAndGetters = function (obj, key, acc
       // Defined a getter for array type
       _.set(acc[key], 'get', function (value) {
         // Default statement
-        return !_.isUndefined(value) ? this.remapNestedArray(value) : value;
+        return !_.isUndefined(value) && !_.isEmpty(value) ?
+          this.remapNestedArray(value.toObject()) : value;
       }.bind(this));
-    } else
-    if (_.isPlainObject(_.get(obj[key], 'type'))) {
+    } else if (_.isPlainObject(_.get(obj[key], 'type'))) {
       // Build setter and getter
       _.each([ 'set', 'get' ], function (hook) {
         // Defined missing setter on nested object
@@ -284,7 +284,6 @@ Crypt.prototype.processAndCheckTypeForSetterAndGetters = function (obj, key, acc
   // Default statement
   return acc;
 }
-
 
 /**
  * Parse all nodes of a plain object and process crypt or decrypt action
@@ -369,20 +368,23 @@ Crypt.prototype.remapNestedArray = function (value, crypt, nothing) {
   return _.map(value, function (item) {
     // Only if is not a objectId item
     if (!this.Types.ObjectId.isValid(item)) {
-      // Parse item and map values
-      return _.mapValues(item, function (v, k) {
-        // Only if is an array and not empty
-        if (_.isArray(v) && !_.isEmpty(v)) {
-          // Call this process recursivly
-          return this.remapNestedArray(v, crypt, nothing);
-        }
+      // Only if if an object otherwise return current value
+      if (_.isPlainObject(item)) {
+        // Parse item and map values
+        return _.mapValues(item, function (v, k) {
+          // Only if is an array and not empty
+          if (_.isArray(v) && !_.isEmpty(v)) {
+            // Call this process recursivly
+            return this.remapNestedArray(v, crypt, nothing);
+          }
 
-        // Define with method to use
-        var encMethod = !crypt ? 'decrypt' : 'encrypt';
+          // Define with method to use
+          var encMethod = !crypt ? 'decrypt' : 'encrypt';
 
-        // Default statement, with decrypted data only if not an exclude key
-        return !_.includes([ '_id', '__v' ], k) && !nothing ? this[encMethod](v) : v;
-      }.bind(this));
+          // Default statement, with decrypted data only if not an exclude key
+          return !_.includes([ '_id', '__v' ], k) && !nothing ? this[encMethod](v) : v;
+        }.bind(this));
+      }
     }
 
     // Default statement

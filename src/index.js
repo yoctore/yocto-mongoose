@@ -567,6 +567,21 @@ YMongoose.prototype.addModel = function (value) {
 
     // schema value
     var schema = new Schema(value.model.properties);
+
+    // has compound indexes defined ?
+    if (_.has(value.model, 'compound') && _.isArray(value.model.compound) && !_.isEmpty(value.model.compound)) {
+      // debug message for compound index process
+      this.logger.debug('[ YMongoose.addModel ] - Compound is defined try to add indexes');
+      // define compound index
+      _.each(value.model.compound, function(value) {
+        // log debug message
+        this.logger.debug([ '[ YMongoose.addModel ] - Try to add compound indexes with :',
+          utils.obj.inspect(value) ].join(' '));
+        // append index
+        schema.index(value);
+      }.bind(this));
+    }
+
     // Set toObject method to use getters to force usage of getters
     // This apply all defined getter methods on current schema
     schema.set('toObject', { getters: true, virtuals : true, transform : function (doc, ret, options) {
@@ -856,7 +871,8 @@ YMongoose.prototype.load = function () {
       }).default({
         hashType  : 'aes256',
         hashKey   : ''
-      })
+      }),
+      compound : joi.array().optional().items(joi.object().required().unknown().empty({}))
     }).unknown()
   }).unknown();
 

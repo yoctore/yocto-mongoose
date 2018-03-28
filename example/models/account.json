@@ -10,6 +10,10 @@
       "hashType" : "aes256",
       "hashKey"  : "gjEWDaFYOhuQoysADloy2S7dgAM7NIG7"
     },
+    "compound" : [{
+      "firstname" : 1,
+      "lastname" : -1
+    }],
     "properties"     : {
       "status"                     : {
         "required"                   : true,

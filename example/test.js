@@ -163,53 +163,41 @@ db.connect(uri, mongoUseTls ? {
       //db.getRedis().remove('aezeazeaz', 'rererer');
       //db.getRedis().flush('*33*');
 
-      var id = "5aba2eafbe26f1561303e80a";
-      var accountModel = db.getModel('Account');
-      console.log('al');
-      var authModel = db.getModel('Auth');
-    
-      console.log(' --> id : ', id)
-    
-      accountModel.getOne({ _id : id }, 'auths').then(function (account) {
-    
-        console.log(' -> acc ', account);
-    
-        var accountTmp = account;
-        console.log("auth =>", accountTmp.auths);
-        authModel.get({
-          _id : {
-            $in : accountTmp.auths
-          }
-        }, '-reseted_passwords._id').then(function (auths) {
-        
-          console.log(' --> auths : ', auths)
-        
-        }).catch(function (error) {
-        
-          console.log(' --> error Auth : ', error);
-        });
-      }).catch(function (error) {
-    
-        console.log(' --> error : ', error);
-      });
+      function testGet() {
+        var id = "5aba2eafbe26f1561303e80a";
+        var accountModel = db.getModel('Account');
+        console.log('al');
+        var authModel = db.getModel('Auth');
       
+        console.log(' --> id : ', id)
+      
+        accountModel.get('5aba2eafbe26f1561303e80a').then(function (account) {
+      
+          console.log(' -> acc ', account);
+      
+          var accountTmp = account;
+          console.log("auth =>", accountTmp.auths);
+          authModel.get({
+            _id : {
+              $in : accountTmp.auths
+            }
+          }, '-reseted_passwords._id').then(function (auths) {
+          
+            console.log(' --> auths : ', auths)
+          
+          }).catch(function (error) {
+          
+            console.log(' --> error Auth : ', error);
+          });
+        }).catch(function (error) {
+      
+          console.log(' --> error : ', error);
+        });
+      }
 
-
-      // Retrieve auths of user
-/*      authModel.get({
-        _id : {
-          $in : [ 'sffdsfsd' ]
-        }
-      }, '-reseted_passwords._id').then(function (auths) {
-        console.log(auths);
-      }).catch(function(e) {
-        console.log('crate failed', e);
-      });
-*/
-      /*
-      console.log('load success');
-      var account = db.getModel('Account');
-      console.log('=> STARTING TEST ');
+      function testInsert() {
+        var account = db.getModel('Account');
+        console.log('=> STARTING TEST ');
       //account.test1();
       //console.log(account.enums().get('notify_type_list'));
 
@@ -221,13 +209,19 @@ db.connect(uri, mongoUseTls ? {
         }).catch(function (b) {
           console.log('search elatic b => ', b);
         });
-
+        */
         console.log('=> STARTING INSERT');
         account.insert(insertModel).then(function(a) {
-        console.log('===> INSERT RETURN VALUE :', utils.obj.inspect(a.toObject()));
-        console.log('=> ENDING INSERT');
+          console.log('===> INSERT RETURN VALUE :', utils.obj.inspect(a.toObject()));
+          console.log('=> ENDING INSERT');
        // a = a.toObject()
-        
+        }).catch(function(e) {
+          console.log('crate failed', e);
+        });
+      }
+
+      testGet();
+      //testInsert();
         //delete a._id;
         //a.updated_date = new Date();
         //console.log('=> STARTING UPDATE');
