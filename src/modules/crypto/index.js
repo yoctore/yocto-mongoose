@@ -14,9 +14,10 @@ var traverse = require('traverse');
  * @copyright : Yocto SAS, All right reserved
  *
  * @param {Object} logger current logger instance
+  * @param {Object} mongooseTypes default list of mongoose Types
  * @class Crypt
  */
-function Crypt (logger) {
+function Crypt (logger, mongooseTypes) {
   /**
    * Logger instance
    *
@@ -33,6 +34,11 @@ function Crypt (logger) {
    * Default hasKey to use for crypp/decrypt process
    */
   this.hashKey = '';
+
+  /**
+   * Current mongoose type
+   */
+  this.Types = mongooseTypes;
 }
 
 /**
@@ -143,6 +149,7 @@ Crypt.prototype.isAlreadyCrypted = function (data) {
  * Save given algorithm key to use on crypto process
  *
  * @param {String} config current algorithm config to use on crypto process
+ * @return {Object} current instance of Crypt class
  */
 Crypt.prototype.setAlgorithmAndKey = function (config) {
   // Save algorythm value
@@ -150,6 +157,9 @@ Crypt.prototype.setAlgorithmAndKey = function (config) {
 
   // Save hash key value
   this.hashKey = _.get(config, 'hashKey') || this.hashKey;
+
+  // Default statement
+  return this;
 }
 
 /**
@@ -213,7 +223,6 @@ Crypt.prototype.addDefaultSettersAndGetters = function (obj, key, acc) {
   if (_.has(obj[key], 'ym_crypt')) {
     if (_.get(obj[key], 'ym_crypt')) {
       // Set encrypt process
-      // console.log('set on',key, 'with value', acc[key]);
       _.set(acc[key], 'set', function (value) {
         // Default statement
         return this.encrypt(value);
@@ -223,6 +232,8 @@ Crypt.prototype.addDefaultSettersAndGetters = function (obj, key, acc) {
       _.set(acc[key], 'get', function (value) {
         // Default statement
         return this.decrypt(value);
+
+        // Return value;
       }.bind(this));
     }
   }
@@ -249,9 +260,10 @@ Crypt.prototype.processAndCheckTypeForSetterAndGetters = function (obj, key, acc
       // Defined a getter for array type
       _.set(acc[key], 'get', function (value) {
         // Default statement
-        return this.remapNestedArray(value.toObject());
+        return !_.isUndefined(value) ? this.remapNestedArray(value) : value;
       }.bind(this));
-    } else if (_.isPlainObject(_.get(obj[key], 'type'))) {
+    } else
+    if (_.isPlainObject(_.get(obj[key], 'type'))) {
       // Build setter and getter
       _.each([ 'set', 'get' ], function (hook) {
         // Defined missing setter on nested object
@@ -355,27 +367,31 @@ Crypt.prototype.remapNestedArray = function (value, crypt, nothing) {
 
   // We need to remap all retreive values
   return _.map(value, function (item) {
-    // Parse item and map values
-    return _.mapValues(item, function (v, k) {
-      // Only if is an array and not empty
-      if (_.isArray(v) && !_.isEmpty(v)) {
-        // Call this process recursivly
-        return this.remapNestedArray(v, crypt, nothing);
-      }
+    // Only if is not a objectId item
+    if (!this.Types.ObjectId.isValid(item)) {
+      // Parse item and map values
+      return _.mapValues(item, function (v, k) {
+        // Only if is an array and not empty
+        if (_.isArray(v) && !_.isEmpty(v)) {
+          // Call this process recursivly
+          return this.remapNestedArray(v, crypt, nothing);
+        }
 
-      // Define with method to use
-      var encMethod = !crypt ? 'decrypt' : 'encrypt';
+        // Define with method to use
+        var encMethod = !crypt ? 'decrypt' : 'encrypt';
 
-      // Console.log('encMode', encMethod, 'nothing state =>', nothing);
-      // default statement, with decrypted data only if not an exclude key
+        // Default statement, with decrypted data only if not an exclude key
+        return !_.includes([ '_id', '__v' ], k) && !nothing ? this[encMethod](v) : v;
+      }.bind(this));
+    }
 
-      return !_.includes([ '_id', '__v' ], k) && !nothing ? this[encMethod](v) : v;
-    }.bind(this));
+    // Default statement
+    return item;
   }.bind(this));
 }
 
 // Default export
-module.exports = function (l) {
+module.exports = function (l, types) {
   // Is a valid logger ?
   if (_.isUndefined(l) || _.isNull(l)) {
     logger.warning('[ Crypt.constructor ] - Invalid logger given. Use internal logger');
@@ -385,5 +401,5 @@ module.exports = function (l) {
   }
 
   // Default statement
-  return new Crypt(l);
+  return new Crypt(l, types);
 };

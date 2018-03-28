@@ -162,22 +162,39 @@ db.connect(uri, mongoUseTls ? {
       })*/
       //db.getRedis().remove('aezeazeaz', 'rererer');
       //db.getRedis().flush('*33*');
-      var authModel = db.getModel('Auth');
 
-      try {
-        var tot = authModel.getOne({
+      var id = "5aba2eafbe26f1561303e80a";
+      var accountModel = db.getModel('Account');
+      console.log('al');
+      var authModel = db.getModel('Auth');
+    
+      console.log(' --> id : ', id)
+    
+      accountModel.getOne({ _id : id }, 'auths').then(function (account) {
+    
+        console.log(' -> acc ', account);
+    
+        var accountTmp = account;
+        console.log("auth =>", accountTmp.auths);
+        authModel.get({
           _id : {
-            $in : [ '58de61a355d23580077c4483' ]
+            $in : accountTmp.auths
           }
         }, '-reseted_passwords._id').then(function (auths) {
-          console.log(auths);
-        }).catch(function(e) {
-          console.log('crate failed', e);
+        
+          console.log(' --> auths : ', auths)
+        
+        }).catch(function (error) {
+        
+          console.log(' --> error Auth : ', error);
         });
-        console.log(tot);
-      } catch (e) {
-        console.log(e);
-      }
+      }).catch(function (error) {
+    
+        console.log(' --> error : ', error);
+      });
+      
+
+
       // Retrieve auths of user
 /*      authModel.get({
         _id : {

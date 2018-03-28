@@ -102,7 +102,7 @@ function YMongoose (l) {
     enums         : modEnums(l, mongoose.Types),
     elastic       : modElastic(l),
     redis         : modRedis(l),
-    crypt         : modCrypt(l)
+    crypt         : modCrypt(l, mongoose.Types)
   };
 }
 
@@ -569,9 +569,7 @@ YMongoose.prototype.addModel = function (value) {
     var schema = new Schema(value.model.properties);
     // Set toObject method to use getters to force usage of getters
     // This apply all defined getter methods on current schema
-    schema.set('toObject', { getters: true, virtuals : true });
-    
-    /*transform : function (doc, ret, options) {
+    schema.set('toObject', { getters: true, virtuals : true, transform : function (doc, ret, options) {
       // remove the _id of every document before returning the result
       if (_.has(ret, 'id')) {
         delete ret.id;
@@ -579,8 +577,13 @@ YMongoose.prototype.addModel = function (value) {
       // return current document
       return ret;
     }});
-    */
-    // append properties for crypto process
+
+    // append crypto instance to current schema
+    schema.static('crypto', function () {
+      // default statement
+      return this.modules.crypt;
+    }.bind(this));
+
     // has elastic enable ?
     if (hasElastic) {
       // debug message

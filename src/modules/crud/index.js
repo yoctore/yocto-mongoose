@@ -316,7 +316,6 @@ Crud.prototype.create = function (value) {
       _.extend(model, value);
 
       // Try to find
-      // console.log('Model',model);
       model.save(function (error, data) {
         // Has error ?
         if (error) {
