@@ -53,7 +53,7 @@ Crypt.prototype.encrypt = function (data) {
     // Only if data is not already crypted
     if (!this.isAlreadyCrypted(data)) {
       // Debug message
-      this.logger.debug([ '[ YMongoose.cryto.encrypt ] - Starting encrypt process with algo [',
+      this.logger.verbose([ '[ YMongoose.cryto.encrypt ] - Starting encrypt process with algo [',
         this.algorithm, '] for data ', utils.obj.inspect(data)
       ].join(' '));
 
@@ -64,7 +64,7 @@ Crypt.prototype.encrypt = function (data) {
 
       if (crypted) {
         // Debug message
-        this.logger.debug([ '[ YMongoose.cryto.encrypt ] - Value was successfuly crypted to ',
+        this.logger.verbose([ '[ YMongoose.cryto.encrypt ] - Value was successfuly crypted to ',
           utils.obj.inspect(crypted)
         ].join(' '));
 
@@ -88,7 +88,7 @@ Crypt.prototype.decrypt = function (data) {
   // Only if data is valid
   if (data) {
     // Debug message
-    this.logger.debug([ '[ YMongoose.cryto.decrypt ] - Starting decrypt process with algo [',
+    this.logger.verbose([ '[ YMongoose.cryto.decrypt ] - Starting decrypt process with algo [',
       this.algorithm, '] for data ', utils.obj.inspect(data)
     ].join(' '));
 
@@ -99,7 +99,7 @@ Crypt.prototype.decrypt = function (data) {
 
     if (decrypted) {
       // Debug message
-      this.logger.debug([ '[ YMongoose.cryto.decrypt ] - Value is crypted so decrypted value is',
+      this.logger.verbose([ '[ YMongoose.cryto.decrypt ] - Value is crypted so decrypted value is',
         utils.obj.inspect(decrypted)
       ].join(' '));
 
@@ -122,7 +122,7 @@ Crypt.prototype.isAlreadyCrypted = function (data) {
   // Only if data is valid
   if (data) {
     // Debug message
-    this.logger.debug([ '[ YMongoose.cryto.isAlreadyCrypted ] - Checking if given data [',
+    this.logger.verbose([ '[ YMongoose.cryto.isAlreadyCrypted ] - Checking if given data [',
       utils.obj.inspect(data),
       '] is already crypted' ].join(' '));
 
@@ -133,7 +133,7 @@ Crypt.prototype.isAlreadyCrypted = function (data) {
 
     if (decrypted) {
       // Debug message
-      this.logger.debug([ '[ YMongoose.cryto.isAlreadyCrypted ] - Given data',
+      this.logger.verbose([ '[ YMongoose.cryto.isAlreadyCrypted ] - Given data',
         utils.obj.inspect(data), 'is already crypted. Skipping this process !' ].join(' '));
 
       // Default statement in this case

@@ -2,12 +2,71 @@
     {
         "model"   : "Account",
         "insert"  : {
-          "name" : "A named test value",
-          "test" : "An optionnal test value"
-        },
-        "update"  : {
-            "name" : "modified value",
-            "test" : "modified test value"
+            "firstname" : "firstname-to-crypt",
+            "lastname" : "lastname-to-crypt",
+            "maiden_name" : "maidenname-to-crypt",
+            "civility"    : "civilty-to-crypt",
+            "childrens" : [
+              { 
+                "firstname" : "children-firstname-to-crypt",
+                "lastname" : "children-lastname-to-crypt",
+                "testarray" : [
+                  {
+                    "foo" : "aaaaaa"
+                  }
+                ]
+              }
+            ],
+            "emails" : [
+              {
+                "primary" : true,
+                "address" : "email-address-to-c-rypt",
+                "validation_type" : "validation_type",
+                "validated_date" : "2018-12-04"
+              }
+            ],
+            "phones" : [
+              { 
+                "primary" : true,
+                "prefix"     : "+262",
+                "phone_type" : "gsm",
+                "number" : "phones-number-to-crypt",
+                "validation_type" : "validation_type",
+                "validated_date" : "2018-12-04"
+              }
+            ],
+            "updated_date" : "2018-12-04",
+            "created_date": "2018-12-04",
+            "iso_code" : "RE",
+            "sync" : false,
+            "status" : "pending",
+            "objtest" : {
+              "objfooa" : [
+                {
+                  "objbara" : "aaaaa"
+                }
+              ]
+            },
+            "objtesttwo" : {
+              "objfoob" : {
+                "objsubb" : [
+                  { "objbarb" : "aaaaa" }
+                ],
+                "objstr" : "ly-obj-str",
+                "objsubbb" : [
+                  { 
+                    "subccc" : {
+                      "subdddd" : "ddddd"
+                    },
+                    "subeee" : "eeee"
+                  }
+                ]
+              }
+            },
+            "update"  : {
+                "name" : "modified value",
+                "test" : "modified test value"
+            }
         }
     }
 ]

@@ -93,7 +93,9 @@ describe('Query process ->', function () {
           obj.should.have.property('__v');
           value._id.toString().should.have.length(24);
           done();
-        }.bind(this));
+        }.bind(this)).catch(function (error) {
+          done(error);
+        });
     }.bind(d));
   });
 
@@ -114,7 +116,9 @@ describe('Query process ->', function () {
           obj.should.have.property('_id');
           value._id.toString().should.have.length(24);
           done();
-        }.bind(this));
+        }.bind(this)).catch(function (error) {
+          done(error);
+        });
     }.bind(d));
   });
 
@@ -136,7 +140,9 @@ describe('Query process ->', function () {
           obj.should.have.property('_id');
           value._id.toString().should.have.length(24);
           done();
-        }.bind(this));
+        }.bind(this)).catch(function (error) {
+          done(error);
+        });
     }.bind(d));
   });
 
@@ -155,7 +161,9 @@ describe('Query process ->', function () {
           obj.should.have.property('_id');
           value._id.toString().should.have.length(24);
           done();
-        }.bind(this));
+        }.bind(this)).catch(function (error) {
+          done(error);
+        });
     }.bind(d));
   });
 

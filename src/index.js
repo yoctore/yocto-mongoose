@@ -567,7 +567,7 @@ YMongoose.prototype.addModel = function (value) {
 
     // schema value
     var schema = new Schema(value.model.properties);
-
+ 
     // has compound indexes defined ?
     if (_.has(value.model, 'compound') && _.isArray(value.model.compound) && !_.isEmpty(value.model.compound)) {
       // debug message for compound index process
@@ -584,11 +584,12 @@ YMongoose.prototype.addModel = function (value) {
 
     // Set toObject method to use getters to force usage of getters
     // This apply all defined getter methods on current schema
-    schema.set('toObject', { getters: true, virtuals : true, transform : function (doc, ret, options) {
+    schema.set('toObject', { getters : true, virtuals : true, transform : function (doc, ret, options) {
       // remove the _id of every document before returning the result
       if (_.has(ret, 'id')) {
         delete ret.id;
       }
+
       // return current document
       return ret;
     }});

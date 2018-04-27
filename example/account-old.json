@@ -1,78 +1,49 @@
-{
-  "model" : {
-    "name"      : "Account",
-    "crud"      : {
-      "enable"  : true,
-      "exclude" : [],
-      "redis"   : {
-        "enable"  : true,
-        "expire"  : 10,
-        "include" : [ "get" ]
-      }
-    },
-    "fn" : [
-      {
-        "type"  : "static",
-        "name"  : "test1",
-        "redis" : {
-          "enable" : true,
-          "expire" : 25
+"objtesttwo" : {
+        "required" : true,
+        "type" : {
+          "objfoob" : {
+            "required" : true,
+            "type" : {
+              "objsubb" : {
+                "required" : true,
+                "type" : [
+                  {
+                    "objbarb" : {
+                      "type" : "String",
+                      "required" : true,
+                      "ym_crypt" : true
+                    }
+                  }
+                ]
+              },
+              "objstr" : {
+                "required" : true,
+                "type" : "String",
+                "ym_crypt" : true
+              },
+              "objsubbb" : {
+                "required" : true,
+                "type" : [
+                  {
+                    "subccc" : {
+                      "required" : true,
+                      "type" : {
+                        "subdddd" : {
+                          "required" : true,
+                          "type" : "String",
+                          "ym_crypt" : true
+                        }
+                      }
+                    },
+                    "subeee" : {
+                      "required" : true,
+                      "type" : "String",
+                      "ym_crypt" : true
+                    }
+                  }
+                ]
+              }
+            }
+          }
         }
-      },
-      {
-        "type"  : "static",
-        "name"  : "test2",
-        "redis" : {
-          "enable" : true,
-          "expire" : 30
-        }
-      },
-      {
-        "type" : "static",
-        "name" : "sync"
-      },
-      {
-        "type" : "post"
-      },
-      {
-        "type" : "rezrze",
-        "name" : "pre"
-      },
-      {
-        "type"  : "post",
-        "name"  : "post",
-        "event" : "init"
-      },
-      {
-        "type"  : "pre",
-        "name"  : "pre",
-        "event" : "init"
       }
-    ],
-    "elastic" : {
-      "enable" : true,
-      "options" : {
-        "indexAutomatically" : true
-      }
-    },
-    "validator"      : "account",
-    "properties"     : {
-      "name"    : {
-        "required"     : true,
-        "type"         : "String",
-        "es_indexed"   : true,
-        "ym_crypt"     : true
-      },
-      "test"    : {
-        "required"      : true,
-        "type"          : "String",
-        "es_indexed"    : true,
-        "ym_crypt"      : false
-      }
-    },
-    "crypto" : {
-      "hashType" : "aes256",
-      "hashKey"  : "gjEWDaFYOhuQoysADloy2S7dgAM7NIG7"
-    }
-  }
-}

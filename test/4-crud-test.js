@@ -77,19 +77,20 @@ describe('Crud process ->', function () {
           var index = _.indexOf(datas, d);
           // add key here to process update or delete on next process
           datas[index].id = value._id.toString();
-
-
+  
           var obj     = value.toObject();
           var dsize   = _.size(d.insert);
           var osize   = _.size(obj);
-
+          console.log("size =>", dsize, osize, obj);
           expect(value).to.be.a('object');
           expect(osize).equal(dsize + 2); // mongo add _id et __v
           obj.should.have.property('_id');
           obj.should.have.property('__v');
           value._id.toString().should.have.length(24);
           done();
-        }.bind(this));
+        }.bind(this)).catch(function (error) {
+          done(error);
+        });
     }.bind(d));
   });
 
@@ -110,7 +111,9 @@ describe('Crud process ->', function () {
           obj.should.have.property('_id');
           value._id.toString().should.have.length(24);
           done();
-        }.bind(this));
+        }.bind(this)).catch(function (error) {
+          done(error);
+        });
     }.bind(d));
   });
 
@@ -131,7 +134,9 @@ describe('Crud process ->', function () {
           obj.should.have.property('_id');
           value._id.toString().should.have.length(24);
           done();
-        }.bind(this));
+        }.bind(this)).catch(function (error) {
+          done(error);
+        });
     }.bind(d));
   });
 
@@ -150,7 +155,9 @@ describe('Crud process ->', function () {
           obj.should.have.property('_id');
           value._id.toString().should.have.length(24);
           done();
-        }.bind(this));
+        }.bind(this)).catch(function (error) {
+          done(error);
+        });
     }.bind(d));
   });
 

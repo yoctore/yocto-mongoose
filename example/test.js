@@ -195,6 +195,43 @@ db.connect(uri, mongoUseTls ? {
         });
       }
 
+      function testAccountAndGet(id, getDetail) {
+        // Create a promise deferred
+       // var deferred  = Q.defer();
+      
+        var accountModel = db.getModel('Account');
+        var authModel = db.getModel('Auth');
+      
+        console.log(' --> id : ', id)
+      
+        accountModel.get({ _id : id }, 'auths').then(function (account) {
+      
+          console.log(' -> acc ')
+      
+          console.log(utils.obj.inspect(account));
+          console.log(account);
+          console.log('===== to object ========');
+          var accountTmp = account.toObject();
+          
+          authModel.get({
+            _id : {
+              $in : accountTmp.auths
+            }
+          }, '-reseted_passwords._id').then(function (auths) {
+          
+            console.log(' --> auths : ', auths)
+          
+          }).catch(function (error) {
+          
+            console.log(' --> error Auth : ', error);
+          });
+      
+        }).catch(function (error) {
+      
+          console.log(' --> error : ', error);
+        });
+      }
+
       function testInsert() {
         var account = db.getModel('Account');
         console.log('=> STARTING TEST ');
@@ -220,7 +257,8 @@ db.connect(uri, mongoUseTls ? {
         });
       }
 
-      testGet();
+      //testGet();
+      testAccountAndGet('5aba2eafbe26f1561303e80a');
       //testInsert();
         //delete a._id;
         //a.updated_date = new Date();
