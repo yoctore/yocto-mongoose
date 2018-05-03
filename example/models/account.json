@@ -54,7 +54,8 @@
       },
       "birth_date"                   : {
         "required"                   : false,
-        "type"                       : "Date"
+        "type"                       : "Date_crypt",
+        "ym_crypt"                   : true
       },
       "birth_place"                   : {
         "required"                   : false,
@@ -93,7 +94,7 @@
       "objtest" : {
         "required" : true,
         "type" : {
-          "objfooa" : { 
+          "objfooa" : {
             "required" : true,
             "type" : [
               {
@@ -195,7 +196,7 @@
                         "type" : "String",
                         "ym_crypt" : true
                       }
-                    }  
+                    }
                   ]
                 }
               ]

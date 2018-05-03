@@ -22,6 +22,7 @@ var modEnums         = require('./modules/enum');
 var modElastic       = require('./modules/utils/elastic');
 var modRedis         = require('./modules/utils/redis');
 var modCrypt         = require('./modules/crypto');
+var modTypes         = require('./modules/types');
 
 // Use q. to handle default promise in mongoose
 mongoose.Promise = require('q').Promise;
@@ -102,7 +103,8 @@ function YMongoose (l) {
     enums         : modEnums(l, mongoose.Types),
     elastic       : modElastic(l),
     redis         : modRedis(l),
-    crypt         : modCrypt(l, mongoose.Types)
+    crypt         : modCrypt(l, mongoose.Types),
+    modTypes      : modTypes(l, mongoose)
   };
 }
 
@@ -567,9 +569,10 @@ YMongoose.prototype.addModel = function (value) {
 
     // schema value
     var schema = new Schema(value.model.properties);
- 
-    // has compound indexes defined ?
-    if (_.has(value.model, 'compound') && _.isArray(value.model.compound) && !_.isEmpty(value.model.compound)) {
+
+// has compound indexes defined ?
+    if (_.has(value.model, 'compound') && _.isArray(value.model.compound) &&
+      !_.isEmpty(value.model.compound)) {
       // debug message for compound index process
       this.logger.debug('[ YMongoose.addModel ] - Compound is defined try to add indexes');
       // define compound index
@@ -584,15 +587,19 @@ YMongoose.prototype.addModel = function (value) {
 
     // Set toObject method to use getters to force usage of getters
     // This apply all defined getter methods on current schema
-    schema.set('toObject', { getters : true, virtuals : true, transform : function (doc, ret, options) {
-      // remove the _id of every document before returning the result
-      if (_.has(ret, 'id')) {
-        delete ret.id;
-      }
+    schema.set('toObject', {
+      getters   : true,
+      virtuals  : true,
+      transform : function (doc, ret, options) {
+        // remove the _id of every document before returning the result
+        if (_.has(ret, 'id')) {
+          delete ret.id;
+        }
 
-      // return current document
-      return ret;
-    }});
+        // return current document
+        return ret;
+      }
+    });
 
     // append crypto instance to current schema
     schema.static('crypto', function () {
@@ -938,43 +945,54 @@ YMongoose.prototype.load = function () {
 
   // all tasks storage
   var tasks = [];
-  // run each model
-  async.each(model, function (m, next) {
-    // build file name
-    var name = m.replace(path.dirname(m), '');
-    // try & catch error
-    try {
-      // parsed file
-      var parsed = JSON.parse(fs.readFileSync(m, 'utf-8'));
-      // parsed not failed push to queue
-      tasks.push({ file : name, data : parsed });
-      // increment counter
-      nbItems.total++;
-      // got to next item
-      next();
-    } catch (e) {
-      // set correct message
-      var message = [ 'Cannot add item to queue. Error is : [', e, '] for [', name, ']' ].join(' ');
-      // error occured
-      this.logger.error([ '[ YMongoose.load ] -', message ].join(' '));
 
-      // reject with correct message
-      deferred.reject(message);
-      // disconnect
-      this.disconnect();
-    }
-  }.bind(this), function () {
-    // push in queue
-    queue.push(tasks, function (error) {
-      // has error ?
-      if (error) {
-        // log error message
-        this.logger.error([ '[ YMongoose.load ] - Cannot add an item to queue [',
-                                  error , ']' ].join(' '));
-        // push error on list for drain reject
-        errors.push(error);
+  // Load all custom Types before loading model
+  this.modules.modTypes.load(this.modules).then(function () {
+    // run each model
+    async.each(model, function (m, next) {
+      // build file name
+      var name = m.replace(path.dirname(m), '');
+      // try & catch error
+      try {
+        // parsed file
+        var parsed = JSON.parse(fs.readFileSync(m, 'utf-8'));
+        // parsed not failed push to queue
+        tasks.push({ file : name, data : parsed });
+        // increment counter
+        nbItems.total++;
+        // got to next item
+        next();
+      } catch (e) {
+        // set correct message
+        var message = [ 'Cannot add item to queue. Error is : [', e, '] for [', name, ']' ].join(' ');
+        // error occured
+        this.logger.error([ '[ YMongoose.load ] -', message ].join(' '));
+
+        // reject with correct message
+        deferred.reject(message);
+        // disconnect
+        this.disconnect();
       }
+    }.bind(this), function () {
+      // push in queue
+      queue.push(tasks, function (error) {
+        // has error ?
+        if (error) {
+          // log error message
+          this.logger.error([ '[ YMongoose.load ] - Cannot add an item to queue [',
+                                    error , ']' ].join(' '));
+          // push error on list for drain reject
+          errors.push(error);
+        }
+      }.bind(this));
     }.bind(this));
+  }.bind(this)).catch(function (error) {
+    // Error loading type
+    this.logger.error([ '[ YMongoose.load.Types ] - Error when loading custom Types [',
+    error , ']' ].join(' '));
+
+    // Reject error
+    deferred.reject(error);
   }.bind(this));
 
   // return deferred promise

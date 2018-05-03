@@ -14,7 +14,7 @@ var m2 = function() {
   console.log('m2');
 };
 
-var uri = 'mongodb://127.0.0.1:27017/r2do';
+var uri = 'mongodb://127.0.0.1:27017/r2do-crypto';
 
 // Read the certificate authority
 var ca = [fs.readFileSync(__dirname + "/cert.crt")];
@@ -30,7 +30,7 @@ var insertModelA = {
   maiden_name : "maidenname-to-crypt",
   civility    : "civilty-to-crypt",
   childrens : [
-    { 
+    {
       firstname : "children-firstname-to-crypt",
       lastname : "children-lastname-to-crypt",
       testarray : [
@@ -49,7 +49,7 @@ var insertModelA = {
     }
   ],
   phones : [
-    { 
+    {
       primary : true,
       prefix     : "+262",
       phone_type : "gsm",
@@ -58,6 +58,7 @@ var insertModelA = {
       validated_date : new Date()
     }
   ],
+  birth_date : new Date(708984000000),
   updated_date: new Date(),
   created_date: new Date(),
   iso_code : 'RE',
@@ -77,7 +78,7 @@ var insertModelA = {
       ],
       objstr : "ly-obj-str",
       objsubbb : [
-        { 
+        {
           subccc : {
             subdddd : "ddddd"
           },
@@ -100,7 +101,7 @@ var insertModelB = {
       ],
       objstr : "ly-obj-str",
       objsubbb : [
-        { 
+        {
           subccc : {
             subdddd : "ddddd"
           },
@@ -122,11 +123,11 @@ db.connect(uri, mongoUseTls ? {
     ssl:true, // enable ssl
     sslValidate:true, // validate ssl connection
     sslCA:ca, // ca
-    sslKey:key, // key 
-    sslCert:cert, // certificate pem 
+    sslKey:key, // key
+    sslCert:cert, // certificate pem
     checkServerIdentity:false // if is self signed we must no enable server identifiy
   }
-} : { 
+} : {
   ///user : "r2do",
   //pass : "bs8R0P<LN6Zj2j5j]soC<HL]v$b]XYAx",
   //authMechanism : "SCRAM-SHA-1"
@@ -168,13 +169,13 @@ db.connect(uri, mongoUseTls ? {
         var accountModel = db.getModel('Account');
         console.log('al');
         var authModel = db.getModel('Auth');
-      
+
         console.log(' --> id : ', id)
-      
+
         accountModel.get('5aba2eafbe26f1561303e80a').then(function (account) {
-      
+
           console.log(' -> acc ', account);
-      
+
           var accountTmp = account;
           console.log("auth =>", accountTmp.auths);
           authModel.get({
@@ -182,15 +183,15 @@ db.connect(uri, mongoUseTls ? {
               $in : accountTmp.auths
             }
           }, '-reseted_passwords._id').then(function (auths) {
-          
+
             console.log(' --> auths : ', auths)
-          
+
           }).catch(function (error) {
-          
+
             console.log(' --> error Auth : ', error);
           });
         }).catch(function (error) {
-      
+
           console.log(' --> error : ', error);
         });
       }
@@ -198,36 +199,36 @@ db.connect(uri, mongoUseTls ? {
       function testAccountAndGet(id, getDetail) {
         // Create a promise deferred
        // var deferred  = Q.defer();
-      
+
         var accountModel = db.getModel('Account');
         var authModel = db.getModel('Auth');
-      
+
         console.log(' --> id : ', id)
-      
+
         accountModel.get({ _id : id }, 'auths').then(function (account) {
-      
+
           console.log(' -> acc ')
-      
+
           console.log(utils.obj.inspect(account));
           console.log(account);
           console.log('===== to object ========');
           var accountTmp = account.toObject();
-          
+
           authModel.get({
             _id : {
               $in : accountTmp.auths
             }
           }, '-reseted_passwords._id').then(function (auths) {
-          
+
             console.log(' --> auths : ', auths)
-          
+
           }).catch(function (error) {
-          
+
             console.log(' --> error Auth : ', error);
           });
-      
+
         }).catch(function (error) {
-      
+
           console.log(' --> error : ', error);
         });
       }
@@ -258,7 +259,10 @@ db.connect(uri, mongoUseTls ? {
       }
 
       //testGet();
-      testAccountAndGet('5aba2eafbe26f1561303e80a');
+      //testAccountAndGet('5aba2eafbe26f1561303e80a');
+
+        testInsert();
+
       //testInsert();
         //delete a._id;
         //a.updated_date = new Date();
@@ -297,7 +301,7 @@ db.connect(uri, mongoUseTls ? {
   console.log(error);
   if (db.isConnected()) {
     db.disconnect().then(function() {
-  
+
     }, function(error) {
       console.log('diconnect failed');
       console.log(error);
@@ -318,9 +322,9 @@ db.connect(uri, mongoUseTls ? {
         }).catch(function(err) {
           console.log(err)
         }).done();
-        
-        
-        
+
+
+
    // console.log(model);
     model.create({ name : "a"}).then(function(a) {
       console.log('a');
