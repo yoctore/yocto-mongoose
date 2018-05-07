@@ -271,6 +271,25 @@
           }
         ]
       },
+      "login"         : {
+        "required"  : false,
+        "type"      : {
+          "email"         : {
+            "required"  : true,
+            "type"      : "String",
+            "index"     : true,
+            "ym_crypt"             : true
+
+          },
+          "phone"         : {
+            "required"  : false,
+            "type"      : "String",
+            "index"     : true
+          }
+        },
+        "required"  : true
+      },
+
       "phones"                       : {
         "required"                   : false,
         "type"                       : [

@@ -25,7 +25,7 @@ var mongoUseTls   = false;
 var elasticUseTls = false;
 
 var insertModelA = {
-  firstname : "firstname-to-crypt",
+  firstname : "firstname-to-crypt-1",
   lastname : "lastname-to-crypt",
   maiden_name : "maidenname-to-crypt",
   civility    : "civilty-to-crypt",
@@ -40,6 +40,11 @@ var insertModelA = {
       ]
     }
   ],
+  login : {
+    email : 'toto@yocto.re',
+    phone : '0639112233'
+  },
+
   emails : [
     {
       primary : true,
@@ -261,7 +266,7 @@ db.connect(uri, mongoUseTls ? {
       //testGet();
       //testAccountAndGet('5aba2eafbe26f1561303e80a');
 
-        testInsert();
+      testInsert();
 
       //testInsert();
         //delete a._id;

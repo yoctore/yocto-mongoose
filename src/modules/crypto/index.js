@@ -308,8 +308,8 @@ Crypt.prototype.walkDeepPlainObject = function (value, rules, isCryptProcess) {
     // Get rule state
     var rule = _.result(rules, rkey);
 
-    // We do this process only is model alow crypt process
-    if (_.isBoolean(rule) && rule) {
+    // We do this process only is model alow crypt process OR if ym_crypt is enabled at first level
+    if (_.isBoolean(rule) && rule || _.has(rule, 'ym_crypt') && _.get(rule, 'ym_crypt')) {
       // Get new value
       var newValue = _.result(value, key);
 
