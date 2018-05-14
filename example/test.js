@@ -263,10 +263,76 @@ db.connect(uri, mongoUseTls ? {
         });
       }
 
+      function testInsertAuth() {
+        var authModel = db.getModel('Auth');
+
+        console.log('=> STARTING INSERT AUTH');
+        authModel.insert({
+          auth_type : 'standard',
+          login : {
+            email : 'toto@yopmail.com',
+            phone : '012345',
+            old_phone : {
+              number : '12344'
+            }
+          },
+          loginarr : [
+            {
+              emailarr : 'toto-arr1@yopmail.com'
+            }
+          ],
+          password : 'hashhhhhhhh',
+          created_date : new Date(),
+          updated_date : new Date(),
+          last_connection_date : new Date()
+        }).then(function(a) {
+          console.log('===> INSERT AUTH  RETURN VALUE :', utils.obj.inspect(a.toObject()));
+          console.log('=> ENDING INSERT');
+       // a = a.toObject()
+        }).catch(function(e) {
+          console.log('crate failed', e);
+        });
+      }
+
+      function testGetAuth(email) {
+
+        var authModel = db.getModel('Auth');
+
+        var query = {
+          //  'login.email' : email
+           "login.old_phone.number" : "28ec07c89bdca2ce236508a84c1bc752"
+
+          // "login.old_phone.number" : "12344"
+
+          // login : {
+          //   old_phone : {
+          //     number : '12344'
+          //   }
+          // }
+
+          // "auth_type" : "standard"
+
+          // "loginarr.emailarr" : "toto-arr1@yopmail.com"
+        };
+
+        console.log(' -->  Search Auth for query : ', query)
+
+        authModel.find(query).limit(1).then(function (value) {
+
+          console.log(' --> auth : ', utils.obj.inspect(value));
+        }).catch(function (error) {
+
+          console.log(' --> testGetAuth() error : ', error);
+        });
+      }
+
       //testGet();
       //testAccountAndGet('5aba2eafbe26f1561303e80a');
 
-      testInsert();
+      // testInsert();
+
+      // testInsertAuth();
+      testGetAuth();
 
       //testInsert();
         //delete a._id;
