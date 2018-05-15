@@ -300,24 +300,23 @@ db.connect(uri, mongoUseTls ? {
 
         var query = {
           //  'login.email' : email
-           "login.old_phone.number" : "28ec07c89bdca2ce236508a84c1bc752"
+           //"login.old_phone.number" : "28ec07c89bdca2ce236508a84c1bc752"
 
-          // "login.old_phone.number" : "12344"
+          "login.old_phone.number" : "12344",
 
-          // login : {
-          //   old_phone : {
-          //     number : '12344'
-          //   }
-          // }
-
-          // "auth_type" : "standard"
+          login : {
+            old_phone : {
+              number : '12344'
+            }
+          },
+          "auth_type" : "standard"
 
           // "loginarr.emailarr" : "toto-arr1@yopmail.com"
         };
 
         console.log(' -->  Search Auth for query : ', query)
 
-        authModel.find(query).limit(1).then(function (value) {
+        authModel.get(query).then(function (value) {
 
           console.log(' --> auth : ', utils.obj.inspect(value));
         }).catch(function (error) {
@@ -326,14 +325,47 @@ db.connect(uri, mongoUseTls ? {
         });
       }
 
+      function updateAuth() {
+
+        var authModel = db.getModel('Auth');
+
+        try {
+          authModel.update({
+            _id : '5afac2ec1071e834bea4fb42'
+          }, {
+            'login.email' : "aa",
+            'login.phone' : 'afdfdd',
+
+            login : {
+              "email" : "bbb@aaa.fr",
+              "phone" : "97456",
+              "old_phone" : {
+                  "number" : "123456"
+              }
+            },
+            auth_type : "aaaaa",
+            loginarr : [ {
+              emailarr: 'toto-arr1@yopmail.com' } ]
+          }).then(function (value) {
+
+            console.log(' --> updateAuth() : ', utils.obj.inspect(value));
+          }).catch(function (error) {
+
+            console.log(' --> updateAuth() error : ', error);
+          });
+        } catch (error) {
+          console.log(error)
+        }
+      }
+
       //testGet();
       //testAccountAndGet('5aba2eafbe26f1561303e80a');
 
       // testInsert();
 
-      // testInsertAuth();
-      testGetAuth();
-
+      //testInsertAuth();
+      //testGetAuth();
+      updateAuth();
       //testInsert();
         //delete a._id;
         //a.updated_date = new Date();

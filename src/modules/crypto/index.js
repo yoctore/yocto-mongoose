@@ -302,6 +302,7 @@ Crypt.prototype.walkDeepPlainObject = function (value, rules, isCryptProcess) {
       [ key ].join('.ym_crypt');
 
     // Replace
+
     rkey = rkey.replace(/(type\.\d\.type)/g, 'type.0');
     rkey = rkey.replace(/(\.\d\.)/g, '.0.');
 
@@ -390,6 +391,68 @@ Crypt.prototype.remapNestedArray = function (value, crypt, nothing) {
     // Default statement
     return item;
   }.bind(this));
+}
+
+/**
+ * Try to crypt and decrypt data from query conditions
+ * @param {Mixed} conditions query conditions to parse for mapping
+ * @param {Mixed} properties definitions properties to use on parse for mapping
+ * @return {Mixed} conditions builded for crypt/decrypt processs
+ */
+Crypt.prototype.prepareCryptQuery = function (conditions, properties) {
+  // Try to normalize key to use string a key in conditions without obj
+  var keys = _.uniq(_.flatten(_.compact(_.map(traverse(conditions).paths(), function (path) {
+    // Default statement
+    return path.join('.');
+  }))));
+
+  // Normalize conditions
+  conditions = _.reduce(_.compact(_.map(_.map(keys, function (key) {
+    // Try to build obj
+    var obj = {};
+
+    // Default statement
+    obj[key] = _.get(conditions, key);
+
+    // Default statement
+    return obj;
+  }), function (k) {
+    // Get property correctly
+    var key   = _.first(Object.keys(k));
+    var value = _.first(_.values(k));
+
+    // Default statement
+    return !_.isObject(key) && !_.isObject(value) &&
+           !_.isObject(value) && !_.isObject(value) ? k : false;
+  })), function (result, value) {
+    // Default statement
+    return _.merge(result, value);
+  });
+
+  // Get keys first
+  conditions = _.mapValues(conditions, function (value, key) {
+    // Try to get key and defintions for get process
+    var pkey          = key.replace(/\./g, '.type.');
+    var definitions  = _.get(properties, pkey);
+
+    // Crypt is enabled ?
+    if (_.has(definitions, 'ym_crypt') && _.get(definitions, 'ym_crypt')) {
+      // Is crypted ?
+      if (!this.isAlreadyCrypted(value)) {
+        // Get encrypted value
+        value = this.encrypt(value);
+      } else {
+        // Get decrypted value
+        value = this.decrypt(value);
+      }
+    }
+
+    // Default statement
+    return value;
+  }.bind(this));
+
+  // Default statement
+  return conditions;
 }
 
 // Default export

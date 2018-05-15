@@ -565,12 +565,15 @@ YMongoose.prototype.addModel = function (value) {
     // save and setup the current algorythm and key to use on crypto process
     this.modules.crypt.setAlgorithmAndKey(value.model.crypto);
     // prepare item to crypt process
-    value.model.properties = this.modules.crypt.prepare(value.model.properties);
-
+    var defaultProperties = value.model.properties;
     // schema value
-    var schema = new Schema(value.model.properties);
+    var schema = new Schema(this.modules.crypt.prepare(value.model.properties, { runSettersOnQuery: true }));
+    
+    schema.static('getProperties', function () {
+      return defaultProperties;
+    });
 
-// has compound indexes defined ?
+    // has compound indexes defined ?
     if (_.has(value.model, 'compound') && _.isArray(value.model.compound) &&
       !_.isEmpty(value.model.compound)) {
       // debug message for compound index process
