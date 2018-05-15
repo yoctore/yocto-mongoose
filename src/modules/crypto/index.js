@@ -406,6 +406,12 @@ Crypt.prototype.prepareCryptQuery = function (conditions, properties) {
     return path.join('.');
   }))));
 
+  // If all keys append to each other contains $ keyword we need to skip the next process
+  if (_.includes(keys.join(''), '$')) {
+    // Default statement
+    return conditions;
+  }
+
   // Normalize conditions
   conditions = _.reduce(_.compact(_.map(_.map(keys, function (key) {
     // Try to build obj

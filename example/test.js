@@ -210,7 +210,7 @@ db.connect(uri, mongoUseTls ? {
 
         console.log(' --> id : ', id)
 
-        accountModel.get(id, 'auths').then(function (account) {
+        accountModel.get({ _id : id }, 'auths').then(function (account) {
 
           console.log(' -> acc ')
 
@@ -310,7 +310,6 @@ db.connect(uri, mongoUseTls ? {
             }
           },
           "auth_type" : "standard"
-
           // "loginarr.emailarr" : "toto-arr1@yopmail.com"
         };
 
@@ -347,7 +346,6 @@ db.connect(uri, mongoUseTls ? {
             loginarr : [ {
               emailarr: 'toto-arr1@yopmail.com' } ]
           }).then(function (value) {
-
             console.log(' --> updateAuth() : ', utils.obj.inspect(value));
           }).catch(function (error) {
 
@@ -364,8 +362,8 @@ db.connect(uri, mongoUseTls ? {
       // testInsert();
 
       //testInsertAuth();
-      //testGetAuth();
-      updateAuth();
+      testGetAuth();
+      //updateAuth();
       //testInsert();
         //delete a._id;
         //a.updated_date = new Date();

@@ -245,9 +245,12 @@ Crud.prototype.update = function (conditions, update, multi) {
   var method = _.isString(conditions) ? 'findByIdAndUpdate' : 'findOneAndUpdate';
 
   // Try to prepare query if is an object
-  if (_.isPlainObject(update)) {
+  if (_.isPlainObject(update) || _.isPlainObject(conditions)) {
     // Prepare update property
     update = this.crypto().prepareCryptQuery(update, this.getProperties());
+
+    // Prepare update property
+    conditions = this.crypto().prepareCryptQuery(conditions, this.getProperties());
   }
 
   // Create our deferred object, which we will use in our promise chain
