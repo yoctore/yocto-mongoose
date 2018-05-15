@@ -210,7 +210,7 @@ db.connect(uri, mongoUseTls ? {
 
         console.log(' --> id : ', id)
 
-        accountModel.get({ _id : id }, 'auths').then(function (account) {
+        accountModel.get(id, 'auths').then(function (account) {
 
           console.log(' -> acc ')
 
