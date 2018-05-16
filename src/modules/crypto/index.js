@@ -427,8 +427,6 @@ Crypt.prototype.prepareCryptQuery = function (conditions, properties) {
     var key   = _.first(Object.keys(k));
     var value = _.first(_.values(k));
 
-    console.log(k);
-
     // Default statement
     return !_.isObject(key) && !_.isObject(value) &&
            !_.isObject(value) && !_.isObject(value) ? k : false;
@@ -437,7 +435,7 @@ Crypt.prototype.prepareCryptQuery = function (conditions, properties) {
     return _.merge(result, value);
   });
 
-  // Get keys first
+  // Try to remap values properly
   conditions = _.mapValues(conditions, function (value, key) {
     // Try to get key and defintions for get process
     var pkey          = key.replace(/\./g, '.type.');
@@ -458,6 +456,22 @@ Crypt.prototype.prepareCryptQuery = function (conditions, properties) {
     // Default statement
     return value;
   }.bind(this));
+
+  // We need to transform key to real object for mongo process, try to remap keys on process
+  _.each(conditions, function (value, key) {
+    // Try to get key and defintions for get process
+    var pkey          = key.replace(/\./g, '.type.');
+    var definitions   = _.get(properties, pkey);
+
+    // Crypt is enabled ?
+    if (!_.has(definitions, 'ym_crypt') || !_.get(definitions, 'ym_crypt')) {
+      // Merge value
+      _.merge(conditions, _.set({}, key, value));
+
+      // And delete prepared previous prepared key
+      delete conditions[key];
+    }
+  });
 
   // Default statement
   return conditions;
