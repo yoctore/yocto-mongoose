@@ -427,6 +427,8 @@ Crypt.prototype.prepareCryptQuery = function (conditions, properties) {
     var key   = _.first(Object.keys(k));
     var value = _.first(_.values(k));
 
+    console.log(k);
+
     // Default statement
     return !_.isObject(key) && !_.isObject(value) &&
            !_.isObject(value) && !_.isObject(value) ? k : false;
@@ -439,7 +441,7 @@ Crypt.prototype.prepareCryptQuery = function (conditions, properties) {
   conditions = _.mapValues(conditions, function (value, key) {
     // Try to get key and defintions for get process
     var pkey          = key.replace(/\./g, '.type.');
-    var definitions  = _.get(properties, pkey);
+    var definitions   = _.get(properties, pkey);
 
     // Crypt is enabled ?
     if (_.has(definitions, 'ym_crypt') && _.get(definitions, 'ym_crypt')) {

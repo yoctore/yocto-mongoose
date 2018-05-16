@@ -272,7 +272,8 @@ Crud.prototype.update = function (conditions, update, multi) {
   } else {
     // Try to find
     this[method](conditions, update, {
-      new : true
+      new    : true,
+      upsert : true
     }, function (error, data) {
       // Has error ?
       if (error) {
