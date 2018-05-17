@@ -302,15 +302,16 @@ db.connect(uri, mongoUseTls ? {
           //  'login.email' : email
            //"login.old_phone.number" : "28ec07c89bdca2ce236508a84c1bc752"
 
-          "login.old_phone.number" : "12344",
+          //"login.old_phone.number" : "12344",
 
-          login : {
-            old_phone : {
-              number : '12344'
-            }
-          },
-          "auth_type" : "standard"
-          // "loginarr.emailarr" : "toto-arr1@yopmail.com"
+          //login : {
+          //  old_phone : {
+          //    number : '12344'
+          //  }
+          //},
+          //"auth_type" : "standard",
+          //"loginarr.emailarr" : "toto-arr1@yopmail.com",
+          created_date : Date.now()
         };
 
         console.log(' -->  Search Auth for query : ', query)
@@ -362,8 +363,8 @@ db.connect(uri, mongoUseTls ? {
       // testInsert();
 
       //testInsertAuth();
-      //testGetAuth();
-      updateAuth();
+      testGetAuth();
+      //updateAuth();
       //testInsert();
         //delete a._id;
         //a.updated_date = new Date();

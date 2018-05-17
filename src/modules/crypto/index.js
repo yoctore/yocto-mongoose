@@ -465,11 +465,11 @@ Crypt.prototype.prepareCryptQuery = function (conditions, properties) {
 
     // Crypt is enabled ?
     if (!_.has(definitions, 'ym_crypt') || !_.get(definitions, 'ym_crypt')) {
-      // Merge value
-      _.merge(conditions, _.set({}, key, value));
-
       // And delete prepared previous prepared key
       delete conditions[key];
+
+      // Merge value
+      _.merge(conditions, _.set({}, key, value));
     }
   });
 
