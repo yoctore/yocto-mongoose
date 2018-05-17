@@ -304,14 +304,13 @@ db.connect(uri, mongoUseTls ? {
 
           //"login.old_phone.number" : "12344",
 
-          //login : {
-          //  old_phone : {
-          //    number : '12344'
-          //  }
-          //},
+          login : {
+            old_phone : {
+              number : '12344'
+            }
+          },
           //"auth_type" : "standard",
-          //"loginarr.emailarr" : "toto-arr1@yopmail.com",
-          created_date : Date.now()
+          //"loginarr.emailarr" : "toto-arr1@yopmail.com"
         };
 
         console.log(' -->  Search Auth for query : ', query)
@@ -333,9 +332,6 @@ db.connect(uri, mongoUseTls ? {
           authModel.update({
             _id : '5afac2ec1071e834bea4fb42'
           }, {
-            'login.email' : "aa",
-            'login.phone' : 'afdfdd',
-
             login : {
               "email" : "bbb@aaa.fr",
               "phone" : "97456",
@@ -345,7 +341,12 @@ db.connect(uri, mongoUseTls ? {
             },
             auth_type : "aaaaa",
             loginarr : [ {
-              emailarr: 'toto-arr1@yopmail.com' } ]
+              emailarr: 'toto-arr1@yopmail.com' } ],
+            "foo.bar" : 1,
+            "bar.nuull" : null,
+            a : {
+              b : null
+            }
           }).then(function (value) {
             console.log(' --> updateAuth() : ', utils.obj.inspect(value));
           }).catch(function (error) {
@@ -363,8 +364,8 @@ db.connect(uri, mongoUseTls ? {
       // testInsert();
 
       //testInsertAuth();
-      testGetAuth();
-      //updateAuth();
+      //testGetAuth();
+      updateAuth();
       //testInsert();
         //delete a._id;
         //a.updated_date = new Date();

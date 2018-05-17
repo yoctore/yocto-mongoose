@@ -400,6 +400,9 @@ Crypt.prototype.remapNestedArray = function (value, crypt, nothing) {
  * @return {Mixed} conditions builded for crypt/decrypt processs
  */
 Crypt.prototype.prepareCryptQuery = function (conditions, properties) {
+  // Save condition for matching at then en of process
+  var initialCondition = conditions;
+
   // Try to normalize key to use string a key in conditions without obj
   var keys = _.uniq(_.flatten(_.compact(_.map(traverse(conditions).paths(), function (path) {
     // Default statement
@@ -459,16 +462,18 @@ Crypt.prototype.prepareCryptQuery = function (conditions, properties) {
 
   // We need to transform key to real object for mongo process, try to remap keys on process
   _.each(conditions, function (value, key) {
-    // Try to get key and defintions for get process
-    var pkey          = key.replace(/\./g, '.type.');
-    var definitions   = _.get(properties, pkey);
+    // Try to get root path of key before next process
+    var rootKey = _.first(_.split(key, '.'));
 
-    // Crypt is enabled ?
-    if (!_.has(definitions, 'ym_crypt') || !_.get(definitions, 'ym_crypt')) {
-      // And delete prepared previous prepared key
+    // Try to get the initial item
+    var initialItem = _.get(initialCondition, rootKey);
+
+    // Check initial type of initial item format
+    if (!_.isString(initialItem) && !_.isUndefined(initialItem)) {
+      // Remove traverse key
       delete conditions[key];
 
-      // Merge value
+      // Set initial value
       _.merge(conditions, _.set({}, key, value));
     }
   });
