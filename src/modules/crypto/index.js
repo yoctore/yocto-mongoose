@@ -39,6 +39,11 @@ function Crypt (logger, mongooseTypes) {
    * Current mongoose type
    */
   this.Types = mongooseTypes;
+
+  /**
+   * Model properties
+   */
+  this.modelProperties = {};
 }
 
 /**
@@ -394,20 +399,97 @@ Crypt.prototype.remapNestedArray = function (value, crypt, nothing) {
 }
 
 /**
+ * Utility method to append model properties to current crypto module to
+ * avoid manual call on prepareCryptQuery method
+ *
+ * @param {Object} properties model properties to save on current model to use on prepareCryptQuery method
+ */
+Crypt.prototype.saveModelProperties = function (properties) {
+  // Save properties here
+  this.modelProperties = properties;
+}
+
+/**
  * Try to crypt and decrypt data from query conditions
  * @param {Mixed} conditions query conditions to parse for mapping
- * @param {Mixed} properties definitions properties to use on parse for mapping
  * @return {Mixed} conditions builded for crypt/decrypt processs
  */
-Crypt.prototype.prepareCryptQuery = function (conditions, properties) {
+Crypt.prototype.prepareCryptQuery = function (conditions) {
+  // We need to do this process only if conditions is a plain object
+  if (!_.isPlainObject(conditions)) {
+    // Default invalid statement
+    return conditions;
+  }
+
   // Save condition for matching at then en of process
   var initialCondition = conditions;
+
+  // Storage for excluded keys
+  var excludedKey = [];
 
   // Try to normalize key to use string a key in conditions without obj
   var keys = _.uniq(_.flatten(_.compact(_.map(traverse(conditions).paths(), function (path) {
     // Default statement
     return path.join('.');
   }))));
+
+  // If all keys append to each other contains $ keyword we need to skip the next process
+  if (_.includes(keys.join(''), '$')) {
+    // Default statement
+    // get excluded keys first
+    var dollars = _.uniq(_.compact(_.map(keys, function (key) {
+      // Default statement
+      return _.includes(key, '$') ? key.split('.') : false;
+    })));
+
+    // We need to find correct main key to avoid confusion between dot notation and object notation
+    dollars = _.uniq(_.map(dollars, function (dollar) {
+      // Recurse function
+      var findCorrectPath = function (current, next) {
+        // Classic usage
+        if (!_.get(conditions, current.join('.'))) {
+          if (!_.isEmpty(next)) {
+            // Get next part of key for matching
+            var nextKey = _.slice(next, 0, 1);
+
+            // Update current object
+
+            current.push(_.first(nextKey));
+
+            // Default recurse process
+            return findCorrectPath(current, _.drop(next));
+          }
+        }
+
+        // Default intenal statement
+        return current.join('.');
+      }
+
+      // Save main Key first
+      var mainKey = _.slice(dollar, 0, 1);
+
+      // Default statement
+      return findCorrectPath(mainKey, _.difference(dollar, mainKey));
+    }));
+
+    // Save excluded key
+    excludedKey = _.map(dollars, function (d) {
+      // Prepare obj
+      var obj = {};
+
+      // Build object and save
+      _.set(obj, d, _.get(conditions, d));
+
+      // Delete excluded key
+      keys = _.compact(_.map(keys, function (k) {
+        // Default statement
+        return _.startsWith(k, d) ? false : k;
+      }));
+
+      // Default statement
+      return obj;
+    });
+  }
 
   // Normalize conditions
   conditions = _.reduce(_.compact(_.map(_.map(keys, function (key) {
@@ -436,7 +518,7 @@ Crypt.prototype.prepareCryptQuery = function (conditions, properties) {
   conditions = _.mapValues(conditions, function (value, key) {
     // Try to get key and defintions for get process
     var pkey          = key.replace(/\./g, '.type.');
-    var definitions   = _.get(properties, pkey);
+    var definitions   = _.get(this.modelProperties, pkey);
 
     // Crypt is enabled ?
     if (_.has(definitions, 'ym_crypt') && _.get(definitions, 'ym_crypt')) {
@@ -470,6 +552,12 @@ Crypt.prototype.prepareCryptQuery = function (conditions, properties) {
       // Set initial value
       _.merge(conditions, _.set({}, key, value));
     }
+  });
+
+  // Append excluded key
+  _.each(excludedKey, function (exclude) {
+    // Add remove key
+    _.merge(conditions, exclude);
   });
 
   // Default statement

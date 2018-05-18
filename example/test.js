@@ -302,13 +302,13 @@ db.connect(uri, mongoUseTls ? {
           //  'login.email' : email
            //"login.old_phone.number" : "28ec07c89bdca2ce236508a84c1bc752"
 
-          //"login.old_phone.number" : "12344",
+          "login.old_phone.number" : "12344",
 
-          login : {
-            old_phone : {
-              number : '12344'
-            }
-          },
+          //login : {
+          //  old_phone : {
+          //    number : '12344'
+          //  }
+          //},
           //"auth_type" : "standard",
           //"loginarr.emailarr" : "toto-arr1@yopmail.com"
         };
@@ -346,7 +346,28 @@ db.connect(uri, mongoUseTls ? {
             "bar.nuull" : null,
             a : {
               b : null
+            },
+            $or: [
+             { 'login.email': '0692556690' },
+             { 'login.phone': '0692556690' }
+           ],
+
+           'loginaa.$.email' : { $in : ['aa@aa.aa', 'bbbb '] },
+
+           loginarr : {
+             $elemMatch : {
+               emailarr : 'toto',
+               foo : 'bar'
+             }
+           },
+
+          $or    : [
+            {
+              'login.email' : {
+                $eq : 'tata@tata.fr'
+              }
             }
+          ]
           }).then(function (value) {
             console.log(' --> updateAuth() : ', utils.obj.inspect(value));
           }).catch(function (error) {
@@ -364,8 +385,8 @@ db.connect(uri, mongoUseTls ? {
       // testInsert();
 
       //testInsertAuth();
-      //testGetAuth();
-      updateAuth();
+      testGetAuth();
+      //updateAuth();
       //testInsert();
         //delete a._id;
         //a.updated_date = new Date();

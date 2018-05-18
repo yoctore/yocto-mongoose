@@ -147,8 +147,7 @@ Crud.prototype.get = function (conditions, filter, method) {
   function defaultFind (conditions, filter, store) {
     // Try to call crypto process for nested object where property is not catched by mongoose setter only if is an object
     // Update conditions format
-    conditions = _.isPlainObject(conditions) ?
-      context.crypto().prepareCryptQuery(conditions, context.getProperties()) : conditions;
+    conditions = context.crypto().prepareCryptQuery(conditions);
 
     // Normal process
     context[method](conditions, filter, function (error, data) {
@@ -244,12 +243,10 @@ Crud.prototype.update = function (conditions, update, multi) {
   var method = _.isString(conditions) ? 'findByIdAndUpdate' : 'findOneAndUpdate';
 
   // Prepare update property for crypto process because setter is not call in few case
-  update = _.isPlainObject(update) ?
-    this.crypto().prepareCryptQuery(update, this.getProperties()) : update;
+  update = this.crypto().prepareCryptQuery(update);
 
   // Prepare update property for crypto process because setter is not call in few case
-  conditions = _.isPlainObject(conditions) ?
-    this.crypto().prepareCryptQuery(conditions, this.getProperties()) : conditions;
+  conditions = this.crypto().prepareCryptQuery(conditions);
 
   // Create our deferred object, which we will use in our promise chain
   var deferred = Q.defer();

@@ -569,9 +569,12 @@ YMongoose.prototype.addModel = function (value) {
     // schema value
     var schema = new Schema(this.modules.crypt.prepare(value.model.properties, { runSettersOnQuery: true }));
     
-    schema.static('getProperties', function () {
+    // Expode model properties for manual crypt/decrypt process
+    /*schema.static('getProperties', function () {
+      // defualt statement
       return defaultProperties;
     });
+    */
 
     // has compound indexes defined ?
     if (_.has(value.model, 'compound') && _.isArray(value.model.compound) &&
@@ -606,6 +609,8 @@ YMongoose.prototype.addModel = function (value) {
 
     // append crypto instance to current schema
     schema.static('crypto', function () {
+      // append model properties to crypto to avoir manual call of method
+      this.modules.crypt.saveModelProperties(defaultProperties);
       // default statement
       return this.modules.crypt;
     }.bind(this));
