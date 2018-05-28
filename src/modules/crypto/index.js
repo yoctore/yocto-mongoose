@@ -295,10 +295,10 @@ Crypt.prototype.processAndCheckTypeForSetterAndGetters = function (obj, key, acc
  *
  * @param {Object} value current plain object to parse
  * @param {Object} rules current model rules for crypt or decrypt process
- * @param {Boolean} isCryptProcess true in case of crypt process, false for decrypt process
+ * @param {Boolean} isSetter true in case of crypt process, false for decrypt process
  * @return {Object} modified value to used for current process
  */
-Crypt.prototype.walkDeepPlainObject = function (value, rules, isCryptProcess) {
+Crypt.prototype.walkDeepPlainObject = function (value, rules, isSetter) {
   // Parse all key and process correct usage
   _.map(traverse(value).paths(), function (key) {
     // Normalize key usage
@@ -319,7 +319,7 @@ Crypt.prototype.walkDeepPlainObject = function (value, rules, isCryptProcess) {
       var newValue = _.result(value, key);
 
       // Is for a crypt process or decrypt process ?
-      if (isCryptProcess) {
+      if (isSetter) {
         /**
          * We need do this check to avoir multiple call of mongoose getter
          * during save process getter are used and if we dont check if current value
@@ -338,7 +338,10 @@ Crypt.prototype.walkDeepPlainObject = function (value, rules, isCryptProcess) {
          * during save process getter are used and if we dont check if current value
          * is crypted before insert, current value was not saved crypted on databse
          */
-        if (this.isAlreadyCrypted(newValue)) {
+        if (!this.isAlreadyCrypted(newValue)) {
+          // Get encrypted value
+          // newValue = this.encrypt(newValue);
+        } else {
           // Get decrypted value
           newValue = this.decrypt(newValue);
         }
@@ -443,6 +446,20 @@ Crypt.prototype.prepareCryptQuery = function (conditions) {
   // Storage for excluded keys
   var excludedKey = [];
 
+  // Parse all keys of conditions
+  _.each(Object.keys(conditions), function (k) {
+    // Only if start by a .
+    if (_.includes(k, '.')) {
+      var obj = {};
+
+      obj[k] = conditions[k];
+      excludedKey.push(obj);
+
+      // Remove on main conditions next process
+      delete conditions[k];
+    }
+  });
+
   // Try to normalize key to use string a key in conditions without obj
   var keys = _.uniq(_.flatten(_.compact(_.map(traverse(conditions).paths(), function (path) {
     // Default statement
@@ -468,7 +485,7 @@ Crypt.prototype.prepareCryptQuery = function (conditions) {
     }));
 
     // Save excluded key
-    excludedKey = _.map(dollars, function (d) {
+    excludedKey = _.union(excludedKey, _.map(dollars, function (d) {
       // Prepare obj
       var obj = {};
 
@@ -483,37 +500,8 @@ Crypt.prototype.prepareCryptQuery = function (conditions) {
 
       // Default statement
       return obj;
-    });
+    }));
   }
-
-  // Try to avoid key with property defined on dot notation and has an object on value
-  // In this case manuel process is required
-  var dotKeyExcluded = _.uniq(_.compact(_.map(keys, function (d) {
-    // Prepare obj
-    var obj = {};
-
-    // Is an object ?
-
-    if (_.includes(d, '.') && _.isObject(_.get(conditions, d))) {
-      // Build object and save
-      obj[d] = _.get(conditions, d);
-
-      // Delete excluded key
-      keys = _.compact(_.map(keys, function (k) {
-        // Default statement
-        return _.startsWith(k, d) ? false : k;
-      }));
-
-      // Default statement
-      return obj;
-    }
-
-    // Default statement
-    return false;
-  })));
-
-  // Union this two values to do a single process at the end
-  excludedKey = _.union(excludedKey, dotKeyExcluded);
 
   // Normalize conditions
   conditions = _.reduce(_.compact(_.map(_.map(keys, function (key) {
@@ -549,10 +537,10 @@ Crypt.prototype.prepareCryptQuery = function (conditions) {
       // Is crypted ?
       if (!this.isAlreadyCrypted(value)) {
         // Get encrypted value
-        // value = this.encrypt(value);
+        value = this.encrypt(value);
       } else {
         // Get decrypted value
-        // value = this.decrypt(value);
+        value = this.decrypt(value);
       }
     }
 
@@ -583,6 +571,7 @@ Crypt.prototype.prepareCryptQuery = function (conditions) {
     // Add remove key
     _.merge(conditions, exclude);
   });
+  console.log(utils.obj.inspect(conditions));
 
   // Default statement
   return conditions;

@@ -341,19 +341,19 @@ db.connect(uri, mongoUseTls ? {
 
         try {
           authModel.update({
-            _id : '5afac2ec1071e834bea4fb42'
+            _id : '5b0be668dc0775961ab69763'
           }, {
             login : {
               "email" : "bbb@aaa.fr",
               "phone" : "97456",
-              "old_phone" : {
+              /*"old_phone" : {
                   "number" : "123456"
-              }
+              }*/
             },
             auth_type : "aaaaa",
             loginarr : [ {
               emailarr: 'toto-arr1@yopmail.com' } ],
-            "foo.bar" : 1,
+/*            "foo.bar" : 1,
             "bar.nuull" : null,
             a : {
               b : null
@@ -362,7 +362,8 @@ db.connect(uri, mongoUseTls ? {
              { 'login.email': '0692556690' },
              { 'login.phone': '0692556690' }
            ],
-
+           */
+/*
            'loginaa.$.email' : { $in : ['aa@aa.aa', 'bbbb '] },
 
            loginarr : {
@@ -379,6 +380,7 @@ db.connect(uri, mongoUseTls ? {
               }
             }
           ]
+          */
           }).then(function (value) {
             console.log(' --> updateAuth() : ', utils.obj.inspect(value));
           }).catch(function (error) {
@@ -456,11 +458,30 @@ db.connect(uri, mongoUseTls ? {
         });
       }
 
+      function testUpdateFailed() {
+        var obj = { updated_date: 1527518027940,
+          final: 
+           { created_date: '2018-05-28T14:33:47.940Z',
+             updated_date: '2018-05-28T14:33:47.940Z',
+             request: 
+              { itemscond: [ { mntcond: 100, qte: 1, cond: 'maxnetttc', ean: '2000000002057' } ],
+                items: [ { ean: '3273220080207', qte: 2 } ],
+                idm: 1029,
+                idtrs: '5b07e8f5bc24072d7b812051' },
+             response: null } };
+             var model = db.getModel('Account');
+             model.update(obj).then(function (value) {
+               console.log(' --> updateAuth() : ', utils.obj.inspect(value));
+             }).catch(function (error) {
+               console.log(' --> updateAuth() error : ', error);
+             });        
+      }
+      //testUpdateFailed();
       //testNoChangeSchema();
       //testInsertAuth();
-      testGetAuth();
+      //testGetAuth();
       //getOneToObject();
-      //updateAuth();
+      updateAuth();
       //testInsert();
         //delete a._id;
         //a.updated_date = new Date();
