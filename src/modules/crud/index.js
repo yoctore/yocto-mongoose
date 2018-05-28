@@ -147,7 +147,7 @@ Crud.prototype.get = function (conditions, filter, method) {
   function defaultFind (conditions, filter, store) {
     // Try to call crypto process for nested object where property is not catched by mongoose setter only if is an object
     // Update conditions format
-    conditions = context.crypto().prepareCryptQuery(conditions);
+    conditions = context.crypto().prepareCryptQuery(conditions, true);
 
     // Normal process
     context[method](conditions, filter, function (error, data) {

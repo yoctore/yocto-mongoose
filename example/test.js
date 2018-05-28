@@ -169,15 +169,26 @@ db.connect(uri, mongoUseTls ? {
       //db.getRedis().remove('aezeazeaz', 'rererer');
       //db.getRedis().flush('*33*');
 
+      function getOneToObject() {
+        var model = db.getModel('Account');;
+        // try to get
+        model.get('5af96f9f063ca40ccc5085e0').then(function (value) {
+          console.log('\n # Success result :',value);
+          console.log('\n # Success result toObject() :', value.toObject() );
+        }).catch(function (error) {
+          console.log(error);
+        });
+      }
+
       function testGet() {
-        var id = "5aba2eafbe26f1561303e80a";
+        var id = "5b0be668dc0775961ab69764";
         var accountModel = db.getModel('Account');
         console.log('al');
         var authModel = db.getModel('Auth');
 
         console.log(' --> id : ', id)
 
-        accountModel.get('5aba2eafbe26f1561303e80a').then(function (account) {
+        accountModel.get(id).then(function (account) {
 
           console.log(' -> acc ', account);
 
@@ -315,7 +326,7 @@ db.connect(uri, mongoUseTls ? {
 
         console.log(' -->  Search Auth for query : ', query)
 
-        authModel.get(query).then(function (value) {
+        authModel.get('5b0be668dc0775961ab69763').then(function (value) {
 
           console.log(' --> auth : ', utils.obj.inspect(value));
         }).catch(function (error) {
@@ -384,8 +395,71 @@ db.connect(uri, mongoUseTls ? {
 
       // testInsert();
 
+      function testNoChangeSchema() {
+        var obj = { updated_date: 1526628511901,
+          'fsdfsd.$.to' : 1,
+          '$or' : {},
+          'final.updated_date': '2018-05-18T07:28:31.901Z',
+          'final.response': 
+           { status: 0,
+             data: 
+              { idtkt: '999201805180010043801033',
+                items: 
+                 [ { ean: '6194049100013',
+                     mnttva: 0.02,
+                     netttc: 0.87,
+                     qte: 1,
+                     puvttc: 0.87,
+                     mntavg: 0,
+                     netht: 0.85,
+                     txtva: 2.1 },
+                   { ean: '2000000002057',
+                     mnttva: 0.39,
+                     netttc: 5,
+                     qte: 1,
+                     puvttc: 5,
+                     mntavg: 0,
+                     netht: 4.61,
+                     txtva: 8.5 },
+                   { ean: '3021690017403',
+                     mnttva: 0.06,
+                     netttc: 3.07,
+                     qte: 1,
+                     puvttc: 3.07,
+                     mntavg: 0,
+                     netht: 3.01,
+                     txtva: 2.1 },
+                   { ean: '3456300002133',
+                     mnttva: 0.11,
+                     netttc: 5.3,
+                     qte: 1,
+                     puvttc: 5.3,
+                     mntavg: 0,
+                     netht: 5.19,
+                     txtva: 2.1 } ],
+                itemscond: 
+                 [ { mntcond: 100, qte: 1, cond: 'maxnetttc', ean: '2000000002057' } ],
+                idtrs: '5afd3a7e7390e4136b76daec',
+                idm: 1033,
+                mntavg: 0,
+                netht: 13.66,
+                dt: '2018-05-17T20:00:00.000Z',
+                tva: 
+                 [ { totalTTC: 5, taux: 8.5, totalHT: 4.61, montant: 0.39 },
+                   { totalTTC: 9.24, taux: 2.1, totalHT: 9.05, montant: 0.19 } ],
+                netttc: 14.24 } } };
+        var model = db.getModel('Account');
+        model.update(obj).then(function (value) {
+          console.log(' --> updateAuth() : ', utils.obj.inspect(value));
+        }).catch(function (error) {
+          console.log(' --> updateAuth() error : ', error);
+        });
+      }
+
+      //testNoChangeSchema();
       //testInsertAuth();
       testGetAuth();
+      //getOneToObject();
       //updateAuth();
       //testInsert();
         //delete a._id;

@@ -568,13 +568,6 @@ YMongoose.prototype.addModel = function (value) {
     var defaultProperties = value.model.properties;
     // schema value
     var schema = new Schema(this.modules.crypt.prepare(value.model.properties, { runSettersOnQuery: true }));
-    
-    // Expode model properties for manual crypt/decrypt process
-    /*schema.static('getProperties', function () {
-      // defualt statement
-      return defaultProperties;
-    });
-    */
 
     // has compound indexes defined ?
     if (_.has(value.model, 'compound') && _.isArray(value.model.compound) &&

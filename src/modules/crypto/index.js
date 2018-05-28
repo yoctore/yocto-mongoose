@@ -307,7 +307,6 @@ Crypt.prototype.walkDeepPlainObject = function (value, rules, isCryptProcess) {
       [ key ].join('.ym_crypt');
 
     // Replace
-
     rkey = rkey.replace(/(type\.\d\.type)/g, 'type.0');
     rkey = rkey.replace(/(\.\d\.)/g, '.0.');
 
@@ -339,10 +338,7 @@ Crypt.prototype.walkDeepPlainObject = function (value, rules, isCryptProcess) {
          * during save process getter are used and if we dont check if current value
          * is crypted before insert, current value was not saved crypted on databse
          */
-        if (!this.isAlreadyCrypted(newValue)) {
-          // Get encrypted value
-          newValue = this.encrypt(newValue);
-        } else {
+        if (this.isAlreadyCrypted(newValue)) {
           // Get decrypted value
           newValue = this.decrypt(newValue);
         }
@@ -415,6 +411,26 @@ Crypt.prototype.saveModelProperties = function (properties) {
  * @return {Mixed} conditions builded for crypt/decrypt processs
  */
 Crypt.prototype.prepareCryptQuery = function (conditions) {
+  // Recurse function
+  var findCorrectPath = function (current, next) {
+    // Classic usage
+    if (!_.get(conditions, current.join('.'))) {
+      if (!_.isEmpty(next)) {
+        // Get next part of key for matching
+        var nextKey = _.slice(next, 0, 1);
+
+        // Update current object
+        current.push(_.first(nextKey));
+
+        // Default recurse process
+        return findCorrectPath(current, _.drop(next));
+      }
+    }
+
+    // Default intenal statement
+    return current.join('.');
+  }
+
   // We need to do this process only if conditions is a plain object
   if (!_.isPlainObject(conditions)) {
     // Default invalid statement
@@ -444,27 +460,6 @@ Crypt.prototype.prepareCryptQuery = function (conditions) {
 
     // We need to find correct main key to avoid confusion between dot notation and object notation
     dollars = _.uniq(_.map(dollars, function (dollar) {
-      // Recurse function
-      var findCorrectPath = function (current, next) {
-        // Classic usage
-        if (!_.get(conditions, current.join('.'))) {
-          if (!_.isEmpty(next)) {
-            // Get next part of key for matching
-            var nextKey = _.slice(next, 0, 1);
-
-            // Update current object
-
-            current.push(_.first(nextKey));
-
-            // Default recurse process
-            return findCorrectPath(current, _.drop(next));
-          }
-        }
-
-        // Default intenal statement
-        return current.join('.');
-      }
-
       // Save main Key first
       var mainKey = _.slice(dollar, 0, 1);
 
@@ -490,6 +485,35 @@ Crypt.prototype.prepareCryptQuery = function (conditions) {
       return obj;
     });
   }
+
+  // Try to avoid key with property defined on dot notation and has an object on value
+  // In this case manuel process is required
+  var dotKeyExcluded = _.uniq(_.compact(_.map(keys, function (d) {
+    // Prepare obj
+    var obj = {};
+
+    // Is an object ?
+
+    if (_.includes(d, '.') && _.isObject(_.get(conditions, d))) {
+      // Build object and save
+      obj[d] = _.get(conditions, d);
+
+      // Delete excluded key
+      keys = _.compact(_.map(keys, function (k) {
+        // Default statement
+        return _.startsWith(k, d) ? false : k;
+      }));
+
+      // Default statement
+      return obj;
+    }
+
+    // Default statement
+    return false;
+  })));
+
+  // Union this two values to do a single process at the end
+  excludedKey = _.union(excludedKey, dotKeyExcluded);
 
   // Normalize conditions
   conditions = _.reduce(_.compact(_.map(_.map(keys, function (key) {
@@ -525,10 +549,10 @@ Crypt.prototype.prepareCryptQuery = function (conditions) {
       // Is crypted ?
       if (!this.isAlreadyCrypted(value)) {
         // Get encrypted value
-        value = this.encrypt(value);
+        // value = this.encrypt(value);
       } else {
         // Get decrypted value
-        value = this.decrypt(value);
+        // value = this.decrypt(value);
       }
     }
 
