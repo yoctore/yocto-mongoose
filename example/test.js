@@ -481,7 +481,7 @@ db.connect(uri, mongoUseTls ? {
       //testInsertAuth();
       //testGetAuth();
       //getOneToObject();
-      updateAuth();
+      //updateAuth();
       //testInsert();
         //delete a._id;
         //a.updated_date = new Date();

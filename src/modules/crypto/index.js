@@ -168,6 +168,38 @@ Crypt.prototype.setAlgorithmAndKey = function (config) {
 }
 
 /**
+ * Check if on defined config we has ym_crypt property defined, to avoid parse process
+ * @param {Object} obj properties object to use on process
+ * @return {Boolean} true if rules is defined and is required
+ */
+Crypt.prototype.cryptedRulesIsDefined = function (obj) {
+  // Default statement
+  return !_.isEmpty(_.compact(_.map(_.compact(_.uniq(_.map(traverse(obj).paths(),
+    function (paths) {
+    // Contains ym_crypt property ?
+      if (_.includes(paths, 'ym_crypt')) {
+      // Default statement
+        return paths.join('.');
+      }
+
+      // Default invalid statement
+      return false;
+    }))), function (path) {
+    // Get state property defined on obj
+    var state = _.get(obj, path);
+
+    // Is a boolean and is set to true
+    if (_.isBoolean(state) && state) {
+      // Return correct path
+      return path;
+    }
+
+    // Default statement
+    return false;
+  })));
+}
+
+/**
  * Default function to parse and object recursivly to update encryp and decrypt key
  *
  * @param {Object} obj default object to process
