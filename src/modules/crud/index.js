@@ -324,10 +324,9 @@ Crud.prototype.create = function (value) {
     if (model instanceof this) {
       // Prepare update property for crypto process because setter is not call in few case
       value = this.crypto().prepareCryptQuery(value);
-      console.log('value', value);
 
       // Extend data before save
-      _.extend(model, value);
+      _.merge(model, value);
 
       // Try to find
       model.save(function (error, data) {

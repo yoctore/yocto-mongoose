@@ -526,7 +526,7 @@ db.connect(uri, mongoUseTls ? {
       //testUpdateAgainFailed();
       //testUpdateFailed();
       //testNoChangeSchema();
-      //testInsertAuth();
+      testInsertAuth();
       //testGetAuth();
       //getOneToObject();
       //updateAuth();
