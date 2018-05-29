@@ -265,7 +265,7 @@ db.connect(uri, mongoUseTls ? {
         });
         */
         console.log('=> STARTING INSERT');
-        account.insert(insertModel).then(function(a) {
+        account.create(insertModel).then(function(a) {
           console.log('===> INSERT RETURN VALUE :', utils.obj.inspect(a.toObject()));
           console.log('=> ENDING INSERT');
        // a = a.toObject()
@@ -476,6 +476,54 @@ db.connect(uri, mongoUseTls ? {
                console.log(' --> updateAuth() error : ', error);
              });        
       }
+
+      function testUpdateAgainFailed() {
+        var obj = { data: 
+          { reply_to: null,
+            expeditor: 
+             { name: 'Service Clients Jumbo Drive',
+               email: 'service-clients@jumbodrive.re',
+               sub_account: 'jumbo-drive' },
+            recipients: [ { iso_code: null, prefix: '', recipient: 'toto974@yopmail.com' } ],
+            subject: 'Inscription sur le site Jumbo-drive',
+            message: 'balard, <br>Merci de votre inscription.<br>Veuillez valider votre compte en cliquant sur le lien suivant :<br><a href="http://jumbodrive.local/validation/email/ec157991b1b8b82c9f636f3c1fc27e51057d31a49d7f5a50c313cf108a3a08cff1ad9c8f4754cb23d574c2c70837af7f17755dacadbaf62a468789e3c7447cd58698d87487e6daacb292d441cd8eb01f183dfe176bd2dcc56cf52f6e64c81b013b35acaae889a94b0568519b366112d108767b25ea3699637f12db23190e23fe8e3344180dddf63f58a9d05e0483458e6513a47b1832bdb4e5db184bfeb6a333253b731677b1632e015ee351c2931d44">Cliquer ici pour valider votre compte</a><br><br>A bientôt,<br>L\'équipe Jumbo-drive.' },
+         updated_date: 1527579153951 };
+
+         var model = db.getModel('Notify');
+         model.update(obj).then(function (value) {
+           console.log(' --> testUpdateAgainFailed() : ', utils.obj.inspect(value));
+         }).catch(function (error) {
+           console.log(' --> testUpdateAgainFailed() error : ', error);
+         });    
+      }
+
+      function testStringArray() {
+        var obj = {
+          "email" : [ 
+            "a", 
+            "aa", 
+            "aaa", 
+            "aaa@", 
+            "aaa@a", 
+            "aaa@aa", 
+            "aaa@aaa", 
+            "aaa@aaa.", 
+            "aaa@aaa.c", 
+            "aaa@aaa.co", 
+            "aaa@aaa.com"
+          ]
+        };
+
+        var model = db.getModel('Account');
+        model.update(obj).then(function (value) {
+          console.log(' --> testStringArray() : ', utils.obj.inspect(value));
+        }).catch(function (error) {
+          console.log(' --> testStringArray() error : ', error);
+        });    
+      }
+
+      //testStringArray();
+      //testUpdateAgainFailed();
       //testUpdateFailed();
       //testNoChangeSchema();
       //testInsertAuth();

@@ -62,11 +62,22 @@ Crypt.prototype.encrypt = function (data) {
         this.algorithm, '] for data ', utils.obj.inspect(data)
       ].join(' '));
 
-      // Try to crypt value
-      var crypted = utils.crypto.encrypt(this.hashKey, data, this.algorithm);
+      // Default state of crypt method
+      var crypted = false;
+
+      // On array case we need a specific process
+      if (_.isArray(data)) {
+        // Try to remap data
+        crypted = _.compact(_.map(data, function (d) {
+          // Default statement
+          return utils.crypto.encrypt(this.hashKey, d, this.algorithm);
+        }.bind(this)));
+      } else {
+        // Try to crypt value
+        crypted = utils.crypto.encrypt(this.hashKey, data, this.algorithm);
+      }
 
       // Only if crypted is value
-
       if (crypted) {
         // Debug message
         this.logger.verbose([ '[ YMongoose.cryto.encrypt ] - Value was successfuly crypted to ',
@@ -97,11 +108,23 @@ Crypt.prototype.decrypt = function (data) {
       this.algorithm, '] for data ', utils.obj.inspect(data)
     ].join(' '));
 
-    // Try to crypt value
-    var decrypted = utils.crypto.decrypt(this.hashKey, data, this.algorithm);
+    // Default state
+    var decrypted = false;
+
+    // On array case we need a specific process
+
+    if (_.isArray(data)) {
+      // Try to remap data
+      decrypted = _.compact(_.map(data, function (d) {
+        // Default statement
+        return utils.crypto.decrypt(this.hashKey, d, this.algorithm);
+      }.bind(this)));
+    } else {
+      // Try to decrypt value
+      decrypted = utils.crypto.decrypt(this.hashKey, data, this.algorithm);
+    }
 
     // Only if crypted is value
-
     if (decrypted) {
       // Debug message
       this.logger.verbose([ '[ YMongoose.cryto.decrypt ] - Value is crypted so decrypted value is',
@@ -118,7 +141,7 @@ Crypt.prototype.decrypt = function (data) {
 };
 
 /**
- * Check if givent value is already crypt or not
+ * Check if given value is already crypt or not
  *
  * @param {Object} data current data to check
  * @return {Boolean} true if data is already crypted, false otherwise
@@ -131,11 +154,24 @@ Crypt.prototype.isAlreadyCrypted = function (data) {
       utils.obj.inspect(data),
       '] is already crypted' ].join(' '));
 
-    // Try to crypt value
-    var decrypted = utils.crypto.decrypt(this.hashKey, data, this.algorithm);
+    // Default state
+    var decrypted = false;
+
+    // On array case we need a specific process
+    if (_.isArray(data)) {
+      // Try to remap data
+      decrypted = _.compact(_.map(data, function (d) {
+        // Default statement
+        return utils.crypto.decrypt(this.hashKey, d, this.algorithm);
+      }.bind(this)));
+
+      decrypted = !_.isEmpty(decrypted);
+    } else {
+      // Try to decrypt value
+      decrypted = utils.crypto.decrypt(this.hashKey, data, this.algorithm);
+    }
 
     // Only if crypted is value
-
     if (decrypted) {
       // Debug message
       this.logger.verbose([ '[ YMongoose.cryto.isAlreadyCrypted ] - Given data',
@@ -551,8 +587,7 @@ Crypt.prototype.prepareCryptQuery = function (conditions) {
     var value = _.first(_.values(k));
 
     // Default statement
-    return !_.isObject(key) && !_.isObject(value) &&
-           !_.isObject(value) && !_.isObject(value) ? k : false;
+    return !_.isObject(key) && (!_.isObject(value) || _.isDate(value)) ? k : false;
   })), function (result, value) {
     // Default statement
     return _.merge(result, value);
@@ -603,7 +638,6 @@ Crypt.prototype.prepareCryptQuery = function (conditions) {
     // Add remove key
     _.merge(conditions, exclude);
   });
-  console.log(utils.obj.inspect(conditions));
 
   // Default statement
   return conditions;

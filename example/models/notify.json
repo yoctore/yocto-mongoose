@@ -1,0 +1,128 @@
+{
+    "model" : {
+      "name" : "Notify",
+      "crud" : {
+        "enable"  : true,
+        "exclude" : []
+      },
+      "crypto" : {
+        "hashType" : "aes256",
+        "hashKey"  : "a92OhuQoLceDgAM7N94ygjEWD2HEdIBB"
+      },
+      "fn" : [
+      
+      ],
+      "validator" : "notifyModelValidator",
+      "properties" : {
+        "status" : {
+          "required" : true,
+          "type"     : "String",
+          "index"     : true
+        },
+        "notify_type" : {
+          "required" : true,
+          "type"     : "String",
+          "index"     : true
+        },
+        "for_customer" : {
+          "required" : true,
+          "type"     : "Boolean"
+        },
+        "response" : {
+          "required" : false,
+          "type"     : "String"
+        },
+        "data" : {
+          "required" : true,
+          "type"      : {
+            "reply_to"    : {
+              "required"  : false,
+              "type"      : "String"
+            },
+            "subject" : {
+              "required"  : false,
+              "type"      : "String"
+            },
+            "message" : {
+              "required"  : true,
+              "type"      : "String",
+              "ym_crypt" : true
+            },
+            "recipients" : {
+              "required"  : true,
+              "type"      : [
+                {
+                  "prefix"    : {
+                    "required"  : false,
+                    "type"      : "String",
+                    "ym_crypt" : true
+                  },
+                  "recipient" : {
+                    "required"  : true,
+                    "type"      : "String",
+                    "index"     : true,
+                    "ym_crypt" : true
+                  },
+                  "iso_code" : {
+                    "required"  : false,
+                    "type"      : "String"
+                  }
+                }
+              ]
+            },
+            "expeditor" : {
+              "required"  : false,
+              "type"      : {
+                "email" : {
+                  "required"  : false,
+                  "type"      : "String"
+                },
+                "name" : {
+                  "required"  : false,
+                  "type"      : "String"
+                },
+                "sub_account" : {
+                  "required"  : false,
+                  "type"      : "String"
+                }
+              }
+            }
+          }
+        },
+        "account_id" : {
+          "required" : true,
+          "type"     : "ObjectId"
+        },
+        "request_id" : {
+          "required" : false,
+          "type"     : "ObjectId"
+        },
+        "notified_date" : {
+          "required" : false,
+          "type"     : "Date"
+        },
+        "processed_date" : {
+          "required" : false,
+          "type"     : "Date"
+        },
+        "created_date" : {
+          "required" : true,
+          "type"     : "Date",
+          "index"     : true
+        },
+        "updated_date" : {
+          "required" : true,
+          "type"     : "Date"
+        },
+        "deleted_date" : {
+          "required" : false,
+          "type"     : "Date"
+        },
+        "retry" : {
+          "required" : false,
+          "type"     : "Number",
+          "index"     : true
+        }
+      }
+    }
+  }

@@ -571,7 +571,6 @@ YMongoose.prototype.addModel = function (value) {
       this.modules.crypt.prepare(value.model.properties) : value.model.properties;
     // schema value
     var schema = new Schema(preparedProperties, { runSettersOnQuery: true });
-
     // has compound indexes defined ?
     if (_.has(value.model, 'compound') && _.isArray(value.model.compound) &&
       !_.isEmpty(value.model.compound)) {

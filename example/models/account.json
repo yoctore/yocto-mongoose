@@ -15,6 +15,12 @@
       "lastname" : -1
     }],
     "properties"     : {
+      "email"  : {
+        "type"      : [ "String" ],
+        "required"  : false,
+        "index"     : false,
+        "ym_crypt" : true
+      },
       "status"                     : {
         "required"                   : true,
         "type"                       : "String"
