@@ -564,13 +564,13 @@ YMongoose.prototype.addModel = function (value) {
 
     // save and setup the current algorythm and key to use on crypto process
     this.modules.crypt.setAlgorithmAndKey(value.model.crypto);
-    // prepare item to crypt process
-    var defaultProperties = value.model.properties;
-    // prepare properly rules if defined
-    var preparedProperties = this.modules.crypt.cryptedRulesIsDefined(value.model.properties) ?
-      this.modules.crypt.prepare(value.model.properties) : value.model.properties;
-    // schema value
-    var schema = new Schema(preparedProperties, { runSettersOnQuery: true });
+    // save default properties
+    this.modules.crypt.saveModelProperties(value.model.properties);
+    // define default schema value
+    var schema = new Schema(value.model.properties);
+    // enable or not crypto hook
+    schema = this.modules.crypt.setupHook(schema, value.model.properties, value.model.name);
+
     // has compound indexes defined ?
     if (_.has(value.model, 'compound') && _.isArray(value.model.compound) &&
       !_.isEmpty(value.model.compound)) {
@@ -586,26 +586,8 @@ YMongoose.prototype.addModel = function (value) {
       }.bind(this));
     }
 
-    // Set toObject method to use getters to force usage of getters
-    // This apply all defined getter methods on current schema
-    schema.set('toObject', {
-      getters   : true,
-      virtuals  : true,
-      transform : function (doc, ret, options) {
-        // remove the _id of every document before returning the result
-        if (_.has(ret, 'id')) {
-          delete ret.id;
-        }
-
-        // return current document
-        return ret;
-      }
-    });
-
     // append crypto instance to current schema
     schema.static('crypto', function () {
-      // append model properties to crypto to avoir manual call of method
-      this.modules.crypt.saveModelProperties(defaultProperties);
       // default statement
       return this.modules.crypt;
     }.bind(this));
