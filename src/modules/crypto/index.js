@@ -1,9 +1,9 @@
 'use strict'
 
-var _       = require('lodash');
-var logger  = require('yocto-logger');
-var utils   = require('yocto-utils');
-var traverse = require('traverse');
+var _         = require('lodash');
+var logger    = require('yocto-logger');
+var utils     = require('yocto-utils');
+var traverse  = require('traverse');
 
 /**
  *
@@ -64,8 +64,7 @@ Crypt.prototype.setAlgorithmAndKey = function (config) {
 }
 
 /**
- * Utility method to append model properties to current crypto module to
- * avoid manual call on prepareCryptQuery method
+ * Utility method to append model properties to current crypto module
  *
  * @param {Object} properties model properties to save on current model to use on prepareCryptQuery method
  */
@@ -92,20 +91,6 @@ Crypt.prototype.encrypt = function (data) {
 
       // Default state of crypt method
       var crypted = this.encryptDecrypt(data, false, true);
-
-      /*
-      // On array case we need a specific process
-      if (_.isArray(data)) {
-        // Try to remap data
-        crypted = _.compact(_.map(data, function (d) {
-          // Default statement
-          return utils.crypto.encrypt(this.hashKey, d, this.algorithm);
-        }.bind(this)));
-      } else {
-        // Try to crypt value
-        crypted = utils.crypto.encrypt(this.hashKey, data, this.algorithm);
-      }
-      */
 
       // Only if crypted is value
       if (crypted) {
@@ -139,21 +124,7 @@ Crypt.prototype.decrypt = function (data) {
     ].join(' '));
 
     // Default state
-    var decrypted = this.encryptDecrypt(data, false, false);;
-
-    /*
-    // On array case we need a specific process
-    if (_.isArray(data)) {
-      // Try to remap data
-      decrypted = _.compact(_.map(data, function (d) {
-        // Default statement
-        return utils.crypto.decrypt(this.hashKey, d, this.algorithm);
-      }.bind(this)));
-    } else {
-      // Try to decrypt value
-      decrypted = utils.crypto.decrypt(this.hashKey, data, this.algorithm);
-    }
-    */
+    var decrypted = this.encryptDecrypt(data, false, false);
 
     // Only if crypted is value
     if (decrypted) {
@@ -185,26 +156,8 @@ Crypt.prototype.isAlreadyCrypted = function (data) {
       utils.obj.inspect(data),
       '] is already crypted' ].join(' '));
 
-    // Default state
-    var decrypted = this.encryptDecrypt(data, true, false);;
-
-    /*
-    // On array case we need a specific process
-    if (_.isArray(data)) {
-      // Try to remap data
-      decrypted = _.compact(_.map(data, function (d) {
-        // Default statement
-        return utils.crypto.decrypt(this.hashKey, d, this.algorithm);
-      }.bind(this)));
-
-      decrypted = !_.isEmpty(decrypted);
-    } else {
-      // Try to decrypt value
-      decrypted = utils.crypto.decrypt(this.hashKey, data, this.algorithm);
-    }
-*/
-    // Only if crypted is value
-    if (decrypted) {
+    // Check if is crypted ?
+    if (this.encryptDecrypt(data, true, false)) {
       // Debug message
       this.logger.verbose([ '[ YMongoose.cryto.isAlreadyCrypted ] - Given data',
         utils.obj.inspect(data), 'is already crypted. Skipping this process !' ].join(' '));
@@ -212,6 +165,7 @@ Crypt.prototype.isAlreadyCrypted = function (data) {
       // Default statement in this case
       return true;
     }
+
     // Debug message
     this.logger.verbose([ '[ YMongoose.cryto.isAlreadyCrypted ] - Given data',
       utils.obj.inspect(data), 'is not crypted. Do crypt process !' ].join(' '));
@@ -221,8 +175,14 @@ Crypt.prototype.isAlreadyCrypted = function (data) {
   return false;
 };
 
-//============= NEW PART
-
+/**
+ * Default method to do encrypt and decrypt action
+ *
+ * @param {Mixed} data content to encrypt
+ * @param {Boolean} isCheck true is cace of encryption verification
+ * @param {Boolean} isCrypt true is case of crypt process false otherwise
+ * @return {Mixed} data processed
+ */
 Crypt.prototype.encryptDecrypt = function (data, isCheck, isCrypt) {
   // Default state
   var state = false;
@@ -232,14 +192,12 @@ Crypt.prototype.encryptDecrypt = function (data, isCheck, isCrypt) {
   if (_.isArray(data)) {
     // Try to remap data is is an array
     state = _.compact(_.map(data, function (d) {
-      console.log(method, d)
       // Default statement
       return utils.crypto[method](this.hashKey, d, this.algorithm);
     }.bind(this)));
 
-    // is to check if data is already encrypt ?
+    // Is to check if data is already encrypt ?
     if (isCheck) {
-      console.log('state', state, data);
       state = !_.isEmpty(state);
     }
   } else {
@@ -247,50 +205,71 @@ Crypt.prototype.encryptDecrypt = function (data, isCheck, isCrypt) {
     state = utils.crypto[method](this.hashKey, data, this.algorithm);
   }
 
-  // default statement
+  // Default statement
   return state;
 }
 
 /**
  * Crypt or decrypt givent value by defined rules
- * @param {Object} obj default object to crypt or decrypt 
+ *
+ * @param {Object} obj default object to crypt or decrypt
  * @param {Boolean} crypt true in case of crypt false otherwise
+ * @return {Mixed} obj processed
  */
 Crypt.prototype.process = function (obj, crypt) {
-  // get properties first
+  // Get properties first
   var cryptProperties = this.getProperties();
 
-  // save context
+  // Save context
   var context = this;
 
-  // default statement
+  // Default statement
   return traverse(obj).map(function (x) {
-    // normalize path to process
+    // Normalize path to process
     var pathToProcess = context.normalizePath(this.path, true);
 
     console.log('defined properties =>', cryptProperties);
     console.log('path =>', this.path);
     console.log(x);
     console.log('path to process', pathToProcess, _.includes(cryptProperties, pathToProcess));
-    // crypt or decrypt is needed ?
+
+    // Crypt or decrypt is needed ?
     if (_.includes(cryptProperties, pathToProcess)) {
-      // try to update current value
-      this.update(crypt ? context.encrypt(x) : context.decrypt(x));
+      // Try to update current value
+      return this.update(crypt ? context.encrypt(x) : context.formatToDate(context.decrypt(x)));
     }
-   });
+
+    // Default statement if current value is not to crypt to get correct date format if is a date
+    return this.update(context.formatToDate(x));
+  });
 };
 
-Crypt.prototype.normalizePath = function (path, includeMongoOperator) {
-  // common process
-  path = path.join('.').replace(/\d/g, 'digit');
-  // extra process
-  if (includeMongoOperator) {
-    path = path.replace(/(\.\$\w+\.)/g, '.');
-    // for $or process
-    path = path.replace(/(\$\w+\.digit\.)/, '');
+Crypt.prototype.formatToDate = function (data) {
+  // Check first is a valid date format
+  if (_.isString(data) && !_.isNaN(Date.parse(data))) {
+    return new Date(data);
   }
 
-  // default statement
+  // Default statement
+  return data;
+}
+
+Crypt.prototype.normalizePath = function (path, includeMongoOperator) {
+  // Common process
+  path = path.join('.').replace(/\d/g, 'digit');
+
+  // Extra process
+  if (includeMongoOperator) {
+    path = path.replace(/(\.\$\w+\.)/g, '.');
+
+    // For $KEYWORD.digit process
+    path = path.replace(/(\$\w+\.digit\.)/, '');
+
+    // For $KEYWORD.obj
+    path = path.replace(/(\$\w+\.)/, '');
+  }
+
+  // Default statement
   return path;
 }
 
@@ -301,24 +280,25 @@ Crypt.prototype.normalizePath = function (path, includeMongoOperator) {
  * @return {Array} list of properties to use
  */
 Crypt.prototype.getProperties = function (properties) {
-  // normalise properties
+  // Normalise properties
   properties = properties || this.modelProperties;
 
-  // first get crypt property
+  // First get crypt property
   var initial = _.uniq(_.map(_.compact(_.map(traverse(properties).paths(), function (paths) {
-    // default statement
+    // Default statement
     return _.includes(paths, 'ym_crypt') ? _.pullAll(paths, [ 'ym_crypt', 'type' ]) : false;
   })), function (paths) {
-    // default statement
+    // Default statement
     return paths.join('.').replace(/\d/g, 'digit');
   }));
+
   // Do this for $ mongo operator
-  var extra = _.map(initial, function(path) {
-    // default statement
+  var extra = _.map(initial, function (path) {
+    // Default statement
     return path.replace(/\.digit\./g, '.');
   });
 
-  // default statement
+  // Default statement
   return _.uniq(_.union(initial, extra));
 }
 
@@ -328,82 +308,116 @@ Crypt.prototype.getProperties = function (properties) {
  * @return {Boolean} true in case of success
  */
 Crypt.prototype.isEnabled = function (properties) {
-  // default statement
+  // Default statement
   return !_.isEmpty(this.getProperties(properties));
 }
 
 /**
  * Enable Hook for request on crypt/decrypt process
- * 
+ *
  * @param {Object} schema default schema to return after hook definition
  * @param {Object} properties default properties to use to check if defined hook is required or not
  * @param {String} modelName current model name
  * @return {Object} update schema
  */
 Crypt.prototype.setupHook = function (schema, properties, modelName) {
-  // only crypt / decrypt properties is defined ?
+  // Only crypt / decrypt properties is defined ?
   if (this.isEnabled(properties)) {
     this.logger.verbose([ '[ YMongoose.cryto.setupHook ] - Setting up hook for model [',
       modelName, ']' ].join(' '));
-    // list of predefined hooks
+
+    // List of predefined hooks
     var hooks = [
-      { type : 'pre', method : 'findOneAndUpdate', crypt : true, update : true },
-      { type : 'pre', method : 'findByIdAndUpdate', crypt : true, update : true },
-      { type : 'pre', method : 'update', crypt : true, update : true },
-      { type : 'pre', method : 'save', crypt : true, create : true },
-      { type : 'pre', method : 'find', crypt : true, find : true },
-      { type : 'pre', method : 'findOne', crypt : true, find : true }
+      {
+        type   : 'pre',
+        method : 'findOneAndUpdate',
+        crypt  : true,
+        update : true
+      },
+      {
+        type   : 'pre',
+        method : 'findByIdAndUpdate',
+        crypt  : true,
+        update : true
+      },
+      {
+        type   : 'pre',
+        method : 'update',
+        crypt  : true,
+        update : true
+      },
+      {
+        type   : 'pre',
+        method : 'save',
+        crypt  : true,
+        create : true
+      },
+      {
+        type   : 'pre',
+        method : 'find',
+        crypt  : true,
+        find   : true
+      },
+      {
+        type   : 'pre',
+        method : 'findOne',
+        crypt  : true,
+        find   : true
+      }
     ];
 
-    // save context for next process
+    // Save context for next process
     var context = this;
 
-    // defined all predefine hook for crypt process
+    // Defined all predefine hook for crypt process
     _.each(hooks, function (hook) {
       // Override toObject to transform Object in all case
       schema.set('toObject', {
-        transform : function (doc, ret, options) {
-          // default statement
-          return context.process(JSON.parse(JSON.stringify(ret), false));
+        transform : function (doc, ret) {
+          // Default statement
+          return context.process(JSON.parse(JSON.stringify(ret), hook.crypt));
         }
       });
 
-      // pre build hook
-      schema[hook.type](hook.method, function (next) {  
-        // is and update hook ?
+      // Pre build hook
+      schema[hook.type](hook.method, function (next) {
+        // Is and update hook ?
         if (hook.update) {
           var query   = context.process(this.getQuery(), hook.crypt);
           var update  = context.process(this.getUpdate(), hook.crypt);
+
           console.log('Query', query);
           console.log('Update', update);
-          // do normal update process
+
+          // Do normal update process
           this.update(query, update);
         }
-        // is a create hook
+
+        // Is a create hook
         if (hook.create) {
-          // extend current object with correct value
+          // Extend current object with correct value
           _.extend(this, context.process(JSON.parse(JSON.stringify(this.toJSON())), hook.crypt));
         }
 
-        // is a find hook ?
+        // Is a find hook ?
         if (hook.find) {
-          // only on pre case
-          if (hook.type === "pre") {
-            // go normal where find process
+          // Only on pre case
+          if (hook.type === 'pre') {
+            // Go normal where find process
             this.where(context.process(this.getQuery(), hook.crypt));
           }
         }
 
-        // has a next function defined ?
+        // Has a next function defined ?
         if (_.isFunction(next)) {
-          // do next process
-          next();
+          // Do next process
+          return next();
         }
       });
     });
   }
 
-  // default statement
+  // Default statement
   return schema;
 };
 

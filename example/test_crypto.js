@@ -18,7 +18,7 @@ var elasticUseTls = false;
 var validateDate = new Date(moment('2018-06-01T04:00:00.000').valueOf());
 var validateDateUpdate = new Date(moment('2018-06-02T04:00:00.000').valueOf());
 
-var version = 4;
+var version = 5;
 console.log(' \n --> validateDate ', validateDate)
 
 var data = {
@@ -423,6 +423,30 @@ db.connect(uri, mongoUseTls ? {
         });
       };
 
+      var getDocQuery3 = function (done) {
+
+        var model = db.getModel('Test_crypto');
+        var fn = 'getDocQuery3';
+
+        var query = {
+          'emails_arr_object.address' : 'eeee@eeee.fr'
+        };
+
+        console.log('\n\n --> ' + fn +' () with following data : \n',
+        utils.obj.inspect(query));
+
+        model.get(query, 'emails_arr_object.$').then(function (values) {
+
+          console.log(' --> Doc ' + fn + ' number elemFound (should be 3) : '+ _.size(values) +
+          ' \n', utils.obj.inspect(values));
+
+          done();
+        }).catch(function (error) {
+          console.log(' --> Error ' + fn + ' : ', utils.obj.inspect(error));
+          done();
+        });
+      };
+
       // Update
       var aggregate1 = function (done) {
 
@@ -489,19 +513,53 @@ db.connect(uri, mongoUseTls ? {
         });
       };
 
+      var cryptData = function (done) {
+
+        var model = db.getModel('Test_crypto');
+        var fn = 'cryptData';
+
+        model.getOne({
+          id_count : 0
+        }).then(function (value) {
+
+          console.log(' \n\--> Doc ' + fn + ' number elemFound (should be 3) : '+
+          ' \n', utils.obj.inspect(value) + ' \n\n\n');
+
+          console.log(' \n\n--> value.email_object = ', value.email_object, '\n\n')
+
+          console.log(' \n\n --> value.email_object = ', value, '\n\n')
+
+          value = value.toObject();
+          model.update(value._id, value).then(function (value) {
+
+            console.log(' --< update end ... ');
+
+            done();
+
+          }).catch(function (error) {
+            console.log(' --> Error ' + fn + ' : ', utils.obj.inspect(error));
+            done();
+          });
+        }).catch(function (error) {
+          console.log(' --> Error ' + fn + ' : ', utils.obj.inspect(error));
+          done();
+        });
+      };
+
       // Process
       async.series([
-
-        flushCollection,
-        createDocs,
+        //flushCollection,
+        //createDocs,
+        cryptData,
         //updateWholeDoc,
         //updateDocDotNotation1,
         //updateDocDotNotation2,
         //updateDocNullValue1,
-        //updateDocNullValue2,
+        // updateDocNullValue2,
         //getDocQuery1,
-        //getDocQuery2
-        //aggregate1
+        //getDocQuery2,
+        //getDocQuery3,
+        // aggregate1
       ], function () {
 
         console.log('\n --> end test;');

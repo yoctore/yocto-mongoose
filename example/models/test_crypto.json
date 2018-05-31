@@ -25,10 +25,14 @@
         "ym_crypt" : true
       },
       "emails_arr_string"  : {
-        "type"     : [ "String" ],
-        "required" : false,
-        "index"    : false,
-        "ym_crypt" : true
+        "type"     : [ 
+          {
+            "required"  : false,
+            "type"      : "String",
+            "ym_crypt"  : true
+          }
+        ],
+        "required" : "true"
       },
       "emails_arr_object" : {
         "required" : false,
@@ -105,7 +109,8 @@
             "type" : [
               {
                 "required"  : false,
-                "type"      : "String"
+                "type"      : "String",
+                "ym_crypt"  : true
               }
             ],
             "required" : false
