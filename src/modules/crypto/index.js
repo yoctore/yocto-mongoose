@@ -67,10 +67,14 @@ Crypt.prototype.setAlgorithmAndKey = function (config) {
  * Utility method to append model properties to current crypto module
  *
  * @param {Object} properties model properties to save on current model to use on prepareCryptQuery method
+ * @return {Object} current instance
  */
 Crypt.prototype.saveModelProperties = function (properties) {
   // Save properties here
   this.modelProperties = properties;
+
+  // Default statement
+  return this;
 }
 
 /**
@@ -321,6 +325,8 @@ Crypt.prototype.isEnabled = function (properties) {
  * @return {Object} update schema
  */
 Crypt.prototype.setupHook = function (schema, properties, modelName) {
+  // Save properties first
+
   // Only crypt / decrypt properties is defined ?
   if (this.isEnabled(properties)) {
     this.logger.verbose([ '[ YMongoose.cryto.setupHook ] - Setting up hook for model [',
@@ -366,16 +372,13 @@ Crypt.prototype.setupHook = function (schema, properties, modelName) {
       }
     ];
 
-    // Save context for next process
-    var context = this;
-
     // Defined all predefine hook for crypt process
-    _.each(hooks, function (hook) {
+    _.map(hooks, function (hook) {
       // Override toObject to transform Object in all case
       schema.set('toObject', {
         transform : function (doc, ret) {
           // Default statement
-          return context.process(JSON.parse(JSON.stringify(ret), hook.crypt));
+          return schema.statics.crypto().process(JSON.parse(JSON.stringify(ret), hook.crypt));
         }
       });
 
@@ -383,8 +386,8 @@ Crypt.prototype.setupHook = function (schema, properties, modelName) {
       schema[hook.type](hook.method, function (next) {
         // Is and update hook ?
         if (hook.update) {
-          var query   = context.process(this.getQuery(), hook.crypt);
-          var update  = context.process(this.getUpdate(), hook.crypt);
+          var query   = schema.statics.crypto().process(this.getQuery(), hook.crypt);
+          var update  = schema.statics.crypto().process(this.getUpdate(), hook.crypt);
 
           console.log('Query', query);
           console.log('Update', update);
@@ -396,7 +399,9 @@ Crypt.prototype.setupHook = function (schema, properties, modelName) {
         // Is a create hook
         if (hook.create) {
           // Extend current object with correct value
-          _.extend(this, context.process(JSON.parse(JSON.stringify(this.toJSON())), hook.crypt));
+          _.extend(this,
+            schema.statics.crypto().process(JSON.parse(JSON.stringify(this.toJSON())),
+              hook.crypt));
         }
 
         // Is a find hook ?
@@ -404,7 +409,7 @@ Crypt.prototype.setupHook = function (schema, properties, modelName) {
           // Only on pre case
           if (hook.type === 'pre') {
             // Go normal where find process
-            this.where(context.process(this.getQuery(), hook.crypt));
+            this.where(schema.statics.crypto().process(this.getQuery(), hook.crypt));
           }
         }
 

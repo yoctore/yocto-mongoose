@@ -564,8 +564,6 @@ YMongoose.prototype.addModel = function (value) {
 
     // save and setup the current algorythm and key to use on crypto process
     this.modules.crypt.setAlgorithmAndKey(value.model.crypto);
-    // save default properties
-    this.modules.crypt.saveModelProperties(value.model.properties);
     // define default schema value
     var schema = new Schema(value.model.properties);
     // enable or not crypto hook
@@ -589,7 +587,7 @@ YMongoose.prototype.addModel = function (value) {
     // append crypto instance to current schema
     schema.static('crypto', function () {
       // default statement
-      return this.modules.crypt;
+      return this.modules.crypt.saveModelProperties(value.model.properties);
     }.bind(this));
 
     // has elastic enable ?
