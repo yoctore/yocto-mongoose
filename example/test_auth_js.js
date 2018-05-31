@@ -50,12 +50,29 @@ db.connect(uri, mongoUseTls ? {
   if (db.isReady(true)) {
     db.load().then(function() {
 
+      function testAuth() {
+        var model = db.getModel('Auth');
+        console.log(' \n\n Insert ... ')
+        model.create( {
+          login: {
+            phone: "0691665500",
+            email: 'alinquant@gmail.com' },
+          email_string : 'aaaa'
+        }).then(function (value) {
 
+          console.log('\n --< create end ... ', value);
+
+        }).catch(function (error) {
+          console.log(' --> Error ' + fn + ' : ', utils.obj.inspect(error));
+
+        });
+      }
+
+    function testDateFormat() {
       var model = db.getModel('Auth');
-      console.log(' \n\n Insert ... ')
       model.create( {
         login: {
-          phone: "0691665500",
+          phone: '905',
           email: 'alinquant@gmail.com' },
         email_string : 'aaaa'
       }).then(function (value) {
@@ -66,7 +83,10 @@ db.connect(uri, mongoUseTls ? {
         console.log(' --> Error ' + fn + ' : ', utils.obj.inspect(error));
 
       });
+    }
 
+    
+    testDateFormat();
     }, function() {
       console.log('load error');
     });

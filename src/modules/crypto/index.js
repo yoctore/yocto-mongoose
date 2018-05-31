@@ -248,9 +248,16 @@ Crypt.prototype.process = function (obj, crypt) {
   });
 };
 
+/**
+ * Check if current data is a date representation of date value
+ *
+ * @param {Mixed} data data to check
+ * @return {Mixed} data on original format if is not a date or an Date object
+ */
 Crypt.prototype.formatToDate = function (data) {
   // Check first is a valid date format
-  if (_.isString(data) && !_.isNaN(Date.parse(data))) {
+  if (_.isString(data) && !_.isNumber(parseInt(data, 10)) && !_.isNaN(Date.parse(data))) {
+    // Default statement
     return new Date(data);
   }
 
