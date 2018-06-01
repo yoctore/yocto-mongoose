@@ -174,6 +174,7 @@ Crud.prototype.get = function (conditions, filter, method) {
       _.set([ this.modelName, conditions ].join('-'), conditions) : conditions || {}, filter || {});
 
     // Get key
+
     redis.instance.get(redisKey).then(function (success) {
       // Success resolve
       deferred.resolve(success);
@@ -375,10 +376,22 @@ Crud.prototype.esearch = function (query, options) {
         // Reject
         deferred.reject(error);
       } else {
+        // Do Manual decrypt process for elasticsearch request and only on this case
+        if (_.has(data, 'hits.hits') && !_.isEmpty(_.get(data, 'hits.hits'))) {
+          // Try to decrypt value
+          _.set(data, 'hits.hits', _.map(_.get(data, 'hits.hits'), function (hit) {
+            // Set source
+            _.set(hit, '_source', this.crypto().process(_.get(hit, '_source'), false));
+
+            // Default statement
+            return hit;
+          }.bind(this)));
+        }
+
         // Valid
         deferred.resolve(data);
       }
-    });
+    }.bind(this));
   } else {
     // Reject with error message
     deferred.reject('Elastic search is not enabled. Cannot process a search request');

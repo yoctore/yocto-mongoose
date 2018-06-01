@@ -248,6 +248,9 @@ RedisUtils.prototype.add = function (key, value, expire) {
   // Normalize expire time
   expire = _.isNumber(expire) && expire > 0 ? expire : this.defaultExpireTime;
 
+  // Try to auto crypt data if crypto is enabled
+  value = this.crypto().redisPlainEncryptDecrypt(value, true);
+
   // Normalize key
   key = this.normalizeKey(key);
 
@@ -407,8 +410,9 @@ RedisUtils.prototype.get = function (key) {
       if (!error) {
         // Result is null ?
         if (!_.isNull(result)) {
+          // Try to auto crypt data if crypto is enabled
           // Resolve with result
-          deferred.resolve(JSON.parse(result));
+          deferred.resolve(this.crypto().redisPlainEncryptDecrypt(JSON.parse(result), false));
         } else {
           // Reject with null value
           deferred.reject(key);

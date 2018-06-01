@@ -4,6 +4,7 @@ var _         = require('lodash');
 var logger    = require('yocto-logger');
 var utils     = require('yocto-utils');
 var traverse  = require('traverse');
+var moment    = require('moment');
 
 /**
  *
@@ -214,6 +215,22 @@ Crypt.prototype.encryptDecrypt = function (data, isCheck, isCrypt) {
 }
 
 /**
+ * Default method to encrypt / decrypt value for redis action
+ *
+ * @param {Mixed} data content to encrypt
+ * @param {Boolean} isCrypt true is case of crypt process false otherwise
+ * @return {Mixed} data processed
+ */
+Crypt.prototype.redisPlainEncryptDecrypt = function (data, isCrypt) {
+  // Build needed method
+  var method = isCrypt ? 'encrypt' : 'decrypt';
+
+  // Try to decrypt/encrypt value
+
+  return utils.crypto[method](this.hashKey, data, this.algorithm);
+}
+
+/**
  * Crypt or decrypt givent value by defined rules
  *
  * @param {Object} obj default object to crypt or decrypt
@@ -232,13 +249,13 @@ Crypt.prototype.process = function (obj, crypt) {
     // Normalize path to process
     var pathToProcess = context.normalizePath(this.path, true);
 
-    console.log('defined properties =>', cryptProperties);
-    console.log('path =>', this.path);
-    console.log(x);
-    console.log('path to process', pathToProcess, _.includes(cryptProperties, pathToProcess));
-
     // Crypt or decrypt is needed ?
     if (_.includes(cryptProperties, pathToProcess)) {
+      // Debug log
+      context.logger.verbose([
+        '[ Crypt.process ] - Try to', crypt ? 'encrypt' : 'decrypt', pathToProcess
+      ].join(' '));
+
       // Try to update current value
       return this.update(crypt ? context.encrypt(x) : context.formatToDate(context.decrypt(x)));
     }
@@ -256,7 +273,7 @@ Crypt.prototype.process = function (obj, crypt) {
  */
 Crypt.prototype.formatToDate = function (data) {
   // Check first is a valid date format
-  if (_.isString(data) && !_.isNumber(parseInt(data, 10)) && !_.isNaN(Date.parse(data))) {
+  if (_.isString(data) && moment(data, moment.ISO_8601, true).isValid()) {
     // Default statement
     return new Date(data);
   }
@@ -267,7 +284,7 @@ Crypt.prototype.formatToDate = function (data) {
 
 Crypt.prototype.normalizePath = function (path, includeMongoOperator) {
   // Common process
-  path = path.join('.').replace(/\d/g, 'digit');
+  path = path.join('.').replace(/(\d{1,})/g, 'digit');
 
   // Extra process
   if (includeMongoOperator) {
@@ -396,9 +413,6 @@ Crypt.prototype.setupHook = function (schema, properties, modelName) {
           var query   = schema.statics.crypto().process(this.getQuery(), hook.crypt);
           var update  = schema.statics.crypto().process(this.getUpdate(), hook.crypt);
 
-          console.log('Query', query);
-          console.log('Update', update);
-
           // Do normal update process
           this.update(query, update);
         }
@@ -413,11 +427,8 @@ Crypt.prototype.setupHook = function (schema, properties, modelName) {
 
         // Is a find hook ?
         if (hook.find) {
-          // Only on pre case
-          if (hook.type === 'pre') {
-            // Go normal where find process
-            this.where(schema.statics.crypto().process(this.getQuery(), hook.crypt));
-          }
+          // Go normal where find process
+          this.where(schema.statics.crypto().process(this.getQuery(), hook.crypt));
         }
 
         // Has a next function defined ?

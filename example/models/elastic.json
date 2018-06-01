@@ -1,0 +1,148 @@
+{
+    "model" : {
+      "name" : "ES_Crypt_Pivot",
+      "crypto" : {
+        "hashType" : "aes256",
+        "hashKey"  : "a92OhuQoLceDgAM7N94ygjEWD2HEdIBB"
+      },
+      "crud" : {
+        "enable"  : true,
+        "exclude" : []
+      },
+      "fn" : [
+        {
+          "type" : "static",
+          "name" : "searchPivot"
+        },
+        {
+          "type" : "static",
+          "name" : "buildSearchQuery"
+        },
+        {
+          "type" : "static",
+          "name" : "setDocumentAsPivot"
+        },
+        {
+          "type" : "static",
+          "name" : "getDocument"
+        },
+        {
+          "type" : "static",
+          "name" : "convertDocToPivot"
+        },
+        {
+          "type" : "static",
+          "name" : "savePivot"
+        },
+        {
+          "type" : "static",
+          "name" : "buildAccountPivot"
+        },
+        {
+          "type" : "static",
+          "name" : "buildOrderPivot"
+        },
+        {
+          "type" : "static",
+          "name" : "splitDataToArray"
+        }
+      ],
+      "validator" : "ESCryptPivotValidator",
+      "elastic" : {
+        "enable" : true,
+        "options" : {
+        }
+      },
+      "properties" : {
+        "created_date"      : {
+          "type"      : "Date",
+          "required"  : true
+        },
+        "updated_date"      : {
+          "type"      : "Date",
+          "required"  : true
+        },
+        "deleted_date"      : {
+          "type"      : "Date",
+          "required"  : false
+        },
+        "origin_collection"  : {
+          "type"      : "String",
+          "required"  : true,
+          "index"     : true,
+          "es_indexed" : true
+        },
+        "origin_id"  : {
+          "type"      : "String",
+          "required"  : false,
+          "index"     : true,
+          "es_indexed" : true
+        },
+        "phone"  : {
+          "type"      : [
+            {
+              "type" : "String",
+              "required" : false,
+              "ym_crypt" : true
+            }
+          ],
+          "required"   : false,
+          "index"      : false,
+          "es_indexed" : true,
+          "es_index"   : "not_analyzed"
+        },
+        "email"  : {
+          "type"      : [
+            {
+              "type" : "String",
+              "required" : false,
+              "ym_crypt" : true
+            }
+          ],        "required"  : false,
+          "index"     : false,
+          "es_indexed" : true,
+          "es_index" : "not_analyzed"
+        },
+        "firstname"  : {
+          "type"      : [
+            {
+              "type" : "String",
+              "required" : false,
+              "ym_crypt" : true
+            }
+          ],
+          "required"  : false,
+          "index"     : false,
+          "es_indexed" : true,
+          "es_index" : "not_analyzed"
+        },
+        "lastname"  : {
+          "type"      : [
+            {
+              "type" : "String",
+              "required" : false,
+              "ym_crypt" : true
+            }
+          ],
+          "required"  : false,
+          "index"     : false,
+          "es_indexed" : true,
+          "es_index" : "not_analyzed"
+        },
+        "reference"  : {
+          "type"      : "String",
+          "required"  : false,
+          "index"     : false,
+          "es_indexed" : true,
+          "es_index" : "not_analyzed"
+        },
+        "action_date" : {
+          "type"      : "Date",
+          "required"  : false,
+          "index"     : false,
+          "es_indexed" : true,
+          "es_type"    : "Date"
+        }
+      }
+    }
+  }

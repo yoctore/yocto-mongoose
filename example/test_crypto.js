@@ -28,7 +28,27 @@ var data = {
       emails_arr_string : [
         'aaaa@aaa.fr',
         'bbbb@bbb.fr',
-        'cccc@ccc.fr'
+        'cccc@ccc.fr',
+        's',
+        'sa',
+        'sad',
+        'sadm',
+        'sadmi',
+        'sadmin',
+        'sadmin@',
+        'sadmin@a',
+        'sadmin@aa',
+        'sadmin@aaa',
+        'sadmin@aaaa',
+        'sadmin@aaaaaa',
+        'sadmin@aaaaaaa',
+        'sadmin@aaaaaaaa',
+        'sadmin@aaaaaaaaa',
+        'sadmin@aaaaaaaaaa',
+        'sadmin@aaaaaaaaaaa',
+        'sadmin@aaaaaaaaaaaa',
+        'sadmin@aaaaaaaaaaaaa',
+        'sadmin@aaaaaaaaaaaaaaaa'
       ],
       emails_arr_object : [
         {
@@ -138,13 +158,16 @@ db.connect(uri, mongoUseTls ? {
   db.methods('./example/methods');
   db.enums('./example/enums');
   // enable elastic hosts
-  db.enableElasticsearch([ { host : '127.0.0.1', port : 9200, protocol : 'http' } ],
+  db.enableElasticsearch([ { host : '192.168.2.110', port : 9200, protocol : 'http' } ],
     elasticUseTls ? {
       ssl: {
         ca: fs.readFileSync(__dirname + "/cert.pem"),
         rejectUnauthorized: true
       }
     } : {});
+
+  // enable redis
+  db.enableRedis([ { "host" : "127.0.0.1", "port" : 6379 } ], false);
 
   if (db.isReady(true)) {
     db.load().then(function() {
@@ -546,11 +569,51 @@ db.connect(uri, mongoUseTls ? {
         });
       };
 
+      var flushAndInsertRedis = function (done) {
+
+        var model = db.getModel('Test_crypto');
+        var redisKey = 'test_insert_crypto';
+
+        // Wait redis start
+        setTimeout(function () {
+
+          model.testFlushAndInsertRedis(redisKey).then(function (v) {
+
+            console.log(' --> value set ', v);
+            done();
+          }).catch(function () {
+
+            console.log(' --> value not found : ');
+            done();
+          });
+        }, 200);
+      };
+
+      var getRedis = function (done) {
+
+        var model = db.getModel('Test_crypto');
+        var redisKey = 'test_insert_crypto';
+
+        // Wait redis start
+        setTimeout(function () {
+
+          model.testGetRedis(redisKey).then(function (v) {
+
+            console.log(' --> value : ', v);
+            done();
+          }).catch(function () {
+
+            console.log(' --> value not found : ');
+            done();
+          });
+        }, 200);
+      };
+
       // Process
       async.series([
-        //flushCollection,
-        //createDocs,
-        cryptData,
+        flushCollection,
+        createDocs,
+        //cryptData,
         //updateWholeDoc,
         //updateDocDotNotation1,
         //updateDocDotNotation2,
@@ -559,6 +622,8 @@ db.connect(uri, mongoUseTls ? {
         //getDocQuery1,
         //getDocQuery2,
         //getDocQuery3,
+        flushAndInsertRedis,
+       //getRedis
         // aggregate1
       ], function () {
 

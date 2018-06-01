@@ -171,6 +171,11 @@ Method.prototype.add = function (schema, path, items, modelName, redis) {
                     // Here default statement. we return current instance of redis and
                     // default expire time to use custom redis usage
 
+                    // append crypto modul on redis if exists ?
+                    if (_.has(schema, 'statics.crypto') && _.isFunction(schema.statics.crypto)) {
+                      _.set(redis, 'crypto', schema.statics.crypto);
+                    }
+
                     return {
                       instance : redis,
                       expire   : expire || 0
