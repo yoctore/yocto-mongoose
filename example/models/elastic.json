@@ -49,7 +49,7 @@
       ],
       "validator" : "ESCryptPivotValidator",
       "elastic" : {
-        "enable" : true,
+        "enable" : false,
         "options" : {
         }
       },

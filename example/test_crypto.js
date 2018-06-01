@@ -434,10 +434,10 @@ db.connect(uri, mongoUseTls ? {
         console.log('\n\n --> ' + fn +' () with following data : \n',
         utils.obj.inspect(query));
 
-        model.get(query, 'emails_arr_object.$').then(function (values) {
+        model.getOne(query, 'emails_arr_object.$').then(function (values) {
 
           console.log(' --> Doc ' + fn + ' number elemFound (should be 3) : '+ _.size(values) +
-          ' \n', utils.obj.inspect(values));
+          ' \n', utils.obj.inspect(values.toObject()));
 
           done();
         }).catch(function (error) {
@@ -609,10 +609,27 @@ db.connect(uri, mongoUseTls ? {
         }, 200);
       };
 
+      var testYMCrypt = function () {
+        var model = db.getModel('Auth');
+        model.getOne({}).then(function (value) {
+          value = value.toObject();    
+          // Define query to find shop
+          var query = {
+            storeId : value._id
+          };
+    
+          console.log(' -->  query : ', query)
+          console.log(' --> typeof : ', typeof query.storeId)
+        }).catch(function (error) {
+          console.log(' err 1 = ', error)
+        });
+      }
+
       // Process
       async.series([
         flushCollection,
         createDocs,
+        testYMCrypt,
         //cryptData,
         //updateWholeDoc,
         //updateDocDotNotation1,
@@ -622,7 +639,7 @@ db.connect(uri, mongoUseTls ? {
         //getDocQuery1,
         //getDocQuery2,
         //getDocQuery3,
-        flushAndInsertRedis,
+        //flushAndInsertRedis,
        //getRedis
         // aggregate1
       ], function () {

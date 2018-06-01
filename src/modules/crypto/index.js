@@ -313,8 +313,18 @@ Crypt.prototype.getProperties = function (properties) {
 
   // First get crypt property
   var initial = _.uniq(_.map(_.compact(_.map(traverse(properties).paths(), function (paths) {
+    // By default we dont need to crypt data
+    var needToCrypt = false;
+
+    // Contains ym_crypt
+
+    if (_.includes(paths, 'ym_crypt')) {
+      // Update this value to enable correct key
+      needToCrypt = _.isBoolean(_.get(properties, paths)) && _.get(properties, paths);
+    }
+
     // Default statement
-    return _.includes(paths, 'ym_crypt') ? _.pullAll(paths, [ 'ym_crypt', 'type' ]) : false;
+    return needToCrypt ? _.pullAll(paths, [ 'ym_crypt', 'type' ]) : false;
   })), function (paths) {
     // Default statement
     return paths.join('.').replace(/\d/g, 'digit');
@@ -349,10 +359,12 @@ Crypt.prototype.isEnabled = function (properties) {
  * @return {Object} update schema
  */
 Crypt.prototype.setupHook = function (schema, properties, modelName) {
-  // Save properties first
+  // Check if we need to enable crypt properties
+  var needToCrypt = this.isEnabled(properties);
 
   // Only crypt / decrypt properties is defined ?
-  if (this.isEnabled(properties)) {
+  if (needToCrypt) {
+    // Debug message
     this.logger.verbose([ '[ YMongoose.cryto.setupHook ] - Setting up hook for model [',
       modelName, ']' ].join(' '));
 
@@ -398,14 +410,6 @@ Crypt.prototype.setupHook = function (schema, properties, modelName) {
 
     // Defined all predefine hook for crypt process
     _.map(hooks, function (hook) {
-      // Override toObject to transform Object in all case
-      schema.set('toObject', {
-        transform : function (doc, ret) {
-          // Default statement
-          return schema.statics.crypto().process(JSON.parse(JSON.stringify(ret), hook.crypt));
-        }
-      });
-
       // Pre build hook
       schema[hook.type](hook.method, function (next) {
         // Is and update hook ?
@@ -440,9 +444,40 @@ Crypt.prototype.setupHook = function (schema, properties, modelName) {
     });
   }
 
+  // Default statement, Override toObject to transform Object in all case
+  return this.normalizeToObject(schema, needToCrypt);
+};
+
+/**
+ * Utility method to modifiy ToObject method for global process
+ *
+ * @param {Mixed} schema current schema to use
+ * @param {Boolean} enabled true in case of crypt process to use specific transform method
+ * @return {Object} modified schema
+ */
+Crypt.prototype.normalizeToObject = function (schema, enabled) {
+  // Only if enabled
+  if (enabled) {
+    // Override toObject for specific crypt process
+    schema.set('toObject', {
+      transform : function (doc, ret) {
+        // Default statement
+        return schema.statics.crypto().process(JSON.parse(JSON.stringify(ret), false));
+      }
+    });
+  } else {
+    // Default to Object
+    schema.set('toObject', {
+      transform : function (doc, ret) {
+        // Default statement
+        return JSON.parse(JSON.stringify(ret));
+      }
+    });
+  }
+
   // Default statement
   return schema;
-};
+}
 
 // Default export
 module.exports = function (l, types) {
