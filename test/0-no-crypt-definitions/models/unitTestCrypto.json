@@ -1,0 +1,157 @@
+{
+  "model" : {
+    "name"      : "unitTestCrypto",
+    "crud"      : {
+      "enable"  : true,
+      "exclude" : []
+    },
+    "fn" : [
+      {
+        "type" : "static",
+        "name" : "testFlushAndInsertRedis",
+        "redis" : {
+          "enable" : true,
+          "expire" : 90
+        }
+      },
+      {
+        "type" : "static",
+        "name" : "testGetRedis",
+        "redis" : {
+          "enable" : true,
+          "expire" : 90
+        }
+      }
+    ],
+    "crypto" : {
+      "hashType" : "aes256",
+      "hashKey"  : "gjEWDaFYOhuQoysADloy2S7dgAM7NIG7"
+    },
+    "properties"     : {
+      "created_date" : {
+        "required" : true,
+        "type"     : "Date"
+      },
+      "validated_date_crypt" : {
+        "required" : false,
+        "type"     : "Date_crypt",
+        "ym_crypt" : true
+      },
+      "emails_arr_string"  : {
+        "type"     : [
+          {
+            "required"  : false,
+            "type"      : "String",
+            "ym_crypt"  : true
+          }
+        ],
+        "required" : "true"
+      },
+      "emails_arr_object" : {
+        "required" : false,
+        "type"     : [
+          {
+            "validated_date" : {
+              "required" : false,
+              "type"     : "Date"
+            },
+            "validated_date_crypt" : {
+              "required" : false,
+              "type"     : "Date_crypt",
+              "ym_crypt" : true
+            },
+            "address"    : {
+              "type"     : "String",
+              "required" : true,
+              "index"    : true,
+              "ym_crypt" : true
+            }
+          }
+        ]
+      },
+      "email_string" : {
+        "required"   : true,
+        "type"       : "String",
+        "ym_crypt"   : true
+      },
+      "email_object" : {
+        "type"             : {
+          "validated_date" : {
+            "required"     : false,
+            "type"         : "Date"
+          },
+          "validated_date_crypt" : {
+            "required" : false,
+            "type"     : "Date_crypt",
+            "ym_crypt" : true
+          },
+          "address"    : {
+            "type"     : "String",
+            "required" : true,
+            "index"    : true,
+            "ym_crypt" : true
+          }
+        }
+      },
+      "reference_string" : {
+        "required" : false,
+        "type"     : "String"
+      },
+      "login_object" : {
+        "required"  : false,
+        "type"      : {
+          "phone_string" : {
+            "required"   : false,
+            "type"       : "String",
+            "index"      : true,
+            "ym_crypt"   : true
+          },
+          "phones_arr_object" : {
+            "type" : [
+              {
+                "number_string" : {
+                  "required"  : false,
+                  "type"      : "String",
+                  "ym_crypt"  : true
+                }
+              }
+            ],
+            "required" : false
+          },
+          "phones_arr_string" : {
+            "type" : [
+              {
+                "required"  : false,
+                "type"      : "String",
+                "ym_crypt"  : true
+              }
+            ],
+            "required" : false
+          }
+        }
+      },
+      "receipt" : {
+        "type" : {
+          "autorization" : {
+            "type" : {
+              "request" : {
+                "type" : {
+                  "name_crypt" : {
+                    "type" : "String",
+                    "ym_crypt" : true
+                  },
+                  "amount" : "Number",
+                  "send_date" : {
+                    "type"     : "Date",
+                    "required" : false
+                  }
+                }
+              },
+              "response" : "Object"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,268 @@
+
+{
+  "model"   : {
+    "name"      : "unitTest",
+    "crud"      : {
+      "enable"  : true,
+      "exclude" : []
+    },
+    "fn" : [],
+    "properties" : {
+      "firstname"    : {
+        "required"     : false,
+        "type"         : "String",
+        "index"        : true,
+        "ym_crypt"     : true
+      },
+      "lastname"                     : {
+        "required"                   : false,
+        "type"                       : "String",
+        "index"                      : true,
+        "ym_crypt"                   : true
+      },
+      "maiden_name"                     : {
+        "required"                   : false,
+        "type"                       : "String",
+        "ym_crypt"                   : true
+      },
+      "civility"                     : {
+        "required"                   : false,
+        "type"                       : "String",
+        "ym_crypt"                   : true
+      },
+      "childrens"                    : {
+        "required"                   : false,
+        "type"                       : [
+          {
+            "firstname"              : {
+              "required"             : false,
+              "type"                 : "String",
+              "ym_crypt"             : true
+            },
+            "lastname"               : {
+              "required"             : false,
+              "type"                 : "String",
+              "ym_crypt"             : true
+            },
+            "birth_date"             : {
+              "required"             : false,
+              "type"                 : "Date",
+              "ym_crypt"             : true
+            },
+            "sex"                    : {
+              "required"             : false,
+              "type"                 : "String"
+            },
+            "testarray"              : {
+              "required"             : true,
+              "type"                 : [
+                {
+                  "foo"              : {
+                    "required" : true,
+                    "type"     : "String",
+                    "ym_crypt" : true
+                  },
+                  "bar" : [
+                    {
+                      "foo" : {
+                        "required" : true,
+                        "type" : "String",
+                        "ym_crypt" : true
+                      }
+                    }  
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "emails"                       : {
+        "required"                   : false,
+        "type"                       : [
+          {
+            "deleted_date"           : {
+              "required"             : false,
+              "type"                 : "Date"
+            },
+            "address"                : {
+              "type"                 : "String",
+              "required"             : true,
+              "index"                : true,
+              "ym_crypt"             : true
+            },
+            "validated_date"         : "Date",
+            "token"                  : {
+              "required"             : false,
+              "type"                 : "String"
+            },
+            "token_lost"             : "Boolean",
+            "primary"                : {
+              "required"             : true,
+              "type"                 : "Boolean",
+              "index"                : true
+            }
+          }
+        ]
+      },
+      "phones"                       : {
+        "required"                   : false,
+        "type"                       : [
+          {
+            "deleted_date"           : {
+              "required"             : false,
+              "type"                 : "Date"
+            },
+            "prefix"                 : {
+              "required"             : true,
+              "type"                 : "String"
+            },
+            "number"                 : {
+              "required"             : true,
+              "type"                 : "String",
+              "index"                : true,
+              "ym_crypt"             : true
+            },
+            "validation_type"        : {
+              "required"             : true,
+              "type"                 : "String"
+            },
+            "validated_date"         : "Date",
+            "primary"                : {
+              "required"             : true,
+              "type"                 : "Boolean",
+              "index"                : true
+            },
+            "phone_type"             : {
+              "required"             : true,
+              "type"                 : "String",
+              "index"                : true
+            },
+            "sub_type"               : {
+              "required"             : false,
+              "type"                 :"String"
+            },
+            "token_lost"             : "String",
+            "codes"                  : {
+              "required"             : false,
+              "type"                 : [
+                {
+                  "code"             : {
+                    "required"       : false,
+                    "type"           : "String"
+                  },
+                  "validated_at"   : "Date",
+                  "retry"            : {
+                    "required"       : false,
+                    "type"           : "Number"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "created_date"                 : {
+        "type"                       : "Date",
+        "required"                   : true
+      },
+      "updated_date"                 : {
+        "type"                       : "Date",
+        "required"                   : true
+      },
+      "deleted_date"                 : {
+        "type"                       : "Date",
+        "required"                   : false
+      },
+      "iso_code"                     : {
+        "required"                   : true,
+        "type"                       : "String"
+      },
+      "sync"                         : {
+        "required"                   : true,
+        "type"                       : {
+          "to_vindemia"              : {
+            "required"               : true,
+            "type"                   : "Boolean",
+            "index"     : true
+          },
+          "from_vindemia"            : {
+            "required"               : true,
+            "type"                   :"Boolean",
+            "index"     : true
+          }
+        }
+      },
+      "status"                     : {
+        "required"                   : true,
+        "type"                       : "String"
+      },
+      "objtest" : {
+        "required" : true,
+        "type" : {
+          "objfooa" : { 
+            "required" : true,
+            "type" : [
+              {
+                "objbara" : {
+                  "type" : "String",
+                  "required" : true,
+                  "ym_crypt" : true
+                }
+              }
+            ]
+          }
+        }
+      },
+      "objtesttwo" : {
+        "required" : true,
+        "type" : {
+          "objfoob" : {
+            "required" : true,
+            "type" : {
+              "objsubb" : {
+                "required" : true,
+                "type" : [
+                  {
+                    "objbarb" : {
+                      "type" : "String",
+                      "required" : true,
+                      "ym_crypt" : true
+                    }
+                  }
+                ]
+              },
+              "objstr" : {
+                "required" : true,
+                "type" : "String",
+                "ym_crypt" : true
+              },
+              "objsubbb" : {
+                "required" : true,
+                "type" : [
+                  {
+                    "subccc" : {
+                      "required" : true,
+                      "type" : {
+                        "subdddd" : {
+                          "required" : true,
+                          "type" : "String",
+                          "ym_crypt" : true
+                        }
+                      }
+                    },
+                    "subeee" : {
+                      "required" : true,
+                      "type" : "String",
+                      "ym_crypt" : true
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }          
+  }
+}

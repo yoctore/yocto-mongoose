@@ -134,6 +134,9 @@ var data = {
   }
 };
 
+console.log(utils.obj.inspect(data));
+process.exit(0);
+
 // Connect
 db.connect(uri, mongoUseTls ? {
   user : "r2do",
@@ -625,11 +628,65 @@ db.connect(uri, mongoUseTls ? {
         });
       }
 
+      var testMatchRegexp = function() {
+        var model = db.getModel('Account');
+        model.getOne({
+          _id    : '57bbfa1f01be9d1e00ccd5fa',
+          status : 'draft',
+          $or    : [
+            {
+              birth_date : {
+                $gt : '1977-02-27T00:00:00.000Z'
+              }
+            },
+            {
+              lastname : new RegExp('^' + '[(:C)GANGAT(:C)]' + '$', 'i')
+            },
+            {
+              email : {
+                $in : [ 'toto', 'atata', ]
+              }
+            }
+          ],
+          email : 'totot@test.com',
+          objtest : {
+            objfooa : {
+              objbara : {
+                $in : [ 'aa', 'bb' ]
+              }
+            }
+          },
+          objtest : {
+            objfooa : {
+              $elemMatch : {
+                objbara : 'match1'
+              }
+            }
+          },
+          objtest : {
+            objfooa : {
+              $elemMatch : {
+                objbara : {
+                  $in : [ 'matchArraaa' ]
+                }
+              }
+            }
+          }
+        }, '_id firstname lastname birth_date').then(function (v) {
+          console.log(' --> value : ', v);
+        }).catch(function () {
+          console.log(' --> value not found : ');
+          done();
+        });
+      }
+
+
       // Process
       async.series([
         flushCollection,
         createDocs,
-        testYMCrypt,
+        testMatchRegexp
+        //testYMCrypt,
         //cryptData,
         //updateWholeDoc,
         //updateDocDotNotation1,
@@ -641,7 +698,7 @@ db.connect(uri, mongoUseTls ? {
         //getDocQuery3,
         //flushAndInsertRedis,
        //getRedis
-        // aggregate1
+        //aggregate1
       ], function () {
 
         console.log('\n --> end test;');

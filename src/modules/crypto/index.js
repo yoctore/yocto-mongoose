@@ -206,8 +206,40 @@ Crypt.prototype.encryptDecrypt = function (data, isCheck, isCrypt) {
       state = !_.isEmpty(state);
     }
   } else {
-    // Try to decrypt/encrypt value
-    state = utils.crypto[method](this.hashKey, data, this.algorithm);
+    // Define comparaison value
+    var objKey        = _.first(Object.keys(data));
+
+    // Defined operator to fix some issue on complexe query with those operator
+    var operator      = [ '$eq', '$gt', '$gte', '$lt', '$lte', '$ne' ];
+    var operatorArray = [ '$in', '$nin' ];
+
+    // Only on this case
+    if (isCrypt && _.isObject(data) && !_.isUndefined(objKey) &&
+      (_.includes(operator, objKey) || _.includes(operatorArray, objKey))) {
+      // We need to check here is given data is an object an if the key is a mongo key
+      if (_.includes(operatorArray, objKey)) {
+        // Remap the array
+        _.set(data, objKey, _.map(_.get(data, objKey), function (value) {
+          return utils.crypto[method](this.hashKey, value, this.algorithm);
+        }.bind(this)));
+      } else {
+        // Do normal process
+        _.set(data, objKey, utils.crypto[method](this.hashKey,
+          _.get(data, objKey).toString(), this.algorithm));
+      }
+
+      // Default process crypt data
+      state = data;
+    } else {
+      // Is a regexp process ?
+      if (_.isRegExp(data)) {
+        // In this case we do nothing
+        state = data;
+      } else {
+        // Try to decrypt/encrypt value
+        state = utils.crypto[method](this.hashKey, data, this.algorithm);
+      }
+    }
   }
 
   // Default statement

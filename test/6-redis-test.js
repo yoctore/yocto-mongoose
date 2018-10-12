@@ -6,7 +6,7 @@ var expect  = require('chai').expect;
 var _       = require('lodash');
 var utils   = require('yocto-utils');
 var logger  = require('yocto-logger');
-var db      = require('../src/')(logger);
+var db      = require('../src')(logger);
 var path    = require('path');
 var async   = require('async');
 
@@ -175,7 +175,7 @@ describe('Redis ->', function () {
         // try to retrieve the deleted key
         async.eachSeries(citems, function (i, inext) {
           // try to retrieve the deleted key
-          db.getRedis().get(i).then(function (item) {
+          db.getRedis().get(i).then(function () {
             inext();
           }).catch(function (error) {
             expect(error).to.not.empty;

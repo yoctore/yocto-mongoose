@@ -6,7 +6,7 @@ var expect  = require('chai').expect;
 var _       = require('lodash');
 var utils   = require('yocto-utils');
 var logger  = require('yocto-logger');
-var db      = require('../src/')(logger);
+var db      = require('../src')(logger);
 var path    = require('path');
 
 // disable console

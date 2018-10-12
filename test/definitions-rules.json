@@ -1,0 +1,6 @@
+[
+  { 
+    "path"  : "./0-no-crypt-definitions",
+    "paths" : [ "models", "methods", "enums", "validators" ]
+  }
+]

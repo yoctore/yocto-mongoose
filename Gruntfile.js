@@ -4,7 +4,8 @@ module.exports = function (grunt) {
   // Init config
   grunt.initConfig({
     // Default package
-    pkg : grunt.file.readJSON('package.json'),
+    pkg  : grunt.file.readJSON('package.json'),
+    date : new Date(),
 
     // Hint our app
     yoctohint : {
@@ -22,7 +23,11 @@ module.exports = function (grunt) {
     // Uglify our app
     uglify : {
       options : {
-        banner : '/* <%= pkg.name %> - <%= pkg.description %> - V<%= pkg.version %> */\n'
+        banner : [
+          '/* <%= pkg.name %>',
+          '<%= pkg.description %>',
+          'V<%= pkg.version %>',
+          '<%= date %>*/\n' ].join(' - ')
       },
       api : {
         files : [ {
