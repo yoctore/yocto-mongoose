@@ -82,9 +82,10 @@ Crypt.prototype.saveModelProperties = function (properties) {
  * Try to encrypt data from given schema
  *
  * @param {Object} data current data to use for crypt action
+ * @param {Boolean} oldMethod set if we need to use old method or not
  * @return {Mixed} Encrypted data
  */
-Crypt.prototype.encrypt = function (data) {
+Crypt.prototype.encrypt = function (data, oldMethod) {
   // Only if data is valid
   if (data) {
     // Only if data is not already crypted
@@ -95,7 +96,7 @@ Crypt.prototype.encrypt = function (data) {
       ].join(' '));
 
       // Default state of crypt method
-      var crypted = this.encryptDecrypt(data, false, true);
+      var crypted = this.encryptDecrypt(data, false, true, oldMethod);
 
       // Only if crypted is value
       if (crypted) {
@@ -186,12 +187,20 @@ Crypt.prototype.isAlreadyCrypted = function (data) {
  * @param {Mixed} data content to encrypt
  * @param {Boolean} isCheck true is cace of encryption verification
  * @param {Boolean} isCrypt true is case of crypt process false otherwise
+ * @param {Boolean} isOldMethod set is we need to use old method or not
  * @return {Mixed} data processed
  */
-Crypt.prototype.encryptDecrypt = function (data, isCheck, isCrypt) {
+Crypt.prototype.encryptDecrypt = function (data, isCheck, isCrypt, isOldMethod) {
   // Default state
   var state = false;
   var method = isCrypt ? 'encrypt' : 'decrypt';
+
+  // Only if encrypt process
+  if (isCrypt && isOldMethod) {
+    method = 'encryptOldMethod';
+    console.log('Using old method', method);
+  }
+
 
   // On array case we need a specific process
   if (_.isArray(data)) {
@@ -267,9 +276,10 @@ Crypt.prototype.redisPlainEncryptDecrypt = function (data, isCrypt) {
  *
  * @param {Object} obj default object to crypt or decrypt
  * @param {Boolean} crypt true in case of crypt false otherwise
+ * @param {Boolean} oldMethod if true process old method with invalid crypto process
  * @return {Mixed} obj processed
  */
-Crypt.prototype.process = function (obj, crypt) {
+Crypt.prototype.process = function (obj, crypt, oldMethod) {
   // Get properties first
   var cryptProperties = this.getProperties();
 
@@ -289,7 +299,8 @@ Crypt.prototype.process = function (obj, crypt) {
       ].join(' '));
 
       // Try to update current value
-      return this.update(crypt ? context.encrypt(x) : context.formatToDate(context.decrypt(x)));
+      return this.update(crypt ?
+        context.encrypt(x, oldMethod) : context.formatToDate(context.decrypt(x)));
     }
 
     // Default statement if current value is not to crypt to get correct date format if is a date
@@ -463,8 +474,24 @@ Crypt.prototype.setupHook = function (schema, properties, modelName) {
 
         // Is a find hook ?
         if (hook.find) {
+          console.log('Get Query', this.getQuery());
+          console.log('Query Crypted',
+            schema.statics.crypto().process(this.getQuery(), hook.crypt));
+          console.log('Query Crypted OLD',
+            schema.statics.crypto().process(this.getQuery(), hook.crypt, true));
+
+          var buildedQuery = {
+            $or : [
+              schema.statics.crypto().process(this.getQuery(), hook.crypt),
+              schema.statics.crypto().process(this.getQuery(), hook.crypt, true)
+            ]
+          };
+
+          console.log('Full Query', utils.obj.inspect(buildedQuery));
+
           // Go normal where find process
-          this.where(schema.statics.crypto().process(this.getQuery(), hook.crypt));
+          // this.where(schema.statics.crypto().process(this.getQuery(), hook.crypt));
+          this.where(schema.statics.crypto().process(buildedQuery, hook.crypt));
         }
 
         // Has a next function defined ?
