@@ -73,7 +73,7 @@
     "joi": "^13.7.0",
     "lodash": "^4.17.11",
     "moment": "^2.22.1",
-    "mongoosastic": "^4.4.1",
+    "mongoosastic": "4.2.1",
     "mongoose": "5.3.2",
     "q": "^1.4.1",
     "stack-trace": "0.0.10",
