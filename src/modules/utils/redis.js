@@ -15,7 +15,7 @@ var fs        = require('fs');
  * @date : 10/04/2016
  * @author : Mathieu ROBERT <mathieu@yocto.re>
  * @copyright : Yocto SAS, All right reserved
- *
+ * @param {Object} logger Yocto Logger instance
  * @class RedisUtils
  */
 function RedisUtils (logger) {
@@ -86,6 +86,7 @@ RedisUtils.prototype.getOptions = function () {
 
 /**
  * Process redis disconnect action
+ * @return {Boolean} Status of disconnect request
  */
 RedisUtils.prototype.disconnect = function () {
   // Process disconnect
@@ -348,7 +349,7 @@ RedisUtils.prototype.flush = function (pattern) {
     // Has items ?
     if (_.size(keys) > 0) {
       // Process call with default method
-      this.remove.call(this, keys);
+      this.remove.call(keys);
     }
   }.bind(this));
 

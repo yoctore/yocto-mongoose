@@ -33,6 +33,7 @@ mongoose.Promise = require('q').Promise;
  * @author : Mathieu ROBERT <mathieu@yocto.re>
  * @copyright : Yocto SAS, All right reserved
  *
+ * @param {Object} l Yocto logger instance
  * @class YMongoose
  */
 function YMongoose (l) {
@@ -575,6 +576,8 @@ YMongoose.prototype.isReady = function (showErrors) {
  * @param {Object} value data to used for creation
  * @return {Boolean} created model or false if an error occured
  */
+// eslint-disable-next-line complexity
+// eslint-disable-next-line max-statements
 YMongoose.prototype.addModel = function (value) {
   // Create async
   var deferred = Q.defer();
@@ -872,9 +875,10 @@ YMongoose.prototype.load = function () {
   // Create our deferred object, which we will use in our promise chain
   var deferred = Q.defer();
 
-  var errors  = []; // List of errors
+  // List of errors
+  var errors = [];
 
-  // nbItem error on load
+  // NbItem error on load
   var nbItems = {
     total     : 0,
     processed : 0
@@ -997,7 +1001,7 @@ YMongoose.prototype.load = function () {
       nbItems.total++;
 
       // Got to next item
-      next();
+      return next();
     } catch (e) {
       // Set correct message
       var message = [ 'Cannot add item to queue. Error is : [', e, '] for [', name, ']' ].join(' ');

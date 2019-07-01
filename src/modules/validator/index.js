@@ -13,7 +13,7 @@ var joi       = require('joi');
  * @date : 25/09/2015
  * @author : Mathieu ROBERT <mathieu@yocto.re>
  * @copyright : Yocto SAS, All right reserved
- *
+ * @param {Object} logger Yocto Logger instance
  * @class Validator
  */
 function Validator (logger) {

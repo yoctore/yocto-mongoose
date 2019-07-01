@@ -13,6 +13,7 @@ var Schema    = require('mongoose').Schema;
  * @author : Mathieu ROBERT <mathieu@yocto.re>
  * @copyright : Yocto SAS, All right reserved
  *
+ * @param {Object} logger Yocto Logger instance
  * @class Crud
  */
 function Crud (logger) {
@@ -131,6 +132,7 @@ Crud.prototype.get = function (conditions, filter, method) {
    *
    * @param {Object|String} conditions query rules to add in find
    * @param {Object} filter object property to process filter action
+   * @param {Object} store Redis Store
    */
   function defaultFind (conditions, filter, store) {
     // Normal process

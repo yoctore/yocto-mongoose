@@ -11,7 +11,7 @@ var utils     = require('yocto-utils');
  * @date : 7/03/2016
  * @author : Mathieu ROBERT <mathieu@yocto.re>
  * @copyright : Yocto SAS, All right reserved
- *
+ * @param {Object} logger Yocto Logger instance
  * @class ElasticUtils
  */
 function ElasticUtils (logger) {

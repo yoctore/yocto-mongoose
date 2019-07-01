@@ -13,7 +13,8 @@ var logger  = require('yocto-logger');
  * @date : 25/09/2015
  * @author : Mathieu ROBERT <mathieu@yocto.re>
  * @copyright : Yocto SAS, All right reserved
- *
+ * @param {Object} logger Yocto Logger instance
+ * @param {Object} mongooseTypes Mongoose Types definitions
  * @class Enums
  */
 function Enums (logger, mongooseTypes) {
