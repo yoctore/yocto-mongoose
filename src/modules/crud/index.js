@@ -21,19 +21,19 @@ function Crud (logger) {
    *
    * @property logger
    */
-  this.logger     = logger;
+  this.logger = logger;
 
   /**
    * Alias object for exclusion process
    *
    * @property alias
    */
-  this.alias      = {
-    'create'  : [ 'insert' ],
-    'get'     : [ 'read' ],
-    'getOne'  : [ 'readOne' ],
-    'delete'  : [ 'destroy' ],
-    'update'  : [ 'modify' ]
+  this.alias = {
+    create : [ 'insert' ],
+    get    : [ 'read' ],
+    getOne : [ 'readOne' ],
+    delete : [ 'destroy' ],
+    update : [ 'modify' ]
   };
 }
 
@@ -43,7 +43,7 @@ function Crud (logger) {
  * @return {Promise} promise object to use for handling
  */
 Crud.prototype.insert = function () {
-  // default instance
+  // Default instance
   return this.create.apply(this, arguments);
 };
 
@@ -53,7 +53,7 @@ Crud.prototype.insert = function () {
  * @return {Promise} promise object to use for handling
  */
 Crud.prototype.read = function () {
-  // default instance
+  // Default instance
   return this.get.apply(this, arguments);
 };
 
@@ -63,7 +63,7 @@ Crud.prototype.read = function () {
  * @return {Promise} promise object to use for handling
  */
 Crud.prototype.readOne = function () {
-  // default instance
+  // Default instance
   return this.getOne.apply(this, arguments);
 };
 
@@ -73,7 +73,7 @@ Crud.prototype.readOne = function () {
  * @return {Promise} promise object to use for handling
  */
 Crud.prototype.modify = function () {
-  // default instance
+  // Default instance
   return this.update.apply(this, arguments);
 };
 
@@ -83,7 +83,7 @@ Crud.prototype.modify = function () {
  * @return {Promise} promise object to use for handling
  */
 Crud.prototype.destroy = function () {
-  // default instance
+  // Default instance
   return this.delete.apply(this, arguments);
 };
 
@@ -95,7 +95,7 @@ Crud.prototype.destroy = function () {
  * @return {Promise} promise object to use for handling
  */
 Crud.prototype.getOne = function (conditions, filter) {
-  // call main get function
+  // Call main get function
   return this.get(conditions, filter, 'findOne');
 };
 
@@ -108,22 +108,22 @@ Crud.prototype.getOne = function (conditions, filter) {
  * @return {Promise} promise object to use for handleling
  */
 Crud.prototype.get = function (conditions, filter, method) {
-  // process redis usage
-  var redis = this[ method === 'findOne' ? 'getOneRedis' : 'getRedis' ];
+  // Process redis usage
+  var redis = this[method === 'findOne' ? 'getOneRedis' : 'getRedis'];
 
-  // defined default method name to use
-  method  = _.isString(method) && !_.isEmpty(method) ? method : 'find';
+  // Defined default method name to use
+  method = _.isString(method) && !_.isEmpty(method) ? method : 'find';
 
-  // is string ? so if for findById request. change method name
+  // Is string ? so if for findById request. change method name
   method = _.isString(conditions) ? 'findById' : method;
 
   // Create our deferred object, which we will use in our promise chain
   var deferred = Q.defer();
 
-  // normalize filter object
+  // Normalize filter object
   filter = _.isString(filter) && !_.isEmpty(filter) ? filter : '';
 
-  // save context for possible strict violation
+  // Save context for possible strict violation
   var context = this;
 
   /**
@@ -133,49 +133,51 @@ Crud.prototype.get = function (conditions, filter, method) {
    * @param {Object} filter object property to process filter action
    */
   function defaultFind (conditions, filter, store) {
-    // normal process
+    // Normal process
     context[method](conditions, filter, function (error, data) {
-      // has error ?
+      // Has error ?
       if (error) {
-        // reject
+        // Reject
         deferred.reject(error);
       } else {
-        // in case of no data
+        // In case of no data
         if (_.isObject(store)) {
-          // store data on db
+          // Store data on db
           redis.instance.add(store.key, data, store.expire);
-          // do not process promise catch here beacause this process must not stop normal process
+
+          // Do not process promise catch here beacause this process must not stop normal process
           // in any case
         }
-        // valid
+
+        // Valid
         deferred.resolve(data);
       }
     });
   }
 
-  // has redis ?
+  // Has redis ?
   if (redis) {
-    // normalize redisKey
+    // Normalize redisKey
     var redisKey = _.merge(_.isString(conditions) ?
       _.set([ this.modelName, conditions ].join('-'), conditions) : conditions || {}, filter || {});
 
-    // get key
+    // Get key
     redis.instance.get(redisKey).then(function (success) {
-      // success resolve
+      // Success resolve
       deferred.resolve(success);
     }).catch(function (error) {
-      // normal stuff
+      // Normal stuff
       defaultFind.call(this, conditions, filter, _.isNull(error) ? {
-        key     : redisKey,
-        expire  : redis.expire
+        key    : redisKey,
+        expire : redis.expire
       } : error);
     }.bind(this));
   } else {
-    // normal process
+    // Normal process
     defaultFind.call(this, conditions, filter);
   }
 
-  // return deferred promise
+  // Return deferred promise
   return deferred.promise;
 };
 
@@ -189,26 +191,26 @@ Crud.prototype.delete = function (id) {
   // Create our deferred object, which we will use in our promise chain
   var deferred = Q.defer();
 
-  // is valid type ?
+  // Is valid type ?
   if (_.isString(id) && !_.isEmpty(id)) {
-    // try to find
+    // Try to find
     this.findByIdAndRemove(id, function (error, data) {
-      // has error ?
+      // Has error ?
       if (error) {
-        // reject
+        // Reject
         deferred.reject(error);
       } else {
-        // valid
+        // Valid
         deferred.resolve(data);
       }
     });
   } else {
-    // reject
+    // Reject
     deferred.reject([ 'Given id is not a string',
-                     _.isString(id) && _.isEmpty(id) ? ' and is empty' : '' ].join(' '));
+      _.isString(id) && _.isEmpty(id) ? ' and is empty' : '' ].join(' '));
   }
 
-  // return deferred promise
+  // Return deferred promise
   return deferred.promise;
 };
 
@@ -221,40 +223,42 @@ Crud.prototype.delete = function (id) {
  * @return {Promise} promise object to use for handling
  */
 Crud.prototype.update = function (conditions, update, multi) {
-  // is string ? so if for findByIdAndUpdate request. change method name
+  // Is string ? so if for findByIdAndUpdate request. change method name
   var method = _.isString(conditions) ? 'findByIdAndUpdate' : 'findOneAndUpdate';
 
   // Create our deferred object, which we will use in our promise chain
   var deferred = Q.defer();
 
-  // is multi request ??
+  // Is multi request ??
   if (_.isBoolean(multi) && multi) {
-    // process specific where
-    this.where().setOptions({ multi : true }).update(conditions, update, function (error, data) {
-      // has error ?
+    // Process specific where
+    this.updateMany(conditions, update, function (error, data) {
+      // Has error ?
       if (error) {
-        // reject
+        // Reject
         deferred.reject(error);
       } else {
-        // valid
+        // Valid
         deferred.resolve(data);
       }
     });
   } else {
-    // try to find
-    this[method](conditions, update, { new : true }, function (error, data) {
-      // has error ?
+    // Try to find
+    this[method](conditions, update, {
+      new : true
+    }, function (error, data) {
+      // Has error ?
       if (error) {
-        // reject
+        // Reject
         deferred.reject(error);
       } else {
-        // valid
+        // Valid
         deferred.resolve(data);
       }
     });
   }
 
-  // return deferred promise
+  // Return deferred promise
   return deferred.promise;
 };
 
@@ -267,68 +271,73 @@ Crud.prototype.update = function (conditions, update, multi) {
 Crud.prototype.create = function (value) {
   // Create our deferred object, which we will use in our promise chain
   var deferred = Q.defer();
-  // create default instance model
+
+  // Create default instance model
   var model = !_.isFunction(this.save) ? new this() : this;
 
-  // default status
+  // Default status
   var status = true;
   var errors = [];
 
-  // has a validate function ?
+  // Has a validate function ?
   if (_.isFunction(this.validate)) {
-    // so try to validate
+    // So try to validate
     status = this.validate(value);
-    // save error
+
+    // Save error
     errors = status.error;
-    // change value here if validate is was call
-    value  = _.has(status, 'value') ? status.value : value;
-    // get status
+
+    // Change value here if validate is was call
+    value = _.has(status, 'value') ? status.value : value;
+
+    // Get status
     status = _.isNull(status.error);
   }
 
-  // is valid ?
+  // Is valid ?
   if (status) {
-    // model is a valid instance ?
+    // Model is a valid instance ?
     if (model instanceof this) {
-      // extend data before save
+      // Extend data before save
       _.extend(model, value);
-      // try to find
+
+      // Try to find
       model.save(function (error, data) {
-        // has error ?
+        // Has error ?
         if (error) {
-          // reject
+          // Reject
           deferred.reject(error);
         } else {
-          // elastic is enable on schema ?
+          // Elastic is enable on schema ?
           if (this.schema.elastic) {
-            // add this a listener to log indexes action
+            // Add this a listener to log indexes action
             model.on('es-indexed', function (err) {
-              // log succes message
+              // Log succes message
               if (err) {
-                // reject with error message
+                // Reject with error message
                 deferred.reject([ '[ Crud.create ] - Indexes creation failed :', err ].join(' '));
               } else {
-                // resolve default statement
+                // Resolve default statement
                 deferred.resolve(data);
               }
             });
           } else {
-            // valid
+            // Valid
             deferred.resolve(data);
           }
         }
       }.bind(this));
     } else {
-      // reject invalid instance model
+      // Reject invalid instance model
       deferred.reject('[ Crud.create ] - Cannot save. invalid instance model');
     }
   } else {
-    // reject schema validation error
+    // Reject schema validation error
     deferred.reject([ '[ Crud.create ] - Cannot save new schema.',
-                      errors ].join(' '));
+      errors ].join(' '));
   }
 
-  // return deferred promise
+  // Return deferred promise
   return deferred.promise;
 };
 
@@ -343,25 +352,27 @@ Crud.prototype.esearch = function (query, options) {
   // Create our deferred object, which we will use in our promise chain
   var deferred    = Q.defer();
 
-  // elastic is enabled ?
+  // Elastic is enabled ?
   if (!_.isUndefined(this.search) && _.isFunction(this.search)) {
-    // try to find
+    // Try to find
+
+    console.log(' \n ESEARCH  options : ', options)
     this.search(query || {}, options || {}, function (error, data) {
-      // has error ?
+      // Has error ?
       if (error) {
-        // reject
+        // Reject
         deferred.reject(error);
       } else {
-        // valid
+        // Valid
         deferred.resolve(data);
       }
     });
   } else {
-    // reject with error message
+    // Reject with error message
     deferred.reject('Elastic search is not enabled. Cannot process a search request');
   }
 
-  // return deferred promise
+  // Return deferred promise
   return deferred.promise;
 };
 
@@ -375,76 +386,84 @@ Crud.prototype.esearch = function (query, options) {
  * @return {Object|Boolean} modified schema with new requested method
  */
 Crud.prototype.add = function (schema, exclude, redisIncludes, redis) {
-  // valid data ?
-  if ((!_.isObject(schema) && !(schema instanceof Schema)) || !_.isArray(exclude)) {
+  // Valid data ?
+  if (!_.isObject(schema) && !(schema instanceof Schema) || !_.isArray(exclude)) {
     this.logger.warning('[ Crud.add ] - Schema or exclude item given is invalid');
-    // invalid statement
+
+    // Invalid statement
     return false;
   }
 
-  // default difference
+  // Default difference
   var difference = [ 'add' ];
 
-  // elastic is disable ?
+  // Elastic is disable ?
   if (!schema.elastic) {
-    // add search method to diff to remove default crud method
+    // Add search method to diff to remove default crud method
     difference.push('elasticsearch');
   }
 
-  // keep only correct method
+  // Keep only correct method
   var existing  = _.difference(Object.keys(Crud.prototype), difference);
-  // normalize data
-  exclude       = _.isArray(exclude) ? exclude : [];
 
-  // try to add alias on exclude array
+  // Normalize data
+
+  exclude = _.isArray(exclude) ? exclude : [];
+
+  // Try to add alias on exclude array
   if (!_.isEmpty(exclude) && _.isArray(exclude)) {
-    // build excluded alias
+    // Build excluded alias
     var excludeAlias = _.intersection(Object.keys(this.alias), exclude);
-    // parse alias to add item
+
+    // Parse alias to add item
+
     _.each(excludeAlias, function (ex) {
-      // push it
+      // Push it
       exclude.push(this.alias[ex]);
     }.bind(this));
 
-    // flatten array to have unique level
+    // Flatten array to have unique level
     exclude = _.flatten(exclude);
   }
 
-  // keep only needed methods
+  // Keep only needed methods
   var saved     = _.difference(existing, exclude);
 
-  // parse all
+  // Parse all
   _.each(saved, function (s) {
-    // is a valid func ?
+    // Is a valid func ?
     if (_.isFunction(this[s])) {
-      // has redis config define ?
+      // Has redis config define ?
       if (redisIncludes) {
-        // current method is include on redis config ?
+        // Current method is include on redis config ?
         if (_.includes(redisIncludes.value || [], s)) {
-          // assign method via static method and bind of redis on it
+          // Assign method via static method and bind of redis on it
           schema.static([ s, 'Redis' ].join(''), {
-            instance  : redis,
-            expire    : redisIncludes.expire || 0
+            instance : redis,
+            expire   : redisIncludes.expire || 0
           });
         }
       }
-      // assign method via static method
+
+      // Assign method via static method
       schema.static(s, this[s]);
     }
   }.bind(this));
 
-  // default statement
+  // Default statement
   return schema;
 };
 
 // Default export
 module.exports = function (l) {
-  // is a valid logger ?
+  // Is a valid logger ?
   if (_.isUndefined(l) || _.isNull(l)) {
     logger.warning('[ Crud.constructor ] - Invalid logger given. Use internal logger');
-    // assign
+
+    // Assign
     l = logger;
   }
-  // default statement
-  return new (Crud)(l);
+
+  // Default statement
+  return new Crud(l);
 };

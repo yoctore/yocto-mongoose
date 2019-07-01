@@ -22,7 +22,7 @@ function Validator (logger) {
    *
    * @property logger
    */
-  this.logger     = logger;
+  this.logger = logger;
 }
 
 /**
@@ -35,74 +35,79 @@ function Validator (logger) {
  * @return {Boolean|Object} new schema if all is ok false othewise
  */
 Validator.prototype.add = function (schema, path, name, modelName) {
-  // valid params first
+  // Valid params first
   if (_.isString(path) && _.isString(name) && !_.isEmpty(path) && !_.isEmpty(name) &&
-     _.isObject(schema) && (schema instanceof Schema) &&
+     _.isObject(schema) && schema instanceof Schema &&
      _.isString(modelName) && !_.isEmpty(modelName)) {
-    // retrieving files
-    var files = glob.sync([ '**/', modelName, '.js'].join(''), {
-      cwd       : path,
-      realpath  : true,
-      nocase    : true
+    // Retrieving files
+    var files = glob.sync([ '**/', modelName, '.js' ].join(''), {
+      cwd      : path,
+      realpath : true,
+      nocase   : true
     });
 
-    // so isEmpty ?
+    // So isEmpty ?
     if (files.length > 0) {
-      // parse all items
+      // Parse all items
       _.each(files, function (f) {
-        // evaluate file
+        // Evaluate file
         var fo = require(f);
 
-        // has wanted validator ?
+        // Has wanted validator ?
         if (_.has(fo, name) && _.isFunction(fo[name])) {
           this.logger.debug([ '[ Validator.add ] - [', name,
-                             '] validator was founded.',
-                             'Adding a new validate function on static property',
-                             'for given schema' ].join(' '));
-          // adding a validate static method
+            '] validator was founded.',
+            'Adding a new validate function on static property',
+            'for given schema' ].join(' '));
+
+          // Adding a validate static method
           schema.static('validate', function (data) {
-            // get rules for validation
+            // Get rules for validation
             // we add reference of enums instance automaticly in validator function param
             var rules = fo[name](this.enums);
-            // default statement
+
+            // Default statement
+
             return joi.validate(data, rules);
           });
 
-          // adding a get validate schema static method
+          // Adding a get validate schema static method
           schema.static('getValidateSchema', function () {
-            // get rules for validation
+            // Get rules for validation
             // we add reference of enums instance automaticly in validator function param
             return fo[name](this.enums);
           });
         }
       }.bind(this));
 
-      // valid statement
+      // Valid statement
       return schema;
     }
 
-    // empty files so message
+    // Empty files so message
     this.logger.warning([ '[ Validator.add ] - Given directory path for',
-                          'Validators seems to be empty.',
-                          'Cannot add validator on schema.' ].join(' '));
+      'Validators seems to be empty.',
+      'Cannot add validator on schema.' ].join(' '));
   } else {
-    // cannot process
+    // Cannot process
     this.logger.error([ '[ Validator.add ] - cannot process invalid path / name',
-                        '/ model name or schema given.' ].join(' '));
+      '/ model name or schema given.' ].join(' '));
   }
 
-  // invalid statement
+  // Invalid statement
   return false;
 };
 
 // Default export
 module.exports = function (l) {
-  // is a valid logger ?
+  // Is a valid logger ?
   if (_.isUndefined(l) || _.isNull(l)) {
     logger.warning('[ Validator.constructor ] - Invalid logger given. Use internal logger');
-    // assign
+
+    // Assign
     l = logger;
   }
-  // default statement
-  return new (Validator)(l);
+
+  // Default statement
+  return new Validator(l);
 };

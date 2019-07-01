@@ -24,7 +24,7 @@ function Method (logger) {
    *
    * @property logger
    */
-  this.logger     = logger;
+  this.logger = logger;
 }
 
 /**
@@ -38,34 +38,33 @@ function Method (logger) {
  * @return {Boolean|Object} new schema if all is ok false othewise
  */
 Method.prototype.add = function (schema, path, items, modelName, redis) {
-  // valid params first
+  // Valid params first
   if (_.isString(path) && _.isArray(items) && !_.isEmpty(path) && !_.isEmpty(items) &&
-     _.isObject(schema) && (schema instanceof Schema) &&
+     _.isObject(schema) && schema instanceof Schema &&
      _.isString(modelName) && !_.isEmpty(modelName)) {
-    // retrieving files
-    var files = glob.sync([ '**/', modelName, '.js'].join(''), {
-      cwd       : path,
-      realpath  : true,
-      nocase    : true
+    // Retrieving files
+    var files = glob.sync([ '**/', modelName, '.js' ].join(''), {
+      cwd      : path,
+      realpath : true,
+      nocase   : true
     });
 
-    // so isEmpty ?
+    // So isEmpty ?
     if (files.length > 0) {
-      // parse all files
+      // Parse all files
       _.each(files, function (f) {
-        // evaluate file
+        // Evaluate file
         var fo = require(f);
 
-        // parse each item
+        // Parse each item
         _.each(items, function (item) {
-
-          // define schema
+          // Define schema
           var vschema = joi.object().keys({
             type  : joi.string().required().empty().valid([ 'static', 'method', 'post', 'pre' ]),
             name  : joi.string().required().empty(),
             event : joi.optional().when('type', {
-              is        : 'post',
-              then      : joi.string().required().empty().valid([
+              is   : 'post',
+              then : joi.string().required().empty().valid([
                 'init',
                 'validate',
                 'save',
@@ -84,80 +83,95 @@ Method.prototype.add = function (schema, path, items, modelName, redis) {
             })
           });
 
-          // validate schema
+          // Validate schema
           var validate = joi.validate(item, vschema);
 
-          // has error ?
+          // Has error ?
           if (_.isNull(validate.error)) {
-            // has wanted validator ?
+            // Has wanted validator ?
             if (_.has(fo, item.name) && _.isFunction(fo[item.name])) {
-              // debug message
+              // Debug message
               this.logger.debug([ '[ Method.add ] - Method [', item.name,
-                                 '] founded adding new',
-                                 (item.type === 'method' ? 'instance' :
-                                  item.type), 'method for given schema' ].join(' '));
+                '] founded adding new',
+                item.type === 'method' ? 'instance' :
+                  item.type, 'method for given schema' ].join(' '));
 
-              // is post item
+              // Is post item
               if ((item.type === 'post' || item.type === 'pre') &&
                 _.isString(item.event) && !_.isEmpty(item.event)) {
-                // debug message
+                // Debug message
                 this.logger.debug([ '[ Method.add ] - Adding [', item.type,
                   ' ] hook on current schema for event [', item.event, ']' ].join(' '));
-                // save logger to send to external method
+
+                // Save logger to send to external method
                 var logger = this.logger;
-                // build post process with needed event
+
+                // Build post process with needed event
+
                 if (item.type === 'post') {
-                  // build post process
+                  // Build post process
                   schema.post(item.event, function () {
-                    // default statement process function with given arguments in current context
+                    // Default statement process function with given arguments in current context
                     return fo[item.name].apply(this, _.flatten([ arguments, logger ]));
                   });
                 } else {
-                  // build pre process
-                  schema.pre(item.event, function (next) {
-                    // default call process function with given arguments in current context
-                    fo[item.name].apply(this, _.flatten([ arguments, logger ]));
-                    // default statement
-                    return next();
+                  console.log('\n item : ', item)
+
+                  // Build pre process
+                  schema.pre(item.event, function () {
+                    // Default call process function with given arguments in current context
+                    return fo[item.name].apply(this, _.flatten([ arguments, logger ]));
+
+                    // Default statement
+                    // return next();
                   });
                 }
               } else {
-                // define method
+                // Define method
                 schema[item.type](item.name, function () {
-                  // default statement process function with given arguments in current context
+                  // Default statement process function with given arguments in current context
                   return fo[item.name].apply(this, arguments);
                 });
               }
 
-              // has redis ?
+              // Has redis ?
               if (item.redis) {
-                // has custom redis expire time define on schema for specific key/method ?
+                // Has custom redis expire time define on schema for specific key/method ?
                 if (!_.isArray(schema.redisExpireTimeByKey)) {
-                  // create default item
+                  // Create default item
                   schema.redisExpireTimeByKey = [];
                 }
-                // is enable ?
+
+                // Is enable ?
                 if (_.has(item.redis, 'enable') && item.redis.enable) {
-                  // push item on schema mapping for specific expire time
+                  // Push item on schema mapping for specific expire time
                   schema.redisExpireTimeByKey.push(_.set({}, item.name, item.redis.expire));
-                  // define static
+
+                  // Define static
                   schema.static('redis', function () {
-                    // current stack trace to find correct key for redi
+                    // Current stack trace to find correct key for redi
                     var stack   = stackTrace.get();
-                    // get caller properly
+
+                    // Get caller properly
                     var caller  = stack[1];
-                    // if correct object
+
+                    // If correct object
+
                     if (_.isObject(caller)) {
-                      // set caller
+                      // Set caller
                       caller = caller.getFunctionName();
-                      // replace exports call
+
+                      // Replace exports call
                       caller = caller.replace('exports.', '');
                     }
-                    // get expire
+
+                    // Get expire
                     var expire = _.result(_.find(this.schema.redisExpireTimeByKey, caller),
-                                    caller);
-                    // here default statement. we return current instance of redis and
+                      caller);
+
+                    // Here default statement. we return current instance of redis and
                     // default expire time to use custom redis usage
+
                     return {
                       instance : redis,
                       expire   : expire || 0
@@ -166,44 +180,46 @@ Method.prototype.add = function (schema, path, items, modelName, redis) {
                 }
               }
             } else {
-              // warning message
+              // Warning message
               this.logger.warning([ '[ Method.add ] - Cannot found method [',
                 item.name, '] for current model'
               ].join(' '));
             }
           } else {
-            // error schema is invalid
+            // Error schema is invalid
             this.logger.error([ '[ Method.add ] - Cannot add method for item',
-                                utils.obj.inspect(item), validate.error ].join(' '));
+              utils.obj.inspect(item), validate.error ].join(' '));
           }
         }.bind(this));
       }.bind(this));
 
-      // valid statement
+      // Valid statement
       return schema;
     }
 
-    // empty files so message
+    // Empty files so message
     this.logger.warning([ '[ Method.add ] - Given directory path for',
-                          'Methods seems to be empty.',
-                          'Cannot add method on schema.' ].join(' '));
+      'Methods seems to be empty.',
+      'Cannot add method on schema.' ].join(' '));
   } else {
-    // cannot process
+    // Cannot process
     this.logger.error('[ Method.add ] - cannot process invalid path / name or schema given.');
   }
 
-  // invalid statement
+  // Invalid statement
   return false;
 };
 
 // Default export
 module.exports = function (l) {
-  // is a valid logger ?
+  // Is a valid logger ?
   if (_.isUndefined(l) || _.isNull(l)) {
     logger.warning('[ Method.constructor ] - Invalid logger given. Use internal logger');
-    // assign
+
+    // Assign
     l = logger;
   }
-  // default statement
-  return new (Method)(l);
+
+  // Default statement
+  return new Method(l);
 };

@@ -11,8 +11,7 @@ exports.test1 = function(data) {
   //console.log('redis Instance', this.redis());
 //  console.log('redis Expire time', this.redis());
   //console.log(arguments);
-  deferred.resolve('Yeahhhh');
-  console.log('TYPES =>', this.Types);
+  deferred.resolve('(Test1 Function ) - Yeahhhh');
   // test redis
   /*this.redis().instance.add('aaa', { foo : 'abar' }, this.redis().expire);
   this.redis().instance.get('aaa').then(function (success) {
@@ -20,6 +19,8 @@ exports.test1 = function(data) {
   }).catch(function (error) {
     console.log('r erro =>', error);
   });*/
+
+  console.log(' --> deffered succes')
   return deferred.promise;
 };
 

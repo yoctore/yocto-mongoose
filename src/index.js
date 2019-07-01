@@ -14,7 +14,7 @@ var elastic       = require('mongoosastic');
 var utils         = require('yocto-utils');
 var elasticClient = require('elasticsearch');
 
-// default require for code quality
+// Default require for code quality
 var modCrud          = require('./modules/crud');
 var modValidator     = require('./modules/validator');
 var modMethod        = require('./modules/method');
@@ -43,7 +43,7 @@ function YMongoose (l) {
    * @memberof YMongoose
    * @member {Instance} logger
    */
-  this.logger   = l;
+  this.logger = l;
 
   /**
    * Mongoose instance
@@ -53,6 +53,7 @@ function YMongoose (l) {
    * @member {Instance} mongoose
    */
   this.mongoose = mongoose;
+
   /**
    * Model Path definition to use on autoLoading
    *
@@ -60,11 +61,11 @@ function YMongoose (l) {
    * @memberof YMongoose
    * @member {Object} paths
    */
-  this.paths    = {
-    model       : '',
-    validator   : '',
-    method      : '',
-    enums       : ''
+  this.paths = {
+    model     : '',
+    validator : '',
+    method    : '',
+    enums     : ''
   };
 
   /**
@@ -75,7 +76,7 @@ function YMongoose (l) {
    * @member {Boolean} crud
    * @default false
    */
-  this.crud     = false;
+  this.crud = false;
 
   /**
    * Define if models are loaded
@@ -85,7 +86,7 @@ function YMongoose (l) {
    * @member {Boolean} loaded
    * @default false
    */
-  this.loaded   = false;
+  this.loaded = false;
 
   /**
    * Internal modules
@@ -95,12 +96,12 @@ function YMongoose (l) {
    * @member {Boolean} loaded
    */
   this.modules = {
-    crud          : modCrud(l),
-    validator     : modValidator(l),
-    method        : modMethod(l),
-    enums         : modEnums(l, mongoose.Types),
-    elastic       : modElastic(l),
-    redis         : modRedis(l)
+    crud      : modCrud(l),
+    validator : modValidator(l),
+    method    : modMethod(l),
+    enums     : modEnums(l, mongoose.Types),
+    elastic   : modElastic(l),
+    redis     : modRedis(l)
   };
 }
 
@@ -110,7 +111,7 @@ function YMongoose (l) {
  * @return {Boolean} true if is connected false otherwise
  */
 YMongoose.prototype.isConnected = function () {
-  // default statement
+  // Default statement
   return this.mongoose.connection.readyState === this.mongoose.Connection.STATES.connected;
 };
 
@@ -120,7 +121,7 @@ YMongoose.prototype.isConnected = function () {
  * @return {Boolean} true if is connected false otherwise
  */
 YMongoose.prototype.isDisconnected = function () {
-  // default statement
+  // Default statement
   return this.mongoose.connection.readyState === this.mongoose.Connection.STATES.disconnected;
 };
 
@@ -135,79 +136,97 @@ YMongoose.prototype.connect = function (url, options) {
   // Create our deferred object, which we will use in our promise chain
   var deferred = Q.defer();
 
-  // try connect
+  // Try connect
   this.logger.info([ '[ YMongoose.connect ] -',
-                     'Try to connect on [', url, ']' ].join(' '));
+    'Try to connect on [', url, ']' ].join(' '));
 
-  // catch open connection
+  // Catch open connection
   this.mongoose.connection.on('open', function () {
-    // message
+    // Message
     this.logger.info([ '[ YMongoose.connect ] - Connection succeed on', url ].join(' '));
-    // success reponse
+
+    // Success reponse
     deferred.resolve();
   }.bind(this));
 
-  // listen error event
+  // Listen error event
   this.mongoose.connection.on('error', function (error) {
-    // message
+    // Message
     this.logger.error([ '[ YMongoose.connect ] - Connection failed.',
-                           'Error is :', error.message ].join(' '));
-    // error reponse
+      'Error is :', error.message ].join(' '));
+
+    // Error reponse
     deferred.reject(error);
   }.bind(this));
 
-  // catch defined event for debug
+  // Catch defined event for debug
   _.each([ 'connecting', 'connected', 'disconnecting', 'disconnected' ], function (e) {
-    // catch each event
+    // Catch each event
     this.mongoose.connection.on(e, function () {
-      // process log
+      // Process log
       this.logger.debug([ '[ YMongoose.connect ] - Mongoose is :',
         _.capitalize(e) ].join(' '));
     }.bind(this));
   }.bind(this));
 
-  // valid url ?
+  // Valid url ?
   if (_.isString(url) && !_.isEmpty(url)) {
-    // normalized options
+    // Normalized options
     options = _.isObject(options) && !_.isEmpty(options) ? options : {};
 
-    // check if property sslCA exist
+    // Check if property sslCA exist
     if (_.has(options, 'server.sslCA') && _.isString(options.server.sslCA)) {
-      // create buffer of this file
+      // Create buffer of this file
       options.server.sslCA = [
         fs.readFileSync(path.normalize(process.cwd() + '/' + options.server.sslCA))
       ];
     }
 
-    // check if property sslKey exist
+    // Check if property sslKey exist
     if (_.has(options, 'server.sslKey') && _.isString(options.server.sslKey)) {
-      // create buffer of this file
+      // Create buffer of this file
       options.server.sslKey = [
-        fs.readFileSync(path.normalize(process.cwd()  + '/' + options.server.sslKey))
+        fs.readFileSync(path.normalize(process.cwd() + '/' + options.server.sslKey))
       ];
     }
 
-    // check if property sslCert exist
+    // Check if property sslCert exist
     if (_.has(options, 'server.sslCert') && _.isString(options.server.sslCert)) {
-      // create buffer of this file
+      // Create buffer of this file
       options.server.sslCert = [
-        fs.readFileSync(path.normalize(process.cwd()  + '/' + options.server.sslCert))
+        fs.readFileSync(path.normalize(process.cwd() + '/' + options.server.sslCert))
       ];
     }
 
-    // connect only if mongoosed is not connected
+    // Check if has new Url Parser (used for MongoDB driver deprecations)
+    if (!_.has(options, 'useNewUrlParser')) {
+      options.useNewUrlParser = true;
+    }
+
+    // Check if use FindAndModify (used for MongoDB driver deprecations)
+    if (!_.has(options, 'useFindAndModify')) {
+      options.useFindAndModify = false;
+    }
+
+    // Check if has use Create Index (used for MongoDB driver deprecations)
+    if (!_.has(options, 'useCreateIndex')) {
+      options.useCreateIndex = true;
+    }
+
+    // Connect only if mongoosed is not connected
     if (this.isDisconnected()) {
-      // start connection
+      // Start connection
       this.mongoose.connect(url, options);
     }
   } else {
-    // invalid url cannot connect
+    // Invalid url cannot connect
     this.logger.error('[ YMongoose.connect ] - Invalid url, cannot connect.');
-    // reject connection failed
+
+    // Reject connection failed
     deferred.reject();
   }
 
-  // return deferred promise
+  // Return deferred promise
   return deferred.promise;
 };
 
@@ -220,50 +239,54 @@ YMongoose.prototype.disconnect = function () {
   // Create our deferred object, which we will use in our promise chain
   var deferred = Q.defer();
 
-  // try to disconnect
+  // Try to disconnect
   this.logger.info('[ YMongoose.disconnect ] - Try to disconnect all connections');
 
-  // is connected ?
+  // Is connected ?
   if (this.isConnected()) {
-    // disconnect
+    // Disconnect
     this.mongoose.disconnect(function (error) {
-
-      // has any error ?
+      // Has any error ?
       if (error) {
-        // message
+        // Message
         this.logger.error([ '[ YMongoose.disconnect ] - Disconnect failed.',
-                               'Error is :', error.message ].join(' '));
-        // reject disconnect failed
+          'Error is :', error.message ].join(' '));
+
+        // Reject disconnect failed
         deferred.reject(error);
       } else {
-        // process redis disconnect here
+        // Process redis disconnect here
         this.modules.redis.disconnect();
-        // clean the other thing
+
+        // Clean the other thing
         this.mongoose.connection.close(function (cerror) {
-          // has error ?
+          // Has error ?
           if (cerror) {
-            // message
+            // Message
             this.logger.error([ '[ YMongoose.disconnect ] - Connection close failed.',
-                                   'Error is :', cerror.message ].join(' '));
-            // reject disconnect failed
+              'Error is :', cerror.message ].join(' '));
+
+            // Reject disconnect failed
             deferred.reject(cerror);
           } else {
-            // successful message
+            // Successful message
             this.logger.info('[ YMongoose.disconnect ] - Closing connection succeed.');
-            // success reponse
+
+            // Success reponse
             deferred.resolve();
           }
         }.bind(this));
       }
     }.bind(this));
   } else {
-    // cant disconnect we are not connected
+    // Cant disconnect we are not connected
     this.logger.warning('[ YMongoose.disconnect ] - Cannot disconnect orm is not connected.');
-    // reject
+
+    // Reject
     deferred.reject();
   }
 
-  // return deferred promise
+  // Return deferred promise
   return deferred.promise;
 };
 
@@ -275,41 +298,50 @@ YMongoose.prototype.disconnect = function () {
  * @return {Boolean} true if all is ok false otherwise
  */
 YMongoose.prototype.enableElasticsearch = function (hosts, options) {
-  // normalize hosts
+  // Normalize hosts
   hosts = _.isArray(hosts) ? hosts : [ hosts || {
-    host      : '127.0.0.1',
-    port      : 9200,
-    protocol  : 'http'
+    host     : '127.0.0.1',
+    port     : 9200,
+    protocol : 'http'
   } ];
 
-  // validation schema
+  // Validation schema
   var schema = joi.array().required().items(
     joi.object().keys({
-      host      : joi.string().required().empty().default('127.0.0.1'),
-      port      : joi.number().required().default(9200),
-      protocol  : joi.string().optional().valid([ 'http', 'https']).default('http'),
-      auth      : joi.string().optional().empty()
-    }).default({ host : '127.0.0.1', port : 9200, protocol : 'http' })
-  ).default([ { host : '127.0.0.1', port : 9200, protocol : 'http' } ]);
+      host     : joi.string().required().empty().default('127.0.0.1'),
+      port     : joi.number().required().default(9200),
+      protocol : joi.string().optional().valid([ 'http', 'https' ]).default('http'),
+      auth     : joi.string().optional().empty()
+    }).default({
+      host     : '127.0.0.1',
+      port     : 9200,
+      protocol : 'http'
+    })
+  ).default([ {
+    host     : '127.0.0.1',
+    port     : 9200,
+    protocol : 'http'
+  } ]);
 
-  // validate given config
+  // Validate given config
   var validate = joi.validate(hosts, schema);
 
-  // has error ?
+  // Has error ?
   if (validate.error) {
-    // log error message
+    // Log error message
     this.logger.warning([ '[ YMongoose.elasticHosts ] - Invalid host config given :',
-                          validate.error ] .join(' '));
-    // default invalid statement
+      validate.error ].join(' '));
+
+    // Default invalid statement
     return false;
   }
 
-  // save data
+  // Save data
   return this.modules.elastic.enableHosts(validate.value, options);
 };
 
 /**
- * enable redis on current module
+ * Enable redis on current module
  *
  * @param {Array} hosts lists of use hosts
  * @param {Object} options options to use on redis instance
@@ -318,7 +350,7 @@ YMongoose.prototype.enableElasticsearch = function (hosts, options) {
  * @return {Object} current redis instance
  */
 YMongoose.prototype.enableRedis = function (hosts, options, cluster, defaultExpireTime) {
-  // connect redis
+  // Connect redis
   return this.modules.redis.connect(hosts, options, defaultExpireTime, cluster);
 };
 
@@ -328,7 +360,7 @@ YMongoose.prototype.enableRedis = function (hosts, options, cluster, defaultExpi
  * @return {Object} default redis instance
  */
 YMongoose.prototype.getRedis = function () {
-  // default statement
+  // Default statement
   return this.modules.redis;
 };
 
@@ -339,9 +371,10 @@ YMongoose.prototype.getRedis = function () {
  * @return {Boolean} true if add was ok false otherwise
  */
 YMongoose.prototype.models = function (directory) {
-  // message
+  // Message
   this.logger.debug('[ YMongoose.models ] - Try to set model defintion path.');
-  // default statement
+
+  // Default statement
   return this.setPath(directory, 'model');
 };
 
@@ -352,9 +385,10 @@ YMongoose.prototype.models = function (directory) {
  * @return {Boolean} true if add was ok false otherwise
  */
 YMongoose.prototype.validators = function (directory) {
-  // message
+  // Message
   this.logger.debug('[ YMongoose.validators ] - Try to set validator defintion path.');
-  // default statement
+
+  // Default statement
   return this.setPath(directory, 'validator');
 };
 
@@ -365,9 +399,10 @@ YMongoose.prototype.validators = function (directory) {
  * @return {Boolean} true if add was ok false otherwise
  */
 YMongoose.prototype.methods = function (directory) {
-  // message
+  // Message
   this.logger.debug('[ YMongoose.methods ] - Try to set methods defintion path.');
-  // default statement
+
+  // Default statement
   return this.setPath(directory, 'method');
 };
 
@@ -378,9 +413,10 @@ YMongoose.prototype.methods = function (directory) {
  * @return {Boolean} true if add was ok false otherwise
  */
 YMongoose.prototype.enums = function (directory) {
-  // message
+  // Message
   this.logger.debug('[ YMongoose.enums ] - Try to set enums defintion path.');
-  // default statement
+
+  // Default statement
   return this.setPath(directory, 'enums');
 };
 
@@ -392,74 +428,94 @@ YMongoose.prototype.enums = function (directory) {
  * @return {Boolean} true if all is ok false otherwise
  */
 YMongoose.prototype.setPath = function (directory, stype) {
-  // default type value
+  // Default type value
   var types = {
-    model       : { ext : 'json', name : 'model' },
-    validator   : { ext : 'js', name  : 'validator' },
-    method      : { ext : 'js', name  : 'method' },
-    enums       : { ext : 'json', name : 'enums' }
+    model : {
+      ext  : 'json',
+      name : 'model'
+    },
+    validator : {
+      ext  : 'js',
+      name : 'validator'
+    },
+    method : {
+      ext  : 'js',
+      name : 'method'
+    },
+    enums : {
+      ext  : 'json',
+      name : 'enums'
+    }
   };
 
-  // set default if we need to set controller directory
+  // Set default if we need to set controller directory
   var type = _.find(types, [ 'name', stype ]);
 
-  // is valid format ?
+  // Is valid format ?
   if (!_.isUndefined(type) && _.isObject(type) && _.isString(directory) && !_.isEmpty(directory)) {
-    // normalize directory path
+    // Normalize directory path
     directory = path.isAbsolute(directory) ?
-                directory : path.normalize([ process.cwd(), directory ].join('/'));
+      directory : path.normalize([ process.cwd(), directory ].join('/'));
 
-    // main process
+    // Main process
     try {
-      // check access sync
+      // Check access sync
       fs.accessSync(directory, fs.R_OK);
-      // retreiving stats of directory
+
+      // Retreiving stats of directory
       var stats   = fs.statSync(directory);
 
-      // is directory ?
+      // Is directory ?
       if (!stats.isDirectory()) {
-        // exception
+        // Exception
         throw [ directory, 'is not a valid directory.' ].join(' ');
       }
 
-      // check if has data on directory for warning prevent
+      // Check if has data on directory for warning prevent
       var hasFile = glob.sync([ '**/*.', type.ext ].join(''), {
         cwd : directory
       });
-      // so isEmpty ?
+
+      // So isEmpty ?
+
       if (_.size(hasFile) === 0) {
         this.logger.warning([ '[ YMongoose.setPath ] - Given directory path for',
-                              [ type.name, (type.name !== 'enums' ? 's' : '') ].join(''),
-                              'seems to be empty.',
-                              'Don\'t forget to ad your', type.ext,
-                              'file before load call' ].join(' '));
+          [ type.name, type.name !== 'enums' ? 's' : '' ].join(''),
+          'seems to be empty.',
+          'Don\'t forget to ad your', type.ext,
+          'file before load call' ].join(' '));
       }
 
-      // set data
+      // Set data
       this.paths[type.name] = directory;
-      // log message
+
+      // Log message
       this.logger.debug([ '[ YMongoose.setPath ] -',
-                          _.capitalize([ type.name, (type.name !== 'enums' ? 's' : '') ].join('')),
-                         'path was set to :',
-                         this.paths[type.name] ].join(' '));
+        _.capitalize([ type.name, type.name !== 'enums' ? 's' : '' ].join('')),
+        'path was set to :',
+        this.paths[type.name] ].join(' '));
     } catch (e) {
-      // log message
+      // Log message
       this.logger.error([ '[ YMongoose.setPath ] - Set path for',
-                          [ type.name, (type.name !== 'enums' ? 's' : '') ].join(''),
-                          'failed.', e ].join(' '));
-      // error on set path disconnect mongoose
+        [ type.name, type.name !== 'enums' ? 's' : '' ].join(''),
+        'failed.', e ].join(' '));
+
+      // Error on set path disconnect mongoose
       this.disconnect();
-      // default statement
+
+      // Default statement
       return false;
     }
-    // success statement
+
+    // Success statement
     return true;
   }
 
-  // error if we exec here
+  // Error if we exec here
   this.logger.error([ '[ YMongoose.setPath ] - Cannot set directory for [', stype, ']',
-                      'Invalid directory given or cannot retreive types rules' ].join(' '));
-  // default statement
+    'Invalid directory given or cannot retreive types rules' ].join(' '));
+
+  // Default statement
   return false;
 };
 
@@ -469,7 +525,7 @@ YMongoose.prototype.setPath = function (directory, stype) {
  * @return {Boolean} true if all is ok false otherwise
  */
 YMongoose.prototype.isLoaded = function () {
-  // default statement
+  // Default statement
   return this.loaded;
 };
 
@@ -480,33 +536,35 @@ YMongoose.prototype.isLoaded = function () {
  * @return {Boolean} true if all is ok false otherwise
  */
 YMongoose.prototype.isReady = function (showErrors) {
-  // show errors ?
+  // Show errors ?
   if (showErrors) {
-    // check connection
+    // Check connection
     if (!this.isConnected()) {
       this.logger.error('[ YMongoose.isReady ] - Connection is not ready.');
     }
-    // model defintion path is properly set ?
+
+    // Model defintion path is properly set ?
     if (_.isEmpty(this.paths.model)) {
       this.logger.error('[ YMongoose.isReady ] - Model definition path is not set.');
     }
-    // controller defintion path is properly set ?
+
+    // Controller defintion path is properly set ?
     if (_.isEmpty(this.paths.validator)) {
       this.logger.error('[ YMongoose.isReady ] - Validator definition path is not set.');
     }
 
-    // methods defintion path is properly set ?
+    // Methods defintion path is properly set ?
     if (_.isEmpty(this.paths.method)) {
       this.logger.error('[ YMongoose.isReady ] - Methods definition path is not set.');
     }
-    // enums defintion path is properly set ?
+
+    // Enums defintion path is properly set ?
     if (_.isEmpty(this.paths.enums)) {
       this.logger.warning('[ YMongoose.isReady ] - Enum definition path is not set.');
     }
-
   }
 
-  // default statement
+  // Default statement
   return this.isConnected() && !_.isEmpty(this.paths.model) &&
          !_.isEmpty(this.paths.validator) && !_.isEmpty(this.paths.method);
 };
@@ -518,196 +576,206 @@ YMongoose.prototype.isReady = function (showErrors) {
  * @return {Boolean} created model or false if an error occured
  */
 YMongoose.prototype.addModel = function (value) {
-  // create async
+  // Create async
   var deferred = Q.defer();
 
-  // is Ready ??
+  // Is Ready ??
   if (this.isReady(true)) {
-    // has properties property from current model
+    // Has properties property from current model
     if (!_.isObject(value) || _.isEmpty(value) || !_.has(value, 'model') ||
         !_.has(value.model, 'properties') || !_.has(value.model, 'name')) {
-      // error message
+      // Error message
       this.logger.error('[ YMongoose.addModel ] - Cannot create model. Invalid data given');
-      // invalid statement
+
+      // Invalid statement
       deferred.reject();
     }
 
-    // message
+    // Message
     this.logger.debug([ '[ YMongoose.addModel ] - Creating model [',
-                        value.model.name, ']' ].join(' '));
+      value.model.name, ']' ].join(' '));
 
-    // default statement for next process
+    // Default statement for next process
     var hasElastic = false;
-    // elastic is enabled ?
+
+    // Elastic is enabled ?
+
     if (_.has(value.model, 'elastic') && _.isObject(value.model.elastic)) {
-      // is enabled ?
+      // Is enabled ?
       if (this.modules.elastic.configIsReady() &&
           _.isBoolean(value.model.elastic.enable) && value.model.elastic.enable) {
-        // debug message
+        // Debug message
         this.logger.debug([ '[ YMongoose.addModel ] - Elastic mode is enabled for this model.',
-                           'Adding default index on all properties to false' ].join(' '));
+          'Adding default index on all properties to false' ].join(' '));
 
-        // get defautl indexes
+        // Get defautl indexes
         var indexes = this.modules.elastic.addDefaultIndexes(_.cloneDeep(value.model.properties));
 
-        // merge data to get correct value
+        // Merge data to get correct value
         _.merge(indexes, value.model.properties);
 
-        // change elastic status
+        // Change elastic status
         hasElastic = true;
       }
     }
 
-    // schema value
+    // Schema value
     var schema = new Schema(value.model.properties);
 
-    // has elastic enable ?
+    // Has elastic enable ?
     if (hasElastic) {
-      // debug message
+      // Debug message
       this.logger.debug([ '[ YMongoose.addModel ] - Elastic mode is enabled for this model.',
-                         'Adding mongoosastic plugin to current schema' ].join(' '));
+        'Adding mongoosastic plugin to current schema' ].join(' '));
 
-      // define here correct client
+      // Define here correct client
       // with correct merge values
       var client = new elasticClient.Client(_.merge(_.merge({
         hosts : this.modules.elastic.getHosts()
       }, _.omit(value.model.elastic.options, [ 'hosts', 'host', 'port', 'protocol', 'auth' ])),
-        this.modules.elastic.getOptions()));
+      this.modules.elastic.getOptions()));
 
-      // add plugin with client connection
-      schema.plugin(elastic, { esClient : client });
+      // Add plugin with client connection
+      schema.plugin(elastic, {
+        esClient : client
+      });
     }
 
-    // add flag on schema
+    // Add flag on schema
     schema.elastic = hasElastic;
 
-    // add crud ?
+    // Add crud ?
     if (_.has(value.model, 'crud') && _.has(value.model.crud, 'enable') &&
         _.isObject(value.model.crud) && value.model.crud.enable) {
-      // message
+      // Message
       this.logger.debug([ '[ YMongoose.addModel ] - Crud mode is enabled.',
-                         'Try to add default methods' ].join(' '));
+        'Try to add default methods' ].join(' '));
 
-      // normalize redis include
+      // Normalize redis include
       var redisIncludes = false;
 
-      // has redis include define ?
+      // Has redis include define ?
       if (value.model.crud.redis && value.model.crud.redis.include) {
-        // redis include
+        // Redis include
         redisIncludes = {
-          value   : value.model.crud.redis.include,
-          expire  : value.model.crud.redis.expire
+          value  : value.model.crud.redis.include,
+          expire : value.model.crud.redis.expire
         };
       }
 
-      // process
+      // Process
       var cschema = this.createCrud(schema, value.model.crud.exclude, redisIncludes);
 
-      // is valid ?
+      // Is valid ?
       if (cschema) {
-        // message
+        // Message
         this.logger.debug([ '[ YMongoose.addModel ] - Adding Crud method success' ].join(' '));
-        // assign
+
+        // Assign
         schema = cschema;
       }
     }
 
-    // add validator ?
+    // Add validator ?
     if (!_.isUndefined(value.model.validator) && !_.isNull(value.model.validator) &&
        _.isString(value.model.validator) && !_.isEmpty(value.model.validator)) {
-      // messsage
+      // Messsage
       this.logger.debug([ '[ YMongoose.addModel ] - A validator is defined.',
-                         'Try to add a validate method.' ].join(' '));
-      // process
-      var vschema = this.createValidator(schema, value.model.validator,
-                                         value.model.name.toLowerCase());
+        'Try to add a validate method.' ].join(' '));
 
-      // is valid ?
+      // Process
+      var vschema = this.createValidator(schema, value.model.validator,
+        value.model.name.toLowerCase());
+
+      // Is valid ?
       if (vschema) {
-        // message
+        // Message
         this.logger.debug([ '[ YMongoose.addModel ] - Adding validate method success' ].join(' '));
-        // assign
+
+        // Assign
         schema = vschema;
       }
     }
 
-    // add methods ??
+    // Add methods ??
     if (!_.isUndefined(value.model.fn) && !_.isNull(value.model.fn) &&
        _.isArray(value.model.fn) && !_.isEmpty(value.model.fn)) {
-      // messsage
+      // Messsage
       this.logger.debug([ '[ YMongoose.addModel ] - External methods are defined.',
-                         'Try to add them.' ].join(' '));
+        'Try to add them.' ].join(' '));
 
-      // process
+      // Process
       var mschema = this.createMethod(schema, value.model.fn, value.model.name.toLowerCase());
 
-      // is valid ?
+      // Is valid ?
       if (mschema) {
-        // message
+        // Message
         this.logger.debug([ '[ YMongoose.addModel ] - Adding external methods success' ].join(' '));
-        // assign
+
+        // Assign
         schema = mschema;
       }
     }
 
-    // path is not empty so load
+    // Path is not empty so load
     if (!_.isEmpty(this.paths.enums)) {
-      // load enums works ?
+      // Load enums works ?
       if (this.modules.enums.load(this.paths.enums)) {
-        // load ok
+        // Load ok
         this.logger.debug('[ YMongoose.addModel ] - loading enums value success');
       } else {
-        // load nok
+        // Load nok
         this.logger.warning('[ YMongoose.addModel ] - loading enums value failed');
       }
     }
 
-    // add default enums instance value
+    // Add default enums instance value
     schema.static('enums', function () {
-      // return enums instance
+      // Return enums instance
       return this.modules.enums;
     }.bind(this));
 
-    // valid statement & set value to default schema
+    // Valid statement & set value to default schema
     var model = this.mongoose.model(value.model.name, schema);
 
-    // has elatic ?
+    // Has elatic ?
     if (hasElastic) {
-      // debug message
+      // Debug message
       this.logger.debug([ '[ YMongoose.addModel ] - Elastic mode is enabled for this model.',
-                         'Create mapping to current model' ].join(' '));
+        'Create mapping to current model' ].join(' '));
 
-      // create for given model mapping
+      // Create for given model mapping
       model.createMapping(function (err, mapping) {
-        // so have error
+        // So have error
         if (err) {
-          // log error message
+          // Log error message
           this.logger.error([ '[ YMongoose.addModel ] - Elastic create mapping error :',
-                              err ].join(' '));
+            err ].join(' '));
         } else {
-          // log success message
+          // Log success message
           this.logger.debug([ '[ YMongoose.addModel ] - Elastic create mapping success :',
-                              utils.obj.inspect(mapping) ].join(' '));
+            utils.obj.inspect(mapping) ].join(' '));
         }
-        // reject or resolve
+
+        // Reject or resolve
         if (!err) {
-          // resolve if all is ok
+          // Resolve if all is ok
           deferred.resolve();
         } else {
-          // reject result if mapping failed
+          // Reject result if mapping failed
           deferred.reject();
         }
       }.bind(this));
     } else {
-      // resolve
+      // Resolve
       deferred.resolve();
     }
   } else {
-    // reject
+    // Reject
     deferred.reject();
   }
 
-  // default statement
+  // Default statement
   return deferred.promise;
 };
 
@@ -720,20 +788,22 @@ YMongoose.prototype.addModel = function (value) {
  * @return {Object|Boolean} if all is ok return new schema false otherwise
  */
 YMongoose.prototype.createCrud = function (value, exclude, redisIncludes) {
-  // is Ready ??
+  // Is Ready ??
   if (this.isReady(true)) {
     if (!(value instanceof Schema)) {
-      // invalid instance
+      // Invalid instance
       this.logger.warning([ ' [ YMongoose.createCrud ] - Cannot process.',
-                            ' given schema is not an instanceof Schema' ].join(' '));
-      // invalid statement
+        ' given schema is not an instanceof Schema' ].join(' '));
+
+      // Invalid statement
       return false;
     }
 
-    // valid statement
+    // Valid statement
     return this.modules.crud.add(value, exclude, redisIncludes, this.modules.redis);
   }
-  // default statement
+
+  // Default statement
   return false;
 };
 
@@ -746,20 +816,22 @@ YMongoose.prototype.createCrud = function (value, exclude, redisIncludes) {
  * @return {Object|Boolean} if all is ok return new schema false otherwise
  */
 YMongoose.prototype.createValidator = function (value, validatorName, modelName) {
-  // is Ready ??
+  // Is Ready ??
   if (this.isReady(true)) {
     if (!(value instanceof Schema)) {
-      // invalid instance
+      // Invalid instance
       this.logger.warning([ ' [ YMongoose.createValidator ] - Cannot process.',
-                            ' given schema is not an instanceof Schema' ].join(' '));
-      // invalid statement
+        ' given schema is not an instanceof Schema' ].join(' '));
+
+      // Invalid statement
       return false;
     }
 
-    // valid statement
+    // Valid statement
     return this.modules.validator.add(value, this.paths.validator, validatorName, modelName);
   }
-  // default statement
+
+  // Default statement
   return false;
 };
 
@@ -772,20 +844,22 @@ YMongoose.prototype.createValidator = function (value, validatorName, modelName)
  * @return {Object|Boolean} if all is ok return new schema false otherwise
  */
 YMongoose.prototype.createMethod = function (value, items, modelName) {
-  // is Ready ??
+  // Is Ready ??
   if (this.isReady(true)) {
     if (!(value instanceof Schema)) {
-      // invalid instance
+      // Invalid instance
       this.logger.warning([ ' [ YMongoose.createMethod ] - Cannot process.',
-                            ' given schema is not an instanceof Schema' ].join(' '));
-      // invalid statement
+        ' given schema is not an instanceof Schema' ].join(' '));
+
+      // Invalid statement
       return false;
     }
 
-    // valid statement
+    // Valid statement
     return this.modules.method.add(value, this.paths.method, items, modelName, this.modules.redis);
   }
-  // default statement
+
+  // Default statement
   return false;
 };
 
@@ -798,7 +872,7 @@ YMongoose.prototype.load = function () {
   // Create our deferred object, which we will use in our promise chain
   var deferred = Q.defer();
 
-  var errors  = [];   // list of errors
+  var errors  = []; // List of errors
 
   // nbItem error on load
   var nbItems = {
@@ -806,18 +880,18 @@ YMongoose.prototype.load = function () {
     processed : 0
   };
 
-  // check model definition & controller first
+  // Check model definition & controller first
   var model = glob.sync('**/*.json', {
-    cwd       : this.paths.model,
-    realpath  : true
+    cwd      : this.paths.model,
+    realpath : true
   });
 
-  // define validator Schema
+  // Define validator Schema
   var vschema = joi.object().keys({
     model : joi.object().keys({
-      name        : joi.string().required(),
-      properties  : joi.object().required(),
-      crud        : joi.object().required().keys({
+      name       : joi.string().required(),
+      properties : joi.object().required(),
+      crud       : joi.object().required().keys({
         enable  : joi.boolean().required(),
         exclude : joi.array().required().empty(),
         redis   : joi.object().optional().keys({
@@ -826,111 +900,134 @@ YMongoose.prototype.load = function () {
           include : joi.array().items(joi.string().empty().valid([ 'get', 'getOne' ]))
         })
       }).allow('enable', 'exclude'),
-      validator   : joi.string().optional()
+      validator : joi.string().optional()
     }).unknown()
   }).unknown();
 
-  // create execution queue with 100 concurrency
+  // Create execution queue with 100 concurrency
   var queue = async.queue(function (task, callback) {
-    // validate
+    // Validate
     var status = joi.validate(task.data, vschema);
 
-    // display big message for more readable log
+    // Display big message for more readable log
     this.logger.debug([ '----------------------------',
-                          'Processing : [', task.file, ']',
-                          '----------------------------' ].join(' '));
-    // has error ?
+      'Processing : [', task.file, ']',
+      '----------------------------' ].join(' '));
+
+    // Has error ?
     if (!_.isNull(status.error)) {
-      // default error message
+      // Default error message
       var message = [ 'Invalid schema for [', task.file, '] Error is :',
-                      status.error ].join(' ');
-      // warning message
+        status.error ].join(' ');
+
+      // Warning message
+
       this.logger.error([ '[ YMongoose.load.queue ] -', message ].join(' '));
-      // callback with error
+
+      // Callback with error
       return callback(message);
-    } else {
-      // add new model
-      this.addModel(task.data).then(function () {
-        // change nb added items value
-        nbItems.processed++;
-        // normal process all is ok
-        callback();
-      }).catch(function () {
-        // callback with error
-        callback([ 'Cannot create model for  [', task.file, ']' ].join(' '));
-      });
     }
+
+    // Add new model
+    this.addModel(task.data).then(function () {
+      // Change nb added items value
+      nbItems.processed++;
+
+      // Normal process all is ok
+      callback();
+    }).catch(function () {
+      // Callback with error
+      callback([ 'Cannot create model for  [', task.file, ']' ].join(' '));
+    });
   }.bind(this), 100);
 
   // Callback at the end of queue processing
-  queue.drain = function () {
-    // message drain ending
+  queue.drain(function () {
+    // Message drain ending
     this.logger.debug([ _.repeat('-', 28),
       '[ Process Queue Complete ]', _.repeat('-', 28) ].join(' '));
     this.logger.info('[ YMongoose.load ] - All Model was processed & loaded.');
 
-    // changed loaded status
-    this.loaded = (nbItems.processed === nbItems.total);
-    // all is processed ?
+    // Changed loaded status
+    this.loaded = nbItems.processed === nbItems.total;
+
+    // All is processed ?
     if (this.loaded) {
-      // success message
+      // Success message
       // all is ok so resolve
       deferred.resolve();
     } else {
-      // all was not processed
+      // All was not processed
       this.logger.error([ '[ YMongoose.load ] -',
-                             'All item was NOT correctly processed.',
-                             'Check your logs.' ].join(' ')
-                          );
-      // reject
+        'All item was NOT correctly processed.',
+        'Check your logs.' ].join(' ')
+      );
+
+      // Reject
       deferred.reject();
-      // disconnect error occured
+
+      // Disconnect error occured
       this.disconnect();
     }
-  }.bind(this);
+  }.bind(this));
 
-  // all tasks storage
+  // All tasks storage
   var tasks = [];
-  // run each model
+
+  // Run each model
+
   async.each(model, function (m, next) {
-    // build file name
+    // Build file name
     var name = m.replace(path.dirname(m), '');
-    // try & catch error
+
+    // Try & catch error
+
     try {
-      // parsed file
+      // Parsed file
       var parsed = JSON.parse(fs.readFileSync(m, 'utf-8'));
-      // parsed not failed push to queue
-      tasks.push({ file : name, data : parsed });
-      // increment counter
+
+      // Parsed not failed push to queue
+
+      tasks.push({
+        file : name,
+        data : parsed
+      });
+
+      // Increment counter
       nbItems.total++;
-      // got to next item
+
+      // Got to next item
       next();
     } catch (e) {
-      // set correct message
+      // Set correct message
       var message = [ 'Cannot add item to queue. Error is : [', e, '] for [', name, ']' ].join(' ');
-      // error occured
+
+      // Error occured
+
       this.logger.error([ '[ YMongoose.load ] -', message ].join(' '));
 
-      // reject with correct message
+      // Reject with correct message
       deferred.reject(message);
-      // disconnect
+
+      // Disconnect
       this.disconnect();
     }
   }.bind(this), function () {
-    // push in queue
+    // Push in queue
     queue.push(tasks, function (error) {
-      // has error ?
+      // Has error ?
       if (error) {
-        // log error message
+        // Log error message
         this.logger.error([ '[ YMongoose.load ] - Cannot add an item to queue [',
-                                  error , ']' ].join(' '));
-        // push error on list for drain reject
+          error , ']' ].join(' '));
+
+        // Push error on list for drain reject
         errors.push(error);
       }
     }.bind(this));
   }.bind(this));
 
-  // return deferred promise
+  // Return deferred promise
   return deferred.promise;
 };
 
@@ -942,41 +1039,49 @@ YMongoose.prototype.load = function () {
  * @return {Boolean|Instance} false if an error occured, a model object if all is ok
  */
 YMongoose.prototype.getModel = function (name, isInstance) {
-  // is ready ??
+  // Is ready ??
   if (this.isReady(true) && this.isLoaded() &&
       _.isString(name) && !_.isEmpty(name)) {
-    // do it in try catch
+    // Do it in try catch
     try {
-      // try to get model
+      // Try to get model
       var Model = this.mongoose.model(name);
-      // add mongoose Types on model
-      Model.Types = mongoose.Types;
-      // valid statement
-      return (_.isBoolean(isInstance) && isInstance) ? new Model() : Model;
+
+      // Add mongoose Types on model
+
+      Model.Types = mongoose.Schema.Types;
+
+      // Valid statement
+      return _.isBoolean(isInstance) && isInstance ? new Model() : Model;
     } catch (e) {
-      // show error
+      // Show error
       this.logger.error('[ YMongoose.getModel ] - Model not found. Invalid schema name given.');
-      // debug message
+
+      // Debug message
       this.logger.debug([ '[ YMongoose.getModel ] -', e ].join(' '));
-      // invalid statement
+
+      // Invalid statement
       return false;
     }
   }
 
-  // error here
+  // Error here
   this.logger.error('[ YMongoose.getModel ] - Cannot get model. Invalid schema name given.');
-  // invalid statement
+
+  // Invalid statement
   return false;
 };
 
 // Default export
 module.exports = function (l) {
-  // is a valid logger ?
+  // Is a valid logger ?
   if (_.isUndefined(l) || _.isNull(l)) {
     logger.warning('[ YMongoose.constructor ] - Invalid logger given. Use internal logger');
-    // assign
+
+    // Assign
     l = logger;
   }
-  // default statement
-  return new (YMongoose)(l);
+
+  // Default statement
+  return new YMongoose(l);
 };
