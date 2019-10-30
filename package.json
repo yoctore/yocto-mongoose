@@ -74,7 +74,7 @@
     "joi": "^10.0.2",
     "lodash": "^4.17.2",
     "mongoosastic": "^4.2.1",
-    "mongoose": "^4.7.1",
+    "mongoose": "^5.7.7",
     "q": "^1.4.1",
     "stack-trace": "0.0.9",
     "yocto-logger": "^1.1.5",
